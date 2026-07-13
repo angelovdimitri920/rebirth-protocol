@@ -1,6 +1,6 @@
-# [Working Title] — Design Document v1
+# REBIRTH PROTOCOL — Design Document v1
 
-*A 3D arena mecha roguelite inspired by Custom Robo: Battle Revolution (GameCube), with weapon-loadout depth from Armored Core / Gundam and a real-time roguelike run structure. Replace [Working Title] once you've settled on a name.*
+*A 3D arena mecha roguelite inspired by Custom Robo: Battle Revolution (GameCube), with weapon-loadout depth from Armored Core / Gundam and a real-time roguelike run structure. "REBIRTH PROTOCOL" is a working title, named for the knockdown → rebirth comeback rhythm (§2.2) and the roguelite die-and-retry loop.*
 
 ---
 

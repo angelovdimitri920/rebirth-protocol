@@ -1,4 +1,6 @@
-# [Working Title]
+# REBIRTH PROTOCOL
+
+*(working title — named for the knockdown → rebirth-invincibility comeback rhythm at the heart of the combat, and the roguelite die-and-retry loop around it)*
 
 A 3D arena mecha roguelite — Custom Robo's build-and-battle loop, crossed with Armored Core/Gundam-style weapon loadouts (melee, shields, funnels). Built in Three.js + TypeScript.
 
@@ -11,7 +13,14 @@ A 3D arena mecha roguelite — Custom Robo's build-and-battle loop, crossed with
 
 ## Status
 
-Design phase complete. See `docs/GAME_DESIGN.md` §6 for the full staged roadmap and go/no-go criteria for each stage.
+Stage 1 (core duel prototype) in development. See `docs/GAME_DESIGN.md` §6 for the full staged roadmap and go/no-go criteria for each stage.
+
+## Running
+
+```bash
+npm install
+npm run dev
+```
 
 ## Pushing to GitHub
 

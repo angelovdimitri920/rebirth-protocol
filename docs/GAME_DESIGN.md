@@ -82,15 +82,20 @@ Go beyond Custom Robo's relatively flat Holosseums:
 
 ## 5. Engine & Tech Stack
 
-**Recommendation: Godot 4 (GDScript, with C# available if needed).**
+**Decision: Three.js + TypeScript, bundled with Vite.**
 
-Rationale, in priority order for a solo dev using an AI coding agent as primary workflow:
-1. **AI-agent tooling is the most mature of any engine right now.** Multiple MCP servers target Claude Code specifically for Godot — one lets an agent launch the editor, run the project, and read back debug output/errors directly (a genuine feedback loop for agentic iteration), another gives version-aware access to official docs, and a more extensive one exposes dozens of tools across scene/node control and viewport screenshots the agent can visually inspect. No other engine's agent tooling is currently this complete.
-2. **GDScript is Python-like** — a natural fit given your ML/data-science background.
-3. **3D capability is more than sufficient** for a stylized, GameCube-era look — Godot 4's Vulkan-based 3D pipeline handles lock-on cameras, `CharacterBody3D` movement, and arena-scale combat without friction. Its known weakness is AAA-grade fidelity (Nanite/Lumen-class), which is irrelevant here.
-4. **Zero licensing cost**, one-click Steam-ready exports, well-trodden Steamworks integration via GDExtension.
+This supersedes an earlier Godot recommendation in this project's research. Worth recording honestly: this trades away Godot's more mature AI-agent tooling (dedicated MCP servers with in-editor run/debug feedback loops) and its built-in editor, physics, and character controller — all of that now gets assembled from libraries instead of coming for free. The upside: Three.js is *just* JavaScript/TypeScript end-to-end, so an AI coding agent can read, write, run, and test it with a normal dev server and no engine-specific tooling required at all — and it opens genuine browser-native distribution (itch.io, web demos) alongside Steam.
 
-**Runner-up considered:** Three.js (browser/WebGL) is genuinely viable if web-first distribution ever becomes a strategic priority, but it means building physics, a scene editor equivalent, and Steam packaging (via Electron) from scratch — more friction for no gain given you're targeting Steam, not the web. Unity is a defensible second choice but heavier to iterate in and carries post-2023 pricing-trust baggage. Unreal is overkill for this art direction and adds a steep C++/Blueprint learning curve for no benefit here.
+**Core stack:**
+- **Three.js** (r16x+) for rendering — scene graph, camera, lighting, `GLTFLoader` for mecha models.
+- **Rapier3D** (`@dimforge/rapier3d-compat`, Rust compiled to WASM) for physics and the character controller. It ships a built-in `KinematicCharacterController`, which is the right primitive for the boost-economy movement in §3.3 — you want precise control over grounded/airborne state and velocity, not a generic rigid-body simulation. It's a more actively maintained, better-performing choice than Cannon-es for a project with real movement/collision demands.
+- **TypeScript**, not plain JS — worth the small setup cost at this scope; it catches a whole class of bugs an agent can otherwise introduce silently across files.
+- **Vite** for the dev server and bundler — fast hot-reload matters a lot when tuning movement feel.
+- **Howler.js** or native Web Audio for sound; an HTML/CSS overlay (not in-canvas rendering) for HUD/menus — far faster to iterate on than drawing UI in WebGL.
+
+**Distribution:** Three.js runs natively as a browser game, so itch.io (HTML5) is a zero-friction release target alongside Steam. For Steam specifically, wrap the build in **Tauri** (Rust-based, much smaller binary than Electron, the current recommendation for new projects) or Electron if you hit a Tauri/WebGL compatibility snag. Steamworks integration then goes through the wrapper's native layer, not the browser.
+
+**Verification loop:** Since this is a normal web app, an AI coding agent can run `npm run dev` and check the dev console for errors directly; if you have a browser-automation MCP connector wired into your Claude Code setup, that gives it a visual self-check loop roughly analogous to Godot's in-editor screenshot tooling, though it isn't wired up by default the way the Godot MCP servers are.
 
 ---
 
@@ -104,7 +109,7 @@ Rationale, in priority order for a solo dev using an AI coding agent as primary 
 
 **Stage 4 — Aerial identity + funnels + melee clash (weeks 20+).** Remote drones with their own energy pool, homing dash, melee-clash/parry counterplay, momentum movement if maps support it.
 
-**Thresholds that should change the plan:** if projectile/particle counts approach bullet-hell scale, move hot paths to C#/GDExtension before considering an engine switch; if online PvP becomes a core pillar rather than a later add-on, re-evaluate engine choice at the end of Stage 2.
+**Thresholds that should change the plan:** if projectile/particle counts approach bullet-hell scale, look at instanced rendering and Three.js's WebGPU renderer path before assuming a rewrite is needed; if online PvP becomes a core pillar rather than a later add-on, plan a WebSocket/WebRTC layer early — browser-native networking is one area where Three.js is actually at an advantage over a native engine.
 
 ---
 

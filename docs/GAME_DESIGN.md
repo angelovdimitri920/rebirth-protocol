@@ -29,11 +29,15 @@ Before a run (and adjusted between fights), assemble a robo from:
 
 Any part fits any body. Each body should be a genuine *archetype* (not just a stat-stick) defined by its air-dash behavior — e.g., a balanced 2-dash all-rounder, a long-single-dash glass-cannon flier, a stealth/vanish-dash evader, a slow tank with high load capacity.
 
+Visual/silhouette design basis for these archetypes: see [`ROBOT_SHELL_DESIGN.md`](ROBOT_SHELL_DESIGN.md).
+
 ### 2.2 HP, endurance, knockdown, rebirth
 Twin-bar system: a large HP pool plus a separate **endurance** bar. Taking hits drains endurance; when it empties, the robo is knocked down (briefly helpless, mash to recover faster), then enters a few seconds of **rebirth invincibility** on standing. This is the source of Custom Robo's signature comeback rhythm — pressure to force a knockdown, but respect the rebirth window. Endurance regenerates over time when unhit.
 
 ### 2.3 Arenas ("Holosseums")
 Small, wall-bounded 3D arenas with cover geometry (walls, platforms), multi-tier verticality, and environmental hazards (lava, ice, conveyors). Cover matters — you duck behind walls to break homing lock, and arc-firing weapons exist specifically to dig enemies out of cover.
+
+Arena design basis and Stage 1 recommendation: see [`HOLOSSEUM_REFERENCE.md`](HOLOSSEUM_REFERENCE.md).
 
 ---
 

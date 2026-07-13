@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Robo } from "../robo/Robo";
 import { Projectiles } from "./Projectiles";
+import { sfx } from "../core/sfx";
 
 // Pod slot (GAME_DESIGN §2.1): deployable drone with its OWN energy pool,
 // independent of gun/bomb, so it's always-on pressure rather than a burst
@@ -96,6 +97,7 @@ export class Pod {
     ) {
       this.fireCooldown = part.fireInterval * (fx?.podFireIntervalMult() ?? 1);
       this.energy -= part.energyPerShot;
+      sfx.podShot();
       const aim = target.position.clone().setY(target.groundY + 1.0);
       this.projectiles.spawn(this.mesh.position.clone(), aim, this.ownerTag, {
         damage:

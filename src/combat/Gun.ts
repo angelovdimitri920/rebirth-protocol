@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Robo } from "../robo/Robo";
 import { Projectiles } from "./Projectiles";
+import { sfx } from "../core/sfx";
 
 // The equipped gun part drives all stats; body ATK multiplier scales damage.
 
@@ -25,6 +26,7 @@ export class Gun {
 
     const part = this.owner.loadout.gun;
     this.cooldown = part.fireInterval;
+    sfx.shot();
 
     const muzzle = new THREE.Vector3();
     this.owner.mesh.gunMuzzle.getWorldPosition(muzzle);

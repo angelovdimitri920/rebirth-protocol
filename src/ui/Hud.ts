@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { Bomb } from "../combat/Bomb";
@@ -67,6 +68,16 @@ export class Hud {
         #hud-toast { position: absolute; left: 50%; bottom: 130px;
           transform: translateX(-50%); color: #7fc4a4; font-size: 16px;
           letter-spacing: 2px; opacity: 0; transition: opacity 0.25s; }
+        #hud-reticle { position: absolute; width: 44px; height: 44px;
+          margin: -22px 0 0 -22px; border: 2px solid #ff4444;
+          border-radius: 50%; opacity: 0.9;
+          box-shadow: 0 0 10px #ff444488, inset 0 0 6px #ff444455; }
+        #hud-reticle::after { content: ""; position: absolute; inset: 16px;
+          border-radius: 50%; background: currentColor; opacity: 0.55; }
+        #hud-reticle.green { border-color: #44dd88;
+          box-shadow: 0 0 10px #44dd8866, inset 0 0 6px #44dd8844; }
+        #hud-reticle { color: #ff4444; }
+        #hud-reticle.green { color: #44dd88; }
       </style>
       <div id="hud-player" class="hud-corner">
         <div class="hud-label">HP</div>
@@ -100,6 +111,7 @@ export class Hud {
           <div class="bar-fill" id="e-shield"></div>
         </div>
       </div>
+      <div id="hud-reticle" style="display:none"></div>
       <div id="hud-callout"></div>
       <div id="hud-run"></div>
       <div id="hud-build"></div>
@@ -135,6 +147,33 @@ export class Hud {
     el.textContent = message;
     el.style.opacity = "1";
     setTimeout(() => (el.style.opacity = "0"), 1800);
+  }
+
+  /** Red lock = inside gun homing range (shots track); green = outside
+   *  (shots fly straight). GAME_DESIGN §3.3's range-gated lock-on. */
+  updateReticle(
+    player: Robo,
+    enemy: Robo,
+    camera: THREE.PerspectiveCamera,
+    lockedOn: boolean,
+  ): void {
+    const el = document.getElementById("hud-reticle")!;
+    if (!lockedOn || enemy.health.state === "dead") {
+      el.style.display = "none";
+      return;
+    }
+    const pos = enemy.position.clone().setY(enemy.groundY + 1.2);
+    pos.project(camera);
+    if (pos.z > 1) {
+      el.style.display = "none"; // behind the camera
+      return;
+    }
+    el.style.display = "";
+    el.style.left = `${((pos.x + 1) / 2) * window.innerWidth}px`;
+    el.style.top = `${((1 - pos.y) / 2) * window.innerHeight}px`;
+    const inRange =
+      player.position.distanceTo(enemy.position) <= TUNING.gun.homingRange;
+    el.classList.toggle("green", !inRange);
   }
 
   update(

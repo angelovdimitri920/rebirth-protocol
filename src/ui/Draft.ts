@@ -1,4 +1,5 @@
 import { BOON_POOL, type Boon, type Effects } from "../run/effects";
+import { sfx } from "../core/sfx";
 
 // Post-fight boon draft (GAME_DESIGN §4): 3 choices, one boon per ability
 // slot in the offer, reroll as mitigation. Resolves with the picked boon
@@ -78,6 +79,7 @@ export function showDraft(
       root.querySelectorAll(".boon").forEach((el) => {
         el.addEventListener("click", () => {
           const boon = boons[Number((el as HTMLElement).dataset.i)];
+          sfx.draftPick();
           root.remove();
           resolve(boon);
         });

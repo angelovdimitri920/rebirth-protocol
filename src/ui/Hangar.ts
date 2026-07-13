@@ -4,6 +4,7 @@ import {
   saveLoadout,
   type Loadout,
 } from "../parts/parts";
+import { sfx } from "../core/sfx";
 
 // Pre-fight loadout screen (Stage 2). Pure DOM overlay; resolves with the
 // chosen loadout when DEPLOY is clicked. Selection persists in localStorage.
@@ -81,6 +82,8 @@ export function showHangar(): Promise<Loadout> {
     }
 
     root.querySelector("#deploy")!.addEventListener("click", () => {
+      sfx.ensure(); // user gesture: safe point to start the AudioContext
+      sfx.draftPick();
       saveLoadout(loadout);
       root.remove();
       resolve(loadout);

@@ -6,6 +6,7 @@ import { Health, type HitResult } from "../combat/Health";
 import { buildRoboMesh, type RoboMeshParts } from "./RoboMesh";
 import { computeStats, type Loadout, type RoboStats } from "../parts/parts";
 import type { Effects } from "../run/effects";
+import { sfx } from "../core/sfx";
 
 // One robo: kinematic character controller + boost economy + health, all
 // parameterized by the five-slot loadout (GAME_DESIGN §2.1).
@@ -185,8 +186,10 @@ export class Robo {
           // no second free defense stacked on rebirth (§3.2)
           this.shieldHp = 0;
           this.health.knockDown();
+          sfx.guardBreak();
           return "guardbreak";
         }
+        sfx.shielded();
         return "shielded";
       }
     }
@@ -194,12 +197,19 @@ export class Robo {
     const result = this.health.takeHit(scaledDamage, enduranceDamage);
     if (result !== "invulnerable") {
       this.applyKnockback(fromDir, 2);
+      sfx.hit();
     }
     return result;
   }
 
   update(dt: number): void {
+    const prevHealthState = this.health.state;
     this.health.update(dt);
+    if (prevHealthState !== this.health.state) {
+      if (this.health.state === "knockdown") sfx.knockdown();
+      else if (this.health.state === "rebirth") sfx.rebirth();
+      else if (this.health.state === "dead") sfx.eliminate();
+    }
     const T = TUNING;
 
     if (this.intent.mashPressed) this.health.mash();
@@ -310,6 +320,7 @@ export class Robo {
       this.spendBoost(dashCost);
       if (this.grounded) this.velocity.y = 3; // ground dash lifts into a hop
       this.effects?.onDash();
+      sfx.dash();
     }
 
     // --- Gravity ---

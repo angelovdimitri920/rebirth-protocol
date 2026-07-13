@@ -8,6 +8,7 @@ import { showDraft } from "../ui/Draft";
 import { Effects } from "../run/effects";
 import { RunState, FIGHTS_PER_RUN } from "../run/run";
 import type { Loadout } from "../parts/parts";
+import { sfx } from "./sfx";
 
 const STEP = 1 / 60;
 
@@ -137,6 +138,12 @@ export class Game {
       this.duel.playerPod,
       this.effects,
     );
+    this.hud.updateReticle(
+      this.duel.player,
+      this.duel.enemy,
+      this.camera,
+      this.duel.playerController.lockedOn,
+    );
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -178,6 +185,8 @@ export class Game {
   }
 
   private showRunEnd(won: boolean): void {
+    if (won) sfx.victory();
+    else sfx.defeat();
     const el = document.createElement("div");
     el.innerHTML = `
       <style>
@@ -217,6 +226,12 @@ export class Game {
       this.duel.playerBomb,
       this.duel.playerPod,
       this.effects,
+    );
+    this.hud.updateReticle(
+      this.duel.player,
+      this.duel.enemy,
+      this.camera,
+      this.duel.playerController.lockedOn,
     );
     this.renderer.render(this.scene, this.camera);
   }

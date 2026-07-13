@@ -13,6 +13,7 @@ import { DummyAI } from "../ai/DummyAI";
 import { Effects, ITEM_POOL, type Item } from "../run/effects";
 import { enemyForFight, enemyPowerMult } from "../run/run";
 import type { Loadout } from "../parts/parts";
+import { sfx } from "./sfx";
 
 // One fight: owns the physics world, arena, both robos, and all combat
 // systems. Game builds a fresh Duel per fight and disposes the old one --
@@ -172,6 +173,7 @@ export class Duel {
     if (this.player.position.distanceTo(this.enemy.position) > 3.5) return;
     this.playerMelee.clashCancel();
     this.enemyMelee.clashCancel();
+    sfx.clash();
     const apart = this.enemy.position.clone().sub(this.player.position);
     apart.setY(0).normalize();
     this.enemy.applyKnockback(apart, 9);
@@ -214,6 +216,7 @@ export class Duel {
       if (this.player.position.distanceTo(p.mesh.position) < 1.4) {
         this.effects.addItem(p.item);
         this.onItemCollected(p.item);
+        sfx.pickup();
         this.root.remove(p.mesh);
         this.pickups.splice(i, 1);
       }

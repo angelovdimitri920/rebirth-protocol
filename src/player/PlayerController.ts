@@ -77,8 +77,9 @@ export class PlayerController {
     this.robo.intent.dashHomingPoint = target ? target.position : null;
 
     // --- Weapons ---
-    if (input.meleePressed && !this.melee.busy && enemyAlive) {
-      this.melee.tryStart(this.enemy);
+    if (input.meleePressed && enemyAlive) {
+      if (!this.melee.busy) this.melee.tryStart(this.enemy);
+      else this.melee.chain(this.enemy); // combo string follow-up
     }
     this.melee.update(dt, this.enemy);
     this.gun.update(dt, input.fireHeld && !this.melee.busy, target);

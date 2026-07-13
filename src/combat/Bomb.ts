@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Robo } from "../robo/Robo";
 import { Arena } from "../arena/Arena";
+import { sfx } from "../core/sfx";
 
 // Bomb slot (GAME_DESIGN §2.1): slower AoE secondary on a cooldown.
 // Lobbed in an arc to the target's position at launch; detonates on
@@ -137,6 +138,7 @@ export class Bomb {
     blastMesh.position.copy(at);
     this.scene.add(blastMesh);
     this.blasts.push({ mesh: blastMesh, timer: 0.35 });
+    sfx.explosion();
 
     // AoE hits BOTH robos -- your own bomb can knock you down. Skill issue.
     for (const robo of [player, enemy]) {

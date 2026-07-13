@@ -2,6 +2,8 @@
 // fixed view), so there's no mouse-look and no pointer lock — the mouse
 // only fires (LMB) and melees (RMB).
 
+import { sfx } from "./sfx";
+
 export class Input {
   private keys = new Set<string>();
   private pressed = new Set<string>(); // cleared each frame: edge-triggered
@@ -20,6 +22,7 @@ export class Input {
     });
 
     canvas.addEventListener("mousedown", (e) => {
+      sfx.ensure(); // user gesture: keeps the AudioContext unlocked
       if (e.button === 0) this.fireHeld = true;
       if (e.button === 2) this.meleePressed = true;
     });

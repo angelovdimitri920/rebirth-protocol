@@ -78,6 +78,10 @@ export class DummyAI {
       this.melee.tryStart(this.player);
       this.meleeTimer = 2.5 + Math.random() * 2;
     }
+    // Sometimes press the string through (~7 attempts/s while in recovery)
+    if (this.melee.busy && Math.random() < 7 * dt) {
+      this.melee.chain(this.player);
+    }
     this.melee.update(dt, this.player);
 
     // Fire gun in bursts

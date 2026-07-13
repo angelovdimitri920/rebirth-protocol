@@ -359,6 +359,7 @@ export class Robo {
       this.overheated = false;
       this.dashTimer = 0;
       this.airDashesUsed = 0;
+      if (spentFraction > 0.15) sfx.land(); // skip tiny hops, keep real landings audible
     }
 
     // --- Facing (frozen mid-swing/recovery: commitment is punishable) ---
@@ -379,6 +380,7 @@ export class Robo {
     this.boost -= amount;
     if (this.boost <= 0) {
       this.boost = 0;
+      if (!this.overheated) sfx.overheat();
       this.overheated = true;
     }
   }

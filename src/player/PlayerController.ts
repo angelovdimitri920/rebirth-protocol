@@ -6,6 +6,7 @@ import { Gun } from "../combat/Gun";
 import { Melee } from "../combat/Melee";
 import { Bomb } from "../combat/Bomb";
 import { Pod } from "../combat/Pod";
+import { sfx } from "../core/sfx";
 
 // Reads input, writes the player robo's intent, drives weapons, and owns
 // the Custom Robo-style camera: an elevated view from the player's side of
@@ -32,7 +33,10 @@ export class PlayerController {
   update(dt: number): void {
     const input = this.input;
 
-    if (input.justPressed("Tab")) this.lockedOn = !this.lockedOn;
+    if (input.justPressed("Tab")) {
+      this.lockedOn = !this.lockedOn;
+      sfx.lockToggle(this.lockedOn);
+    }
     const enemyAlive = this.enemy.health.state !== "dead";
     const target = this.lockedOn && enemyAlive ? this.enemy : null;
 
@@ -52,11 +56,20 @@ export class PlayerController {
       .normalize();
 
     const move = new THREE.Vector3();
-    if (input.held("KeyW")) move.add(screenForward);
-    if (input.held("KeyS")) move.sub(screenForward);
-    if (input.held("KeyD")) move.add(screenRight);
-    if (input.held("KeyA")) move.sub(screenRight);
-    if (move.lengthSq() > 0) move.normalize();
+    if (input.stickMoveDir) {
+      // Analog stick: direction only (the sim has no analog-speed model),
+      // magnitude already <=1 since it's read straight off the pad's axes.
+      move
+        .addScaledVector(screenForward, input.stickMoveDir.z)
+        .addScaledVector(screenRight, input.stickMoveDir.x);
+      if (move.lengthSq() > 1) move.normalize();
+    } else {
+      if (input.held("KeyW")) move.add(screenForward);
+      if (input.held("KeyS")) move.sub(screenForward);
+      if (input.held("KeyD")) move.add(screenRight);
+      if (input.held("KeyA")) move.sub(screenRight);
+      if (move.lengthSq() > 0) move.normalize();
+    }
 
     this.robo.intent.moveDir.copy(move);
     this.robo.intent.thrustHeld = input.held("Space");

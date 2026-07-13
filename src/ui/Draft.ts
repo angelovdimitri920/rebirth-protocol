@@ -86,11 +86,13 @@ export function showDraft(
       });
       root.querySelector("#reroll")!.addEventListener("click", () => {
         if (rerolls > 0) {
+          sfx.uiClick();
           onReroll();
           render(rerolls - 1);
         }
       });
       root.querySelector("#skip")!.addEventListener("click", () => {
+        sfx.uiClick();
         root.remove();
         resolve(null);
       });

@@ -55,6 +55,10 @@ export class Hud {
           opacity: 0; transition: opacity 0.15s; }
         #hud-controls { position: absolute; left: 24px; top: 20px;
           color: #55608a; font-size: 12px; line-height: 1.7; }
+        #hud-controller { position: absolute; left: 24px; top: 84px;
+          color: #7fc4a4; font-size: 11px; letter-spacing: 2px;
+          text-transform: uppercase; opacity: 0; transition: opacity 0.2s; }
+        #hud-controller.on { opacity: 1; }
         #hud-run { position: absolute; left: 50%; top: 18px;
           transform: translateX(-50%); text-align: center; color: #aab4d4;
           font-size: 15px; letter-spacing: 4px; }
@@ -118,8 +122,10 @@ export class Hud {
       <div id="hud-toast"></div>
       <div id="hud-controls">
         WASD move &nbsp; SPACE jump/hover &nbsp; SHIFT dash<br>
-        LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; R rebuild
+        LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; R rebuild<br>
+        <span style="opacity:.7">pad: LS move · A jump · B dash · RT gun · RB melee · X bomb · Y pod · LB lock · Start rebuild</span>
       </div>
+      <div id="hud-controller">controller connected</div>
     `;
     this.playerHp = document.getElementById("p-hp")!;
     this.playerEnd = document.getElementById("p-end")!;
@@ -140,6 +146,13 @@ export class Hud {
     const runEl = document.getElementById("hud-run")!;
     const hazardLabel = roll.hazard === "none" ? "" : ` · ${roll.hazard}`;
     runEl.innerHTML = `FIGHT ${fight} / ${total}<div class="mods">${roll.layout}${hazardLabel}</div>`;
+  }
+
+  private controllerConnectedShown = false;
+  setControllerConnected(connected: boolean): void {
+    if (connected === this.controllerConnectedShown) return;
+    this.controllerConnectedShown = connected;
+    document.getElementById("hud-controller")!.classList.toggle("on", connected);
   }
 
   toast(message: string): void {

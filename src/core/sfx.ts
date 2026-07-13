@@ -109,8 +109,21 @@ class Sfx {
     this.tone(500, 40, 0.5, "sawtooth", 0.24);
     this.tone(700, 50, 0.55, "sawtooth", 0.16, 0.06);
   }
+  overheat(): void {
+    this.tone(500, 120, 0.35, "sawtooth", 0.18);
+    this.noise(0.25, 0.1, 500);
+  }
+  land(): void {
+    this.noise(0.06, 0.12, 500);
+  }
 
   // --- UI / run ---
+  uiClick(): void {
+    this.tone(700, 500, 0.05, "square", 0.08);
+  }
+  lockToggle(on: boolean): void {
+    this.tone(on ? 700 : 500, on ? 1000 : 350, 0.08, "sine", 0.12);
+  }
   pickup(): void {
     this.tone(660, 990, 0.1, "sine", 0.14);
     this.tone(990, 1320, 0.12, "sine", 0.12, 0.08);

@@ -69,6 +69,8 @@ export function showHangar(): Promise<Loadout> {
         card.className = "card" + (loadout[slot].id === part.id ? " selected" : "");
         card.innerHTML = `<div class="pname">${part.name}</div><div class="pblurb">${part.blurb}</div>`;
         card.addEventListener("click", () => {
+          sfx.ensure(); // user gesture: safe point to start the AudioContext
+          sfx.uiClick();
           (loadout[slot] as typeof part) = part;
           cards
             .querySelectorAll(".card")

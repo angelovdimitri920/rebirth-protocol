@@ -119,6 +119,9 @@ export class Game {
     const dt = Math.min((now - this.lastTime) / 1000, 0.1);
     this.lastTime = now;
 
+    this.input.poll(); // gamepad state: once per rendered frame, not per sim step
+    if (this.input.justPressed("KeyR")) location.reload(); // gamepad Start
+
     if (this.phase === "fight") {
       this.accumulator += dt;
       let stepped = false;
@@ -144,6 +147,7 @@ export class Game {
       this.camera,
       this.duel.playerController.lockedOn,
     );
+    this.hud.setControllerConnected(this.input.gamepadConnected);
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -215,6 +219,7 @@ export class Game {
   /** Console/testing hook: advance the sim N fixed steps, then render once.
    *  Lets the game be driven when rAF is suspended (hidden tab). */
   debugStep(steps = 1): void {
+    this.input.poll();
     for (let i = 0; i < steps; i++) {
       if (this.phase !== "fight") break;
       this.stepFight(STEP);
@@ -233,6 +238,7 @@ export class Game {
       this.camera,
       this.duel.playerController.lockedOn,
     );
+    this.hud.setControllerConnected(this.input.gamepadConnected);
     this.renderer.render(this.scene, this.camera);
   }
 }

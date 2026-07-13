@@ -46,7 +46,7 @@ export class DummyAI {
 
     this.robo.intent.moveDir.copy(move);
     this.robo.intent.faceAngle = Math.atan2(dirToPlayer.x, dirToPlayer.z);
-    this.robo.intent.mashPressed = Math.random() < 0.5; // mediocre masher
+    this.robo.intent.mashPressed = Math.random() < 8 * dt; // ~8 mash/s
 
     // Occasional jump / dash to be a harder target
     this.robo.intent.thrustHeld =

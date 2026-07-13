@@ -43,12 +43,26 @@ export class Melee {
 
     this.didHit = false;
     if (dist <= T.closeRange) {
-      this.state = "swing";
-      this.timer = T.swingActiveTime;
+      this.enterSwing();
     } else {
       this.state = "lunge";
       this.timer = T.lungeMaxDuration;
     }
+  }
+
+  private enterSwing(): void {
+    this.state = "swing";
+    this.timer = TUNING.melee.swingActiveTime;
+    this.owner.externalMove = null;
+    // Planted on the ground / falls in the air, but can't act
+    this.owner.actionLock = 10; // held while swing+recovery run; reset clears
+  }
+
+  private enterRecovery(duration: number): void {
+    this.state = "recovery";
+    this.timer = duration;
+    this.owner.externalMove = null;
+    this.owner.actionLock = 10;
   }
 
   update(dt: number, target: Robo): void {
@@ -78,32 +92,26 @@ export class Melee {
           .multiplyScalar(T.lungeSpeed);
 
         if (dist <= T.lungeReachDistance) {
-          this.state = "swing";
-          this.timer = T.swingActiveTime;
+          this.enterSwing();
         } else if (this.timer <= 0) {
           // Lunge expired without reaching: whiff recovery
-          this.state = "recovery";
-          this.timer = T.whiffRecovery;
-          this.owner.externalMove = new THREE.Vector3();
+          this.enterRecovery(T.whiffRecovery);
         }
         break;
       }
 
       case "swing": {
-        this.owner.externalMove = new THREE.Vector3(); // planted during swing
         if (!this.didHit) this.checkHit(target);
         this.updateBladeVisual();
         this.timer -= dt;
         if (this.timer <= 0) {
-          this.state = "recovery";
-          this.timer = this.didHit ? T.hitRecovery : T.whiffRecovery;
+          this.enterRecovery(this.didHit ? T.hitRecovery : T.whiffRecovery);
           this.swingBlade.visible = false;
         }
         break;
       }
 
       case "recovery": {
-        this.owner.externalMove = new THREE.Vector3(); // punishable: planted
         this.timer -= dt;
         if (this.timer <= 0) this.reset();
         break;
@@ -143,6 +151,7 @@ export class Melee {
   private reset(): void {
     this.state = "idle";
     this.swingBlade.visible = false;
-    if (this.owner.externalMove) this.owner.externalMove = null;
+    this.owner.externalMove = null;
+    this.owner.actionLock = 0;
   }
 }

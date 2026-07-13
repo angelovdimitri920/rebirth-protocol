@@ -36,6 +36,7 @@ export class PlayerController {
     if (target) {
       const toEnemy = this.enemy.position.clone().sub(this.robo.position);
       camYaw = Math.atan2(toEnemy.x, toEnemy.z);
+      this.freeYaw = camYaw; // stay in sync so unlocking doesn't snap
     } else {
       this.freeYaw -= input.mouseDx * 0.003;
       this.freePitch = THREE.MathUtils.clamp(
@@ -50,8 +51,8 @@ export class PlayerController {
     const move = new THREE.Vector3();
     if (input.held("KeyW")) move.z += 1;
     if (input.held("KeyS")) move.z -= 1;
-    if (input.held("KeyA")) move.x += 1;
-    if (input.held("KeyD")) move.x -= 1;
+    if (input.held("KeyA")) move.x -= 1;
+    if (input.held("KeyD")) move.x += 1;
     if (move.lengthSq() > 0) {
       move.normalize();
       const sin = Math.sin(camYaw);

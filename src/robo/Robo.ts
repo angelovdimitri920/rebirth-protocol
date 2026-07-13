@@ -41,8 +41,11 @@ export class Robo {
   private dashTimer = 0;
   private dashDir = new THREE.Vector3();
   private knockback = new THREE.Vector3();
-  /** While > 0, an external system (melee lunge) owns horizontal velocity. */
+  /** While set, an external system (melee lunge) owns horizontal velocity. */
   externalMove: THREE.Vector3 | null = null;
+  /** While > 0, control inputs are ignored but gravity still applies
+   *  (melee swing/recovery: planted on the ground, falls in the air). */
+  actionLock = 0;
 
   intent: RoboIntent = {
     moveDir: new THREE.Vector3(),
@@ -95,16 +98,10 @@ export class Robo {
     return this.body.translation().y - CENTER_Y;
   }
 
-  get canAct(): boolean {
-    return (
-      this.health.state === "active" ||
-      (this.health.state === "rebirth" && true)
-    );
-  }
-
   get controlLocked(): boolean {
     return (
       this.landingRecovery > 0 ||
+      this.actionLock > 0 ||
       this.health.state === "knockdown" ||
       this.health.state === "dead" ||
       this.externalMove !== null
@@ -120,8 +117,9 @@ export class Robo {
     const downed =
       this.health.state === "knockdown" || this.health.state === "dead";
 
-    // --- Landing recovery timer ---
+    // --- Landing recovery / action lock timers ---
     if (this.landingRecovery > 0) this.landingRecovery -= dt;
+    if (this.actionLock > 0) this.actionLock -= dt;
 
     // --- Horizontal movement ---
     const horiz = new THREE.Vector3();
@@ -129,7 +127,7 @@ export class Robo {
       // Melee lunge (or similar) owns movement this step
       horiz.copy(this.externalMove);
       this.velocity.y = 0;
-    } else if (downed || this.landingRecovery > 0) {
+    } else if (downed || this.landingRecovery > 0 || this.actionLock > 0) {
       // No control: drift to stop
       this.velocity.x *= 0.85;
       this.velocity.z *= 0.85;
@@ -162,6 +160,7 @@ export class Robo {
     const canBoost =
       !downed &&
       this.landingRecovery <= 0 &&
+      this.actionLock <= 0 &&
       !this.overheated &&
       this.boost > 0 &&
       this.externalMove === null;
@@ -223,8 +222,8 @@ export class Robo {
       this.dashTimer = 0;
     }
 
-    // --- Facing ---
-    if (!downed && this.externalMove === null) {
+    // --- Facing (frozen mid-swing/recovery: commitment is punishable) ---
+    if (!downed && this.externalMove === null && this.actionLock <= 0) {
       const target =
         this.intent.faceAngle !== null
           ? this.intent.faceAngle

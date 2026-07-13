@@ -124,3 +124,18 @@ This supersedes an earlier Godot recommendation in this project's research. Wort
 - Whether funnels/pods deploy as persistent companions or single-use consumables.
 - How many arena layouts are needed at ship vs. how much variety comes from modifiers alone.
 - Whether multiplayer (local or online) is ever in scope, and if so, when to start planning netcode.
+
+---
+
+## 8. Implementation Log — Stage 1 Judgment Calls
+
+Decisions made during Stage 1 prototyping where the design doc was ambiguous or silent. Revisit any of these if playtesting disagrees.
+
+- **Downed robos are fully invulnerable**, not damage-reduced (source games reduce damage). Keeps the comeback rhythm clean in a 1v1; revisit if juggling/oki play ever matters.
+- **Melee is a single swing** — no 2–3 hit combo strings yet. §3.1's combo strings are treated as a later addition on top of the proven gap-closer core, not a Stage 1 requirement.
+- **No separate stagger meter yet.** Endurance fills that role for now; the dedicated stagger gauge (§3.1) arrives with shields in Stage 2, since a broken shield needs it to feed into.
+- **Dash from the ground is allowed** (converts to a small hop + air-dash, costs boost). The design only specifies air-dash; a grounded robo with zero dash options felt wrong.
+- **Lock-on is default-on and arena-wide**; the red-lock/green-lock range gate (§3.3) is deferred to Stage 4 as planned, but gun homing already stops beyond 24 m as a soft preview of it.
+- **Controls (KB+M):** WASD move (camera-relative), Space jump/hover + mash-to-recover, Shift air-dash, LMB gun, RMB melee, Tab lock-on toggle, R restart.
+- **Boost numbers** (gauge 100): hover drain 45/s, air-dash 28, landing recovery 0.1 s + 0.55 s × fraction spent, overheat +0.5 s. All in `src/core/tuning.ts`.
+- **Working title: REBIRTH PROTOCOL** (named for §2.2's rebirth window + the roguelite loop).

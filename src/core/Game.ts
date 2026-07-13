@@ -49,7 +49,7 @@ export class Game {
     );
     this.camera.position.set(0, 6, -20);
 
-    const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+    const sun = new THREE.DirectionalLight(0xffffff, 2.8);
     sun.position.set(20, 30, 10);
     sun.castShadow = true;
     sun.shadow.camera.left = -25;
@@ -58,8 +58,8 @@ export class Game {
     sun.shadow.camera.bottom = -25;
     sun.shadow.mapSize.set(2048, 2048);
     this.scene.add(sun);
-    this.scene.add(new THREE.AmbientLight(0x8899bb, 0.55));
-    const rim = new THREE.HemisphereLight(0x4a6cff, 0x1a1a2a, 0.4);
+    this.scene.add(new THREE.AmbientLight(0x99aacc, 1.1));
+    const rim = new THREE.HemisphereLight(0x6a8cff, 0x2a2a3a, 0.8);
     this.scene.add(rim);
 
     const arena = new Arena(this.physics, this.scene);
@@ -148,5 +148,16 @@ export class Game {
     this.enemy.update(dt);
     this.physics.step(dt);
     this.projectiles.update(dt, this.player, this.enemy);
+  }
+
+  /** Console/testing hook: advance the sim N fixed steps, then render once.
+   *  Lets the game be driven when rAF is suspended (hidden tab). */
+  debugStep(steps = 1): void {
+    for (let i = 0; i < steps; i++) {
+      this.step(STEP);
+      this.input.endFrame();
+    }
+    this.hud.update(this.player, this.enemy);
+    this.renderer.render(this.scene, this.camera);
   }
 }

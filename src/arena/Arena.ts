@@ -29,29 +29,30 @@ export class Arena {
     // --- Floor: holographic grid look ---
     const floor = new THREE.Mesh(
       new THREE.BoxGeometry(size, 1, size),
-      new THREE.MeshStandardMaterial({ color: 0x232336, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color: 0x3a3f5c, roughness: 0.8 }),
     );
     floor.position.y = -0.5;
     floor.receiveShadow = true;
     this.group.add(floor);
 
-    const grid = new THREE.GridHelper(size, size, 0x4a6cff, 0x2e3560);
+    const grid = new THREE.GridHelper(size, size, 0x7f9fff, 0x4a5480);
     grid.position.y = 0.02;
     this.group.add(grid);
 
-    // Glowing rim marking the holosseum boundary
-    const rimGeo = new THREE.BoxGeometry(size + 0.6, 0.3, size + 0.6);
-    const rim = new THREE.Mesh(
-      rimGeo,
-      new THREE.MeshBasicMaterial({ color: 0x3355ff }),
-    );
-    rim.position.y = 0.05;
-    const rimHole = new THREE.Mesh(
-      new THREE.BoxGeometry(size, 0.4, size),
-      new THREE.MeshBasicMaterial({ color: 0x0a0a12 }),
-    );
-    rimHole.position.y = 0.06;
-    this.group.add(rim, rimHole);
+    // Glowing rim strips marking the holosseum boundary
+    const rimMat = new THREE.MeshBasicMaterial({ color: 0x3355ff });
+    const rimStrips: [number, number, number, number][] = [
+      // [cx, cz, w, d]
+      [0, -half - 0.15, size + 0.6, 0.3],
+      [0, half + 0.15, size + 0.6, 0.3],
+      [-half - 0.15, 0, 0.3, size],
+      [half + 0.15, 0, 0.3, size],
+    ];
+    for (const [cx, cz, w, d] of rimStrips) {
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(w, 0.3, d), rimMat);
+      strip.position.set(cx, 0.05, cz);
+      this.group.add(strip);
+    }
 
     const floorBody = physics.world.createRigidBody(
       RAPIER.RigidBodyDesc.fixed(),
@@ -86,7 +87,7 @@ export class Arena {
 
     // --- Unbreakable cover walls (asymmetric, break line of sight) ---
     const coverMat = new THREE.MeshStandardMaterial({
-      color: 0x3a3a52,
+      color: 0x565c80,
       roughness: 0.6,
       metalness: 0.3,
     });

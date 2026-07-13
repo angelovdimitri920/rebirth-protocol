@@ -20,7 +20,7 @@ export class Pod {
   constructor(
     private owner: Robo,
     private ownerTag: "player" | "enemy",
-    scene: THREE.Scene,
+    scene: THREE.Object3D,
     private projectiles: Projectiles,
     accentColor: number,
   ) {
@@ -64,9 +64,10 @@ export class Pod {
     const part = this.owner.loadout.pod;
 
     // Energy regenerates whether deployed or not (its own pool)
+    const fx = this.owner.effects;
     this.energy = Math.min(
       part.energyMax,
-      this.energy + part.energyRegenPerSec * dt,
+      this.energy + part.energyRegenPerSec * (fx?.podRegenMult() ?? 1) * dt,
     );
 
     if (!this.deployed) return;
@@ -93,14 +94,16 @@ export class Pod {
       this.fireCooldown <= 0 &&
       this.energy >= part.energyPerShot
     ) {
-      this.fireCooldown = part.fireInterval;
+      this.fireCooldown = part.fireInterval * (fx?.podFireIntervalMult() ?? 1);
       this.energy -= part.energyPerShot;
       const aim = target.position.clone().setY(target.groundY + 1.0);
       this.projectiles.spawn(this.mesh.position.clone(), aim, this.ownerTag, {
-        damage: part.damage * this.owner.stats.atkMult,
+        damage:
+          part.damage * this.owner.stats.atkMult + (fx?.flatDamageBonus() ?? 0),
         enduranceDamage: part.enduranceDamage,
         speed: 26,
         homingTurnRate: 1.6,
+        source: "pod",
       });
     }
   }

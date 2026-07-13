@@ -2,10 +2,33 @@ import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { Physics } from "../physics/Physics";
 import { TUNING } from "../core/tuning";
+import { Robo } from "../robo/Robo";
 
-// Stage 1 arena, per docs/HOLOSSEUM_REFERENCE.md §4: neutral Basic-Stage-style
-// duel space. Flat bounded floor, destructible crates mid-arena, a few
-// unbreakable wall segments for line-of-sight play, invisible boundary walls.
+// Arena with roguelite modifier rolls (GAME_DESIGN §3.4): each fight rolls
+// {layout, hazard} for variety without hand-building dozens of stages.
+// Design principles per docs/HOLOSSEUM_REFERENCE.md: breakable + unbreakable
+// mix, walls vs hazards as distinct levers, one memorable landmark.
+
+export type LayoutId = "crossfire" | "bastion" | "scatter";
+export type HazardId = "none" | "lava" | "ice" | "conveyor";
+
+export interface ArenaRoll {
+  layout: LayoutId;
+  hazard: HazardId;
+}
+
+export function rollArena(fightIndex: number): ArenaRoll {
+  const layouts: LayoutId[] = ["crossfire", "bastion", "scatter"];
+  const hazards: HazardId[] = ["none", "lava", "ice", "conveyor"];
+  return {
+    layout: layouts[Math.floor(Math.random() * layouts.length)],
+    // First fight is always hazard-free; keeps run openings readable
+    hazard:
+      fightIndex === 0
+        ? "none"
+        : hazards[Math.floor(Math.random() * hazards.length)],
+  };
+}
 
 interface Crate {
   id: number;
@@ -14,22 +37,105 @@ interface Crate {
   collider: RAPIER.Collider;
 }
 
+interface LavaPool {
+  center: THREE.Vector2;
+  radius: number;
+}
+
+interface ConveyorStrip {
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+  push: THREE.Vector3;
+}
+
+const LAYOUTS: Record<
+  LayoutId,
+  {
+    covers: { pos: [number, number]; size: [number, number, number]; rotY?: number }[];
+    crates: [number, number][];
+  }
+> = {
+  crossfire: {
+    covers: [
+      { pos: [-7, -6], size: [6, 2.6, 1] },
+      { pos: [8, 5], size: [5, 3.2, 1], rotY: Math.PI / 5 },
+      { pos: [2, -11], size: [4, 2.2, 1], rotY: -Math.PI / 8 },
+    ],
+    crates: [
+      [-1.5, 1.5],
+      [1.5, 1.5],
+      [-1.5, -1.5],
+      [1.5, -1.5],
+      [0, 0],
+      [-10, 8],
+      [11, -8],
+    ],
+  },
+  bastion: {
+    // One big central landmark wall (Castle Citadel's lantern principle)
+    covers: [
+      { pos: [0, 0], size: [8, 3.6, 1.4] },
+      { pos: [-11, 9], size: [3, 2, 1], rotY: Math.PI / 4 },
+      { pos: [11, -9], size: [3, 2, 1], rotY: Math.PI / 4 },
+    ],
+    crates: [
+      [-6, 4],
+      [6, -4],
+      [-6, -4],
+      [6, 4],
+    ],
+  },
+  scatter: {
+    // Crate-heavy, low walls: cover you can chew through (Basic Stage)
+    covers: [
+      { pos: [-9, 0], size: [4, 1.8, 1], rotY: Math.PI / 2 },
+      { pos: [9, 0], size: [4, 1.8, 1], rotY: Math.PI / 2 },
+    ],
+    crates: [
+      [-4, 6],
+      [0, 7],
+      [4, 6],
+      [-4, -6],
+      [0, -7],
+      [4, -6],
+      [-2, 0],
+      [2, 0],
+      [0, 2.5],
+      [0, -2.5],
+    ],
+  },
+};
+
 export class Arena {
   group = new THREE.Group();
+  onCrateDestroyed: (at: THREE.Vector3) => void = () => {};
+  readonly roll: ArenaRoll;
   private crates = new Map<number, Crate>();
   private nextCrateId = 1;
+  private lavaPools: LavaPool[] = [];
+  private conveyors: ConveyorStrip[] = [];
+  private bodies: RAPIER.RigidBody[] = [];
 
   constructor(
     private physics: Physics,
-    scene: THREE.Scene,
+    parent: THREE.Object3D,
+    roll: ArenaRoll,
   ) {
+    this.roll = roll;
     const size = TUNING.arena.size;
     const half = size / 2;
 
-    // --- Floor: holographic grid look ---
+    // --- Floor ---
+    const floorColor = roll.hazard === "ice" ? 0x5a7a9c : 0x3a3f5c;
     const floor = new THREE.Mesh(
       new THREE.BoxGeometry(size, 1, size),
-      new THREE.MeshStandardMaterial({ color: 0x3a3f5c, roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({
+        color: floorColor,
+        roughness: roll.hazard === "ice" ? 0.15 : 0.8,
+        metalness: roll.hazard === "ice" ? 0.5 : 0,
+      }),
     );
     floor.position.y = -0.5;
     floor.receiveShadow = true;
@@ -42,7 +148,6 @@ export class Arena {
     // Glowing rim strips marking the holosseum boundary
     const rimMat = new THREE.MeshBasicMaterial({ color: 0x3355ff });
     const rimStrips: [number, number, number, number][] = [
-      // [cx, cz, w, d]
       [0, -half - 0.15, size + 0.6, 0.3],
       [0, half + 0.15, size + 0.6, 0.3],
       [-half - 0.15, 0, 0.3, size],
@@ -54,9 +159,7 @@ export class Arena {
       this.group.add(strip);
     }
 
-    const floorBody = physics.world.createRigidBody(
-      RAPIER.RigidBodyDesc.fixed(),
-    );
+    const floorBody = this.makeBody();
     const floorCol = physics.world.createCollider(
       RAPIER.ColliderDesc.cuboid(half, 0.5, half).setTranslation(0, -0.5, 0),
       floorBody,
@@ -66,14 +169,13 @@ export class Arena {
     // --- Invisible boundary walls ---
     const wallH = TUNING.arena.wallHeight;
     const wallDefs: [number, number, number, number][] = [
-      // [cx, cz, halfX, halfZ]
       [0, -half, half, 0.5],
       [0, half, half, 0.5],
       [-half, 0, 0.5, half],
       [half, 0, 0.5, half],
     ];
     for (const [cx, cz, hx, hz] of wallDefs) {
-      const body = physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
+      const body = this.makeBody();
       const col = physics.world.createCollider(
         RAPIER.ColliderDesc.cuboid(hx, wallH / 2, hz).setTranslation(
           cx,
@@ -85,22 +187,14 @@ export class Arena {
       physics.tag(col, { kind: "arena" });
     }
 
-    // --- Unbreakable cover walls (asymmetric, break line of sight) ---
+    // --- Layout: cover walls + crates ---
+    const layout = LAYOUTS[roll.layout];
     const coverMat = new THREE.MeshStandardMaterial({
       color: 0x565c80,
       roughness: 0.6,
       metalness: 0.3,
     });
-    const coverDefs: {
-      pos: [number, number];
-      size: [number, number, number]; // w, h, d
-      rotY?: number;
-    }[] = [
-      { pos: [-7, -6], size: [6, 2.6, 1] },
-      { pos: [8, 5], size: [5, 3.2, 1], rotY: Math.PI / 5 },
-      { pos: [2, -11], size: [4, 2.2, 1], rotY: -Math.PI / 8 },
-    ];
-    for (const def of coverDefs) {
+    for (const def of layout.covers) {
       const [w, h, d] = def.size;
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), coverMat);
       mesh.position.set(def.pos[0], h / 2, def.pos[1]);
@@ -109,7 +203,7 @@ export class Arena {
       mesh.receiveShadow = true;
       this.group.add(mesh);
 
-      const body = physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
+      const body = this.makeBody();
       const col = physics.world.createCollider(
         RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2)
           .setTranslation(def.pos[0], h / 2, def.pos[1])
@@ -118,20 +212,94 @@ export class Arena {
       );
       physics.tag(col, { kind: "arena" });
     }
+    for (const [x, z] of layout.crates) this.spawnCrate(x, z);
 
-    // --- Destructible crates, clustered mid-arena (Basic Stage style) ---
-    const cratePositions: [number, number][] = [
-      [-1.5, 1.5],
-      [1.5, 1.5],
-      [-1.5, -1.5],
-      [1.5, -1.5],
-      [0, 0],
-      [-10, 8],
-      [11, -8],
-    ];
-    for (const [x, z] of cratePositions) this.spawnCrate(x, z);
+    // --- Hazards ---
+    if (roll.hazard === "lava") {
+      const poolDefs: [number, number, number][] = [
+        [-8, 3, 3],
+        [8, -3, 3],
+        [0, 10, 2.4],
+      ];
+      for (const [x, z, r] of poolDefs) {
+        this.lavaPools.push({ center: new THREE.Vector2(x, z), radius: r });
+        const pool = new THREE.Mesh(
+          new THREE.CircleGeometry(r, 24),
+          new THREE.MeshStandardMaterial({
+            color: 0xff4400,
+            emissive: 0xff3300,
+            emissiveIntensity: 0.9,
+          }),
+        );
+        pool.rotation.x = -Math.PI / 2;
+        pool.position.set(x, 0.04, z);
+        this.group.add(pool);
+      }
+    } else if (roll.hazard === "conveyor") {
+      const stripDefs: { z: number; dir: number }[] = [
+        { z: -6, dir: 1 },
+        { z: 6, dir: -1 },
+      ];
+      for (const { z, dir } of stripDefs) {
+        this.conveyors.push({
+          minX: -half,
+          maxX: half,
+          minZ: z - 2,
+          maxZ: z + 2,
+          push: new THREE.Vector3(4.5 * dir, 0, 0),
+        });
+        const strip = new THREE.Mesh(
+          new THREE.BoxGeometry(size, 0.06, 4),
+          new THREE.MeshStandardMaterial({
+            color: dir > 0 ? 0x3c5c3c : 0x5c3c5c,
+            emissive: dir > 0 ? 0x1c3c1c : 0x3c1c3c,
+            emissiveIntensity: 0.5,
+          }),
+        );
+        strip.position.set(0, 0.04, z);
+        this.group.add(strip);
+      }
+    }
 
-    scene.add(this.group);
+    parent.add(this.group);
+  }
+
+  private makeBody(): RAPIER.RigidBody {
+    const body = this.physics.world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed(),
+    );
+    this.bodies.push(body);
+    return body;
+  }
+
+  /** Per-step hazard application; sets robo.onIce / robo.drift + lava DoT. */
+  applyHazards(dt: number, robos: Robo[]): void {
+    for (const robo of robos) {
+      robo.onIce = this.roll.hazard === "ice";
+      robo.drift.set(0, 0, 0);
+      if (!robo.grounded || robo.health.state === "dead") continue;
+
+      const pos = robo.position;
+      for (const pool of this.lavaPools) {
+        if (
+          new THREE.Vector2(pos.x, pos.z).distanceTo(pool.center) <=
+          pool.radius
+        ) {
+          // Hazard DoT bypasses the shield: environmental, not directional
+          robo.health.takeHit(24 * dt, 14 * dt);
+        }
+      }
+      for (const strip of this.conveyors) {
+        if (
+          pos.x >= strip.minX &&
+          pos.x <= strip.maxX &&
+          pos.z >= strip.minZ &&
+          pos.z <= strip.maxZ
+        ) {
+          robo.drift.copy(strip.push);
+        }
+      }
+    }
   }
 
   private spawnCrate(x: number, z: number): void {
@@ -145,9 +313,7 @@ export class Arena {
     mesh.receiveShadow = true;
     this.group.add(mesh);
 
-    const body = this.physics.world.createRigidBody(
-      RAPIER.RigidBodyDesc.fixed(),
-    );
+    const body = this.makeBody();
     const collider = this.physics.world.createCollider(
       RAPIER.ColliderDesc.cuboid(s / 2, s / 2, s / 2).setTranslation(
         x,
@@ -177,10 +343,12 @@ export class Arena {
     if (!crate) return false;
     crate.hp -= 1;
     if (crate.hp <= 0) {
+      const at = crate.mesh.position.clone();
       this.group.remove(crate.mesh);
       this.physics.untag(crate.collider);
       this.physics.world.removeRigidBody(crate.collider.parent()!);
       this.crates.delete(id);
+      this.onCrateDestroyed(at);
       return true;
     }
     // Darken as it takes damage

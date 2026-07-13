@@ -13,6 +13,8 @@ export interface ShotPayload {
   enduranceDamage: number;
   speed: number;
   homingTurnRate: number; // 0 = flies straight
+  /** Which system fired this (for boon trigger verbs). */
+  source?: "gun" | "pod";
 }
 
 interface Projectile {
@@ -34,7 +36,7 @@ export class Projectiles {
 
   constructor(
     private physics: Physics,
-    private scene: THREE.Scene,
+    private scene: THREE.Object3D,
     private arena: Arena,
   ) {}
 
@@ -105,7 +107,18 @@ export class Projectiles {
             p.mesh.position.copy(p.pos);
             continue;
           }
-          victim.receiveHit(p.payload.damage, p.payload.enduranceDamage, p.dir);
+          const result = victim.receiveHit(
+            p.payload.damage,
+            p.payload.enduranceDamage,
+            p.dir,
+          );
+          const effects = ownerRobo.effects;
+          if (effects && p.payload.source && result !== "invulnerable") {
+            effects.onHit(p.payload.source, victim.position.clone());
+            if (result === "knockdown" || result === "guardbreak") {
+              effects.onKnockdown();
+            }
+          }
         }
         this.remove(i);
         continue;

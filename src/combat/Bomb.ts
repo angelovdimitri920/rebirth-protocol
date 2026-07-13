@@ -23,12 +23,16 @@ export class Bomb {
 
   constructor(
     private owner: Robo,
-    private scene: THREE.Scene,
+    private scene: THREE.Object3D,
     private arena: Arena,
   ) {}
 
   get ready(): boolean {
     return this.cooldownRemaining <= 0;
+  }
+
+  resetCooldown(): void {
+    this.cooldownRemaining = 0;
   }
 
   tryThrow(target: Robo): boolean {
@@ -72,6 +76,16 @@ export class Bomb {
   update(dt: number, player: Robo, enemy: Robo): void {
     this.cooldownRemaining -= dt;
 
+    // Delayed cluster mini-blasts (sim-time, not wall-clock)
+    for (let i = this.pendingClusters.length - 1; i >= 0; i--) {
+      const c = this.pendingClusters[i];
+      c.timer -= dt;
+      if (c.timer <= 0) {
+        this.pendingClusters.splice(i, 1);
+        c.fire();
+      }
+    }
+
     for (let i = this.live.length - 1; i >= 0; i--) {
       const b = this.live[i];
       b.t += dt / b.flightTime;
@@ -102,11 +116,18 @@ export class Bomb {
     }
   }
 
-  private detonate(at: THREE.Vector3, player: Robo, enemy: Robo): void {
+  private detonate(
+    at: THREE.Vector3,
+    player: Robo,
+    enemy: Robo,
+    isCluster = false,
+  ): void {
     const part = this.owner.loadout.bomb;
+    const fx = this.owner.effects;
+    const scale = isCluster ? 0.6 : 1;
 
     const blastMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(part.blastRadius * 0.5, 16, 16),
+      new THREE.SphereGeometry(part.blastRadius * 0.5 * scale, 16, 16),
       new THREE.MeshBasicMaterial({
         color: 0xffaa44,
         transparent: true,
@@ -120,15 +141,36 @@ export class Bomb {
     // AoE hits BOTH robos -- your own bomb can knock you down. Skill issue.
     for (const robo of [player, enemy]) {
       const toRobo = robo.position.clone().sub(at);
-      if (toRobo.length() <= part.blastRadius + 0.5) {
-        robo.receiveHit(
-          part.damage * this.owner.stats.atkMult,
-          part.enduranceDamage,
+      if (toRobo.length() <= part.blastRadius * scale + 0.5) {
+        const result = robo.receiveHit(
+          (part.damage * this.owner.stats.atkMult +
+            (fx?.flatDamageBonus() ?? 0)) *
+            scale,
+          part.enduranceDamage * scale,
           toRobo.setY(0).normalize(),
         );
+        if (fx && robo !== this.owner && result !== "invulnerable") {
+          fx.onHit("bomb", robo.position.clone());
+          if (result === "knockdown" || result === "guardbreak") {
+            fx.onKnockdown();
+          }
+        }
       }
     }
     // Crates inside the blast are destroyed outright
-    this.arena.damageCratesInRadius(at, part.blastRadius);
+    this.arena.damageCratesInRadius(at, part.blastRadius * scale);
+
+    // Cluster Shell boon: follow-up mini-blasts
+    if (!isCluster && fx) {
+      for (const offset of fx.clusterOffsets()) {
+        const miniAt = at.clone().add(offset);
+        this.pendingClusters.push({
+          timer: 0.3,
+          fire: () => this.detonate(miniAt, player, enemy, true),
+        });
+      }
+    }
   }
+
+  private pendingClusters: { timer: number; fire: () => void }[] = [];
 }

@@ -2,6 +2,8 @@ import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { Bomb } from "../combat/Bomb";
 import { Pod } from "../combat/Pod";
+import type { Effects } from "../run/effects";
+import type { ArenaRoll } from "../arena/Arena";
 
 // HTML/CSS overlay HUD (per CLAUDE.md: no in-canvas UI).
 // Player: HP, endurance, shield, boost, bomb cooldown, pod energy.
@@ -52,6 +54,19 @@ export class Hud {
           opacity: 0; transition: opacity 0.15s; }
         #hud-controls { position: absolute; left: 24px; top: 20px;
           color: #55608a; font-size: 12px; line-height: 1.7; }
+        #hud-run { position: absolute; left: 50%; top: 18px;
+          transform: translateX(-50%); text-align: center; color: #aab4d4;
+          font-size: 15px; letter-spacing: 4px; }
+        #hud-run .mods { font-size: 11px; color: #55608a; letter-spacing: 2px;
+          margin-top: 2px; text-transform: uppercase; }
+        #hud-build { position: absolute; right: 24px; bottom: 24px;
+          text-align: right; color: #8894c4; font-size: 11.5px;
+          line-height: 1.7; max-width: 260px; }
+        #hud-build .boon { color: #c4b47f; }
+        #hud-build .item { color: #7fc4a4; }
+        #hud-toast { position: absolute; left: 50%; bottom: 130px;
+          transform: translateX(-50%); color: #7fc4a4; font-size: 16px;
+          letter-spacing: 2px; opacity: 0; transition: opacity 0.25s; }
       </style>
       <div id="hud-player" class="hud-corner">
         <div class="hud-label">HP</div>
@@ -86,6 +101,9 @@ export class Hud {
         </div>
       </div>
       <div id="hud-callout"></div>
+      <div id="hud-run"></div>
+      <div id="hud-build"></div>
+      <div id="hud-toast"></div>
       <div id="hud-controls">
         WASD move &nbsp; SPACE jump/hover &nbsp; SHIFT dash<br>
         LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; TAB lock-on &nbsp; R rebuild
@@ -106,7 +124,26 @@ export class Hud {
     this.callout = document.getElementById("hud-callout")!;
   }
 
-  update(player: Robo, enemy: Robo, bomb: Bomb, pod: Pod): void {
+  setRunInfo(fight: number, total: number, roll: ArenaRoll): void {
+    const runEl = document.getElementById("hud-run")!;
+    const hazardLabel = roll.hazard === "none" ? "" : ` · ${roll.hazard}`;
+    runEl.innerHTML = `FIGHT ${fight} / ${total}<div class="mods">${roll.layout}${hazardLabel}</div>`;
+  }
+
+  toast(message: string): void {
+    const el = document.getElementById("hud-toast")!;
+    el.textContent = message;
+    el.style.opacity = "1";
+    setTimeout(() => (el.style.opacity = "0"), 1800);
+  }
+
+  update(
+    player: Robo,
+    enemy: Robo,
+    bomb: Bomb,
+    pod: Pod,
+    effects?: Effects,
+  ): void {
     const H = TUNING.health;
     this.playerHp.style.width = `${(player.health.hp / player.health.maxHp) * 100}%`;
     this.playerEnd.style.width = `${(player.health.endurance / H.maxEndurance) * 100}%`;
@@ -135,10 +172,22 @@ export class Hud {
     let text = "";
     if (player.health.state === "knockdown") text = "DOWN — MASH SPACE";
     else if (player.health.state === "rebirth") text = "REBIRTH";
-    else if (player.health.state === "dead") text = "DESTROYED — R TO REBUILD";
-    else if (enemy.health.state === "dead") text = "TARGET ELIMINATED — R TO REBUILD";
+    else if (player.health.state === "dead") text = "DESTROYED";
+    else if (enemy.health.state === "dead") text = "TARGET ELIMINATED";
     else if (enemy.health.state === "knockdown") text = "ENEMY DOWN";
     this.callout.textContent = text;
     this.callout.style.opacity = text ? "1" : "0";
+
+    // Build strip: boons + item stacks
+    if (effects) {
+      const buildEl = document.getElementById("hud-build")!;
+      const boons = effects.boonList
+        .map((b) => `<div class="boon">${b.name}</div>`)
+        .join("");
+      const items = [...effects.itemStacks.entries()]
+        .map(([id, n]) => `<div class="item">${id} ×${n}</div>`)
+        .join("");
+      buildEl.innerHTML = boons + items;
+    }
   }
 }

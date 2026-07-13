@@ -10,7 +10,9 @@ export type HealthState = "active" | "knockdown" | "rebirth" | "dead";
 export type HitResult = "hit" | "knockdown" | "killed" | "invulnerable";
 
 export class Health {
-  readonly maxHp: number;
+  private readonly baseMaxHp: number;
+  /** Extra max HP from items (Scrap Plating). */
+  maxHpBonus = 0;
   hp: number;
   endurance = TUNING.health.maxEndurance;
   state: HealthState = "active";
@@ -19,8 +21,25 @@ export class Health {
   private timeSinceHit = Infinity;
 
   constructor(maxHp: number) {
-    this.maxHp = maxHp;
+    this.baseMaxHp = maxHp;
     this.hp = maxHp;
+  }
+
+  get maxHp(): number {
+    return this.baseMaxHp + this.maxHpBonus;
+  }
+
+  heal(amount: number): void {
+    if (this.state === "dead") return;
+    this.hp = Math.min(this.maxHp, this.hp + amount);
+  }
+
+  restoreEndurance(amount: number): void {
+    if (this.state !== "active") return;
+    this.endurance = Math.min(
+      TUNING.health.maxEndurance,
+      this.endurance + amount,
+    );
   }
 
   takeHit(damage: number, enduranceDamage: number): HitResult {

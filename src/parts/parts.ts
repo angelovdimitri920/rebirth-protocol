@@ -308,18 +308,6 @@ export function defaultLoadout(): Loadout {
   };
 }
 
-/** The dummy's contrasting preset: tanky brawler with shield and quake. */
-export function enemyLoadout(): Loadout {
-  return {
-    body: BODIES[3], // Bulwark
-    gun: GUNS[2], // Ram Cannon
-    bomb: BOMBS[1], // Quake
-    pod: PODS[0], // Sentry
-    legs: LEGS[0], // Strider
-    shield: SHIELDS[1], // Aegis
-  };
-}
-
 const STORAGE_KEY = "rebirth-protocol.loadout";
 
 export function saveLoadout(l: Loadout): void {

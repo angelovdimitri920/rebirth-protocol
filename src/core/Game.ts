@@ -1,45 +1,38 @@
 import * as THREE from "three";
 import { Physics } from "../physics/Physics";
-import { Arena } from "../arena/Arena";
-import { Robo } from "../robo/Robo";
 import { Input } from "./input";
 import { TUNING } from "./tuning";
-import { Projectiles } from "../combat/Projectiles";
-import { Gun } from "../combat/Gun";
-import { Melee } from "../combat/Melee";
-import { Bomb } from "../combat/Bomb";
-import { Pod } from "../combat/Pod";
-import { PlayerController } from "../player/PlayerController";
-import { DummyAI } from "../ai/DummyAI";
+import { Duel } from "./Duel";
 import { Hud } from "../ui/Hud";
-import { enemyLoadout, type Loadout } from "../parts/parts";
+import { showDraft } from "../ui/Draft";
+import { Effects } from "../run/effects";
+import { RunState, FIGHTS_PER_RUN } from "../run/run";
+import type { Loadout } from "../parts/parts";
 
 const STEP = 1 / 60;
+
+type GamePhase = "fight" | "interlude" | "over";
+
+// Orchestrates a run: builds a fresh Duel per fight, pauses the sim for
+// boon drafts between fights, and shows the run-end overlay.
 
 export class Game {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private input: Input;
-  private physics: Physics;
-  private player: Robo;
-  private enemy: Robo;
-  private playerController: PlayerController;
-  private dummyAI: DummyAI;
-  private projectiles: Projectiles;
-  private playerBomb: Bomb;
-  private enemyBomb: Bomb;
-  private playerPod: Pod;
   private hud: Hud;
+  private duel!: Duel;
+  private effects = new Effects();
+  private run = new RunState();
+  private loadout: Loadout;
+  private phase: GamePhase = "fight";
+  private victoryDelay = 0;
   private accumulator = 0;
   private lastTime = 0;
 
-  private constructor(
-    canvas: HTMLCanvasElement,
-    physics: Physics,
-    playerLoadout: Loadout,
-  ) {
-    this.physics = physics;
+  private constructor(canvas: HTMLCanvasElement, loadout: Loadout) {
+    this.loadout = loadout;
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -69,72 +62,9 @@ export class Game {
     sun.shadow.mapSize.set(2048, 2048);
     this.scene.add(sun);
     this.scene.add(new THREE.AmbientLight(0x99aacc, 1.1));
-    const rim = new THREE.HemisphereLight(0x6a8cff, 0x2a2a3a, 0.8);
-    this.scene.add(rim);
+    this.scene.add(new THREE.HemisphereLight(0x6a8cff, 0x2a2a3a, 0.8));
 
-    const arena = new Arena(this.physics, this.scene);
     this.input = new Input(canvas);
-
-    this.player = new Robo(
-      this.physics,
-      this.scene,
-      "player",
-      new THREE.Vector3(0, 0, -11),
-      0x5577aa,
-      0x33e0ff,
-      playerLoadout,
-    );
-    this.enemy = new Robo(
-      this.physics,
-      this.scene,
-      "enemy",
-      new THREE.Vector3(0, 0, 11),
-      0x8a4444,
-      0xff8833,
-      enemyLoadout(),
-    );
-    this.player.setFacing(0);
-    this.enemy.setFacing(Math.PI);
-
-    this.projectiles = new Projectiles(this.physics, this.scene, arena);
-    const playerGun = new Gun(this.player, "player", this.projectiles);
-    const enemyGun = new Gun(this.enemy, "enemy", this.projectiles);
-    const playerMelee = new Melee(this.player, this.scene);
-    this.playerBomb = new Bomb(this.player, this.scene, arena);
-    this.enemyBomb = new Bomb(this.enemy, this.scene, arena);
-    this.playerPod = new Pod(
-      this.player,
-      "player",
-      this.scene,
-      this.projectiles,
-      0x33e0ff,
-    );
-    const enemyPod = new Pod(
-      this.enemy,
-      "enemy",
-      this.scene,
-      this.projectiles,
-      0xff8833,
-    );
-
-    this.playerController = new PlayerController(
-      this.player,
-      this.enemy,
-      this.input,
-      this.camera,
-      playerGun,
-      playerMelee,
-      this.playerBomb,
-      this.playerPod,
-    );
-    this.dummyAI = new DummyAI(
-      this.enemy,
-      this.player,
-      enemyGun,
-      this.enemyBomb,
-      enemyPod,
-    );
-
     this.hud = new Hud(document.getElementById("hud")!);
 
     window.addEventListener("resize", () => {
@@ -143,7 +73,7 @@ export class Game {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
     window.addEventListener("keydown", (e) => {
-      if (e.code === "KeyR") location.reload(); // back to hangar (persisted)
+      if (e.code === "KeyR") location.reload(); // abandon -> hangar
       if (e.code === "Tab") e.preventDefault();
     });
   }
@@ -152,8 +82,30 @@ export class Game {
     canvas: HTMLCanvasElement,
     playerLoadout: Loadout,
   ): Promise<Game> {
+    const game = new Game(canvas, playerLoadout);
+    await game.startFight();
+    return game;
+  }
+
+  private async startFight(): Promise<void> {
     const physics = await Physics.create();
-    return new Game(canvas, physics, playerLoadout);
+    this.duel = new Duel(
+      this.scene,
+      this.camera,
+      this.input,
+      physics,
+      this.loadout,
+      this.effects,
+      this.run.fightIndex,
+      this.run.carriedHp,
+    );
+    this.duel.onItemCollected = (item) => this.hud.toast(`+ ${item.name}`);
+    this.hud.setRunInfo(
+      this.run.fightIndex + 1,
+      FIGHTS_PER_RUN,
+      this.duel.arena.roll,
+    );
+    this.phase = "fight";
   }
 
   start(): void {
@@ -163,42 +115,109 @@ export class Game {
 
   private frame(): void {
     const now = performance.now();
-    const dt = Math.min((now - this.lastTime) / 1000, 0.1); // clamp hitches
+    const dt = Math.min((now - this.lastTime) / 1000, 0.1);
     this.lastTime = now;
 
-    this.accumulator += dt;
-    let stepped = false;
-    while (this.accumulator >= STEP) {
-      this.step(STEP);
-      this.accumulator -= STEP;
-      stepped = true;
+    if (this.phase === "fight") {
+      this.accumulator += dt;
+      let stepped = false;
+      while (this.accumulator >= STEP) {
+        this.stepFight(STEP);
+        this.accumulator -= STEP;
+        stepped = true;
+        if (this.phase !== "fight") break;
+      }
+      if (stepped) this.input.endFrame();
     }
-    // Only clear edge-triggered input once a sim step has consumed it
-    if (stepped) this.input.endFrame();
 
-    this.hud.update(this.player, this.enemy, this.playerBomb, this.playerPod);
+    this.hud.update(
+      this.duel.player,
+      this.duel.enemy,
+      this.duel.playerBomb,
+      this.duel.playerPod,
+      this.effects,
+    );
     this.renderer.render(this.scene, this.camera);
   }
 
-  private step(dt: number): void {
-    this.playerController.update(dt);
-    this.dummyAI.update(dt);
-    this.player.update(dt);
-    this.enemy.update(dt);
-    this.physics.step(dt);
-    this.projectiles.update(dt, this.player, this.enemy);
-    this.playerBomb.update(dt, this.player, this.enemy);
-    this.enemyBomb.update(dt, this.player, this.enemy);
+  private stepFight(dt: number): void {
+    this.duel.step(dt);
+
+    const result = this.duel.result;
+    if (result === "playerLost") {
+      this.phase = "over";
+      this.showRunEnd(false);
+    } else if (result === "playerWon") {
+      // Let the kill land visually before the draft
+      this.victoryDelay += dt;
+      if (this.victoryDelay >= 1.4) {
+        this.victoryDelay = 0;
+        void this.advanceRun();
+      }
+    }
+  }
+
+  private async advanceRun(): Promise<void> {
+    this.phase = "interlude";
+    this.run.carriedHp = this.duel.player.health.hp;
+    this.run.fightIndex += 1;
+
+    if (this.run.fightIndex >= FIGHTS_PER_RUN) {
+      this.phase = "over";
+      this.showRunEnd(true);
+      return;
+    }
+
+    const boon = await showDraft(this.effects, this.run.rerollsLeft, () => {
+      this.run.rerollsLeft -= 1;
+    });
+    if (boon) this.effects.addBoon(boon);
+
+    this.duel.dispose(this.scene);
+    await this.startFight();
+  }
+
+  private showRunEnd(won: boolean): void {
+    const el = document.createElement("div");
+    el.innerHTML = `
+      <style>
+        #runend { position: absolute; inset: 0; background: #0a0a12dd;
+          display: flex; flex-direction: column; align-items: center;
+          justify-content: center; z-index: 10; color: #fff;
+          font-family: "Segoe UI", system-ui, sans-serif; }
+        #runend h1 { letter-spacing: 8px; font-size: 38px; margin: 0 0 8px;
+          text-shadow: 0 0 24px ${won ? "#33e0ff" : "#d94a3a"}; }
+        #runend .stats { color: #8894c4; margin-bottom: 26px; }
+        #runend button { padding: 12px 48px; font-size: 16px;
+          letter-spacing: 4px; background: #1b2438; color: #fff;
+          border: 1px solid #5f7fff; border-radius: 4px; cursor: pointer; }
+      </style>
+      <div id="runend">
+        <h1>${won ? "PROTOCOL COMPLETE" : "RUN TERMINATED"}</h1>
+        <div class="stats">fights cleared: ${this.run.fightIndex}${
+          won ? ` / ${FIGHTS_PER_RUN}` : ""
+        } &nbsp;·&nbsp; boons: ${this.effects.boonList.map((b) => b.name).join(", ") || "none"}</div>
+        <button onclick="location.reload()">RETURN TO HANGAR</button>
+      </div>
+    `;
+    document.body.appendChild(el);
   }
 
   /** Console/testing hook: advance the sim N fixed steps, then render once.
    *  Lets the game be driven when rAF is suspended (hidden tab). */
   debugStep(steps = 1): void {
     for (let i = 0; i < steps; i++) {
-      this.step(STEP);
+      if (this.phase !== "fight") break;
+      this.stepFight(STEP);
       this.input.endFrame();
     }
-    this.hud.update(this.player, this.enemy, this.playerBomb, this.playerPod);
+    this.hud.update(
+      this.duel.player,
+      this.duel.enemy,
+      this.duel.playerBomb,
+      this.duel.playerPod,
+      this.effects,
+    );
     this.renderer.render(this.scene, this.camera);
   }
 }

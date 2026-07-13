@@ -7,6 +7,10 @@ import { Projectiles } from "./Projectiles";
 export class Gun {
   private cooldown = 0;
 
+  resetCooldown(): void {
+    this.cooldown = 0;
+  }
+
   constructor(
     private owner: Robo,
     private ownerTag: "player" | "enemy",
@@ -36,11 +40,15 @@ export class Gun {
         .add(new THREE.Vector3(Math.sin(f) * 10, 0, Math.cos(f) * 10));
     }
 
+    const fx = this.owner.effects;
     this.projectiles.spawn(muzzle, aimPoint, this.ownerTag, {
-      damage: part.damage * this.owner.stats.atkMult,
+      damage:
+        (part.damage * this.owner.stats.atkMult + (fx?.flatDamageBonus() ?? 0)) *
+        (fx?.gunDamageMult() ?? 1),
       enduranceDamage: part.enduranceDamage,
       speed: part.projectileSpeed,
       homingTurnRate: target !== null ? part.homingTurnRate : 0,
+      source: "gun",
     });
   }
 }

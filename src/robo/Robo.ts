@@ -5,6 +5,7 @@ import { TUNING } from "../core/tuning";
 import { Health, type HitResult } from "../combat/Health";
 import { buildRoboMesh, type RoboMeshParts } from "./RoboMesh";
 import { computeStats, type Loadout, type RoboStats } from "../parts/parts";
+import type { Effects } from "../run/effects";
 
 // One robo: kinematic character controller + boost economy + health, all
 // parameterized by the five-slot loadout (GAME_DESIGN §2.1).
@@ -52,6 +53,13 @@ export class Robo {
   shieldHp: number;
   private shieldHitTimer = Infinity;
 
+  // Run-level boon/item effects (player only; null = no effects)
+  effects: Effects | null = null;
+
+  // Arena hazard state, written by Arena.applyHazards each step
+  onIce = false;
+  drift = new THREE.Vector3();
+
   // Motion state
   private velocity = new THREE.Vector3();
   private dashTimer = 0;
@@ -76,15 +84,18 @@ export class Robo {
 
   constructor(
     physics: Physics,
-    scene: THREE.Scene,
+    scene: THREE.Object3D,
     tag: "player" | "enemy",
     spawn: THREE.Vector3,
     hullColor: number,
     accentColor: number,
     loadout: Loadout,
+    powerMult = 1,
   ) {
     this.loadout = loadout;
     this.stats = computeStats(loadout);
+    this.stats.maxHp = Math.round(this.stats.maxHp * powerMult);
+    this.stats.atkMult *= powerMult;
     this.health = new Health(this.stats.maxHp);
     this.shieldHp = loadout.shield.shieldHp;
 
@@ -146,6 +157,7 @@ export class Robo {
     damage: number,
     enduranceDamage: number,
     fromDir: THREE.Vector3,
+    opts?: { shieldDamageMult?: number },
   ): ReceiveResult {
     if (this.intangible) return "evaded";
     if (this.health.state !== "active") return "invulnerable";
@@ -162,7 +174,7 @@ export class Robo {
       const incoming = fromDir.clone().setY(0).normalize().negate();
       const halfArc = (this.loadout.shield.arcDegrees * Math.PI) / 360;
       if (facingVec.angleTo(incoming) <= halfArc) {
-        this.shieldHp -= scaledDamage;
+        this.shieldHp -= scaledDamage * (opts?.shieldDamageMult ?? 1);
         this.shieldHitTimer = 0;
         if (this.shieldHp <= 0) {
           // Guard break: feeds into the existing knockdown state --
@@ -226,9 +238,18 @@ export class Robo {
       this.velocity.x = horiz.x;
       this.velocity.z = horiz.z;
     } else if (this.grounded) {
-      horiz.copy(this.intent.moveDir).multiplyScalar(this.stats.runSpeed);
-      this.velocity.x = horiz.x;
-      this.velocity.z = horiz.z;
+      const desired = this.intent.moveDir
+        .clone()
+        .multiplyScalar(this.stats.runSpeed);
+      if (this.onIce) {
+        // Ice: momentum carries; steering is a slow correction
+        this.velocity.x += (desired.x - this.velocity.x) * Math.min(1, 2.5 * dt);
+        this.velocity.z += (desired.z - this.velocity.z) * Math.min(1, 2.5 * dt);
+      } else {
+        this.velocity.x = desired.x;
+        this.velocity.z = desired.z;
+      }
+      horiz.set(this.velocity.x, 0, this.velocity.z).add(this.drift);
     } else {
       // Air steering: accelerate toward desired air velocity
       const desired = this.intent.moveDir
@@ -257,11 +278,12 @@ export class Robo {
       this.spendBoost(T.boost.thrustDrainPerSec * dt);
     }
     const profile = DASH_PROFILES[this.stats.dashType];
+    const dashCost = profile.cost * (this.effects?.dashCostMult() ?? 1);
     if (
       canBoost &&
       this.intent.dashRequested &&
       this.dashTimer <= 0 &&
-      this.boost >= profile.cost &&
+      this.boost >= dashCost &&
       this.airDashesUsed < this.stats.dashCount
     ) {
       const dir =
@@ -271,8 +293,9 @@ export class Robo {
       this.dashDir.copy(dir.normalize());
       this.dashTimer = profile.duration;
       this.airDashesUsed += 1;
-      this.spendBoost(profile.cost);
+      this.spendBoost(dashCost);
       if (this.grounded) this.velocity.y = 3; // ground dash lifts into a hop
+      this.effects?.onDash();
     }
 
     // --- Gravity ---

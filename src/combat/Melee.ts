@@ -17,7 +17,7 @@ export class Melee {
 
   constructor(
     private owner: Robo,
-    scene: THREE.Scene,
+    scene: THREE.Object3D,
   ) {
     // Simple visual: a glowing blade that appears during the swing
     this.swingBlade = new THREE.Mesh(
@@ -134,13 +134,22 @@ export class Melee {
 
     this.didHit = true;
     const dir = toTarget.normalize();
+    const fx = this.owner.effects;
     const result = target.receiveHit(
-      T.damage * this.owner.stats.atkMult,
+      (T.damage * this.owner.stats.atkMult + (fx?.flatDamageBonus() ?? 0)) *
+        (fx?.meleeDamageMult() ?? 1),
       T.enduranceDamage,
       dir,
+      { shieldDamageMult: fx?.meleeShieldMult() ?? 1 },
     );
     if (result !== "invulnerable" && result !== "evaded") {
       target.applyKnockback(dir, T.knockbackSpeed);
+      if (fx) {
+        fx.onHit("melee", target.position.clone());
+        if (result === "knockdown" || result === "guardbreak") {
+          fx.onKnockdown();
+        }
+      }
     }
   }
 

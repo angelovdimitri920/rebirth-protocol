@@ -151,3 +151,13 @@ Decisions made during Stage 1 prototyping where the design doc was ambiguous or 
 - **No charge attacks yet**: body identity = dash type + stat profile for now; charge attacks (§2.1) deferred.
 - **Enemy preset build**: Bulwark / Ram Cannon / Quake Bomb / Sentry Pod / Strider / Aegis — a tanky bruiser that contrasts with most player builds for the Stage 2 go/no-go ("do two different builds feel meaningfully different?").
 - **Known polish gap**: no camera collision — cover walls can briefly occlude the third-person camera.
+
+### Stage 3 judgment calls
+
+- **Run shape**: 5 duels per run against escalating enemy presets (all-rounder → harasser → shielded skirmisher → tank → kitchen-sink), each with a flat ×(1 + 0.12·fight) power multiplier on HP and ATK.
+- **Player HP persists across fights** (+15% max-HP heal between fights); endurance/shield/boost reset per fight. Death ends the run.
+- **Boons apply to the player only** — the AI doesn't draft. Drafts offer 3 boons from 3 *different* ability slots (§4's one-boon-per-slot discipline); 1 reroll per run; skipping is allowed.
+- **Items drop mid-fight from destroyed crates** (30% chance) as walk-over pickups, rather than from a post-fight shop — makes destructible cover double as an economy. %-chance items use hyperbolic stacking as specified.
+- **Arena modifier rolls**: {layout: crossfire/bastion/scatter} × {hazard: none/lava/ice/conveyor}; fight 1 is always hazard-free so run openings stay readable. Hazard damage bypasses shields (environmental, not directional).
+- **Mitigation shipped**: reroll only; banish and shops deferred until there's a currency to spend.
+- **Meta-progression not started** — §4's "unlock options, not power" layer is still open.

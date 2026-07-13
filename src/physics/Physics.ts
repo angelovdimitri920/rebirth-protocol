@@ -26,6 +26,12 @@ export class Physics {
     this.world.step();
   }
 
+  /** Release the WASM world (called when a duel is torn down). */
+  dispose(): void {
+    this.world.free();
+    this.tags.clear();
+  }
+
   tag(collider: RAPIER.Collider, tag: ColliderTag): void {
     this.tags.set(collider.handle, tag);
   }

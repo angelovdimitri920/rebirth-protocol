@@ -9,6 +9,7 @@ import { Effects } from "../run/effects";
 import { RunState, FIGHTS_PER_RUN } from "../run/run";
 import type { Loadout } from "../parts/parts";
 import { sfx } from "./sfx";
+import { music } from "./music";
 
 const STEP = 1 / 60;
 
@@ -76,6 +77,9 @@ export class Game {
     window.addEventListener("keydown", (e) => {
       if (e.code === "KeyR") location.reload(); // abandon -> hangar
       if (e.code === "Tab") e.preventDefault();
+      if (e.code === "KeyF" && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      }
     });
   }
 
@@ -107,6 +111,7 @@ export class Game {
       this.duel.arena.roll,
     );
     this.phase = "fight";
+    music.start("combat");
   }
 
   start(): void {
@@ -170,6 +175,7 @@ export class Game {
 
   private async advanceRun(): Promise<void> {
     this.phase = "interlude";
+    music.start("hangar"); // calm loop for the draft/run-end screens
     this.run.carriedHp = this.duel.player.health.hp;
     this.run.fightIndex += 1;
 

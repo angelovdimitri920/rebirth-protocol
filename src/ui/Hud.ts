@@ -55,10 +55,25 @@ export class Hud {
           opacity: 0; transition: opacity 0.15s; }
         #hud-controls { position: absolute; left: 24px; top: 20px;
           color: #55608a; font-size: 12px; line-height: 1.7; }
-        #hud-controller { position: absolute; left: 24px; top: 84px;
-          color: #7fc4a4; font-size: 11px; letter-spacing: 2px;
-          text-transform: uppercase; opacity: 0; transition: opacity 0.2s; }
-        #hud-controller.on { opacity: 1; }
+        #hud-pad-legend { position: absolute; right: 24px; bottom: 24px;
+          width: 190px; padding: 10px 14px; border-radius: 8px;
+          background: rgba(10, 12, 24, 0.38); backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px); border: 1px solid #4a558033;
+          opacity: 0; transition: opacity 0.25s; pointer-events: none; }
+        #hud-pad-legend.on { opacity: 1; }
+        #hud-pad-legend .pad-title { font-size: 10px; letter-spacing: 3px;
+          color: #7fc4a4cc; text-transform: uppercase; margin-bottom: 6px; }
+        #hud-pad-legend .pad-row { display: flex; align-items: center;
+          gap: 8px; font-size: 12px; color: #cdd6f4cc; line-height: 1.9; }
+        #hud-pad-legend .pad-btn { display: inline-flex; align-items: center;
+          justify-content: center; min-width: 22px; height: 18px;
+          padding: 0 4px; border-radius: 4px; font-size: 10px;
+          font-weight: 700; color: #0a0a12; flex-shrink: 0; }
+        #hud-pad-legend .pad-btn.a { background: #4ade80; }
+        #hud-pad-legend .pad-btn.b { background: #f87171; }
+        #hud-pad-legend .pad-btn.x { background: #60a5fa; }
+        #hud-pad-legend .pad-btn.y { background: #fbbf24; }
+        #hud-pad-legend .pad-btn.grey { background: #aab4d4; }
         #hud-run { position: absolute; left: 50%; top: 18px;
           transform: translateX(-50%); text-align: center; color: #aab4d4;
           font-size: 15px; letter-spacing: 4px; }
@@ -122,10 +137,20 @@ export class Hud {
       <div id="hud-toast"></div>
       <div id="hud-controls">
         WASD move &nbsp; SPACE jump/hover &nbsp; SHIFT dash<br>
-        LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; R rebuild<br>
-        <span style="opacity:.7">pad: LS move · A jump · B dash · RT gun · RB melee · X bomb · Y pod · LB lock · Start rebuild</span>
+        LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; R rebuild &nbsp; F fullscreen
       </div>
-      <div id="hud-controller">controller connected</div>
+      <div id="hud-pad-legend">
+        <div class="pad-title">Controller</div>
+        <div class="pad-row"><span class="pad-btn grey">LS</span> Move</div>
+        <div class="pad-row"><span class="pad-btn a">A</span> Jump / Mash</div>
+        <div class="pad-row"><span class="pad-btn b">B</span> Dash</div>
+        <div class="pad-row"><span class="pad-btn x">X</span> Bomb</div>
+        <div class="pad-row"><span class="pad-btn y">Y</span> Pod</div>
+        <div class="pad-row"><span class="pad-btn grey">LB</span> Lock-On</div>
+        <div class="pad-row"><span class="pad-btn grey">RB</span> Melee</div>
+        <div class="pad-row"><span class="pad-btn grey">RT</span> Fire</div>
+        <div class="pad-row"><span class="pad-btn grey">☰</span> Rebuild</div>
+      </div>
     `;
     this.playerHp = document.getElementById("p-hp")!;
     this.playerEnd = document.getElementById("p-end")!;
@@ -152,7 +177,7 @@ export class Hud {
   setControllerConnected(connected: boolean): void {
     if (connected === this.controllerConnectedShown) return;
     this.controllerConnectedShown = connected;
-    document.getElementById("hud-controller")!.classList.toggle("on", connected);
+    document.getElementById("hud-pad-legend")!.classList.toggle("on", connected);
   }
 
   toast(message: string): void {

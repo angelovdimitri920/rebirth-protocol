@@ -1,4 +1,5 @@
 import { TUNING } from "../core/tuning";
+import { sfx } from "../core/sfx";
 
 // Twin-bar system per GAME_DESIGN §2.2: HP pool + endurance bar.
 // Endurance empties -> knockdown (mash to shorten) -> rebirth invincibility.
@@ -80,6 +81,7 @@ export class Health {
           (TUNING.health.knockdownDuration - this.stateTimer),
         this.stateTimer - TUNING.health.knockdownMashReduction,
       );
+      sfx.mashTick();
     }
   }
 

@@ -71,6 +71,7 @@ export class Bomb {
       flightTime: Math.max(0.5, dist / 18), // faster lob at range
       arcHeight: part.arcHeight,
     });
+    sfx.bombThrow();
     return true;
   }
 

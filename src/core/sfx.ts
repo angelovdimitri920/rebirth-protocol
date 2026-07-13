@@ -1,21 +1,14 @@
 // Synthesized sound effects via Web Audio -- no audio assets, everything is
 // oscillators and filtered noise. Module singleton: combat systems call
-// sfx.shot() etc. directly. The AudioContext can only start after a user
-// gesture, so ensure() is called from UI click handlers (deploy, canvas).
+// sfx.shot() etc. directly. Routes through the shared audioCore's sfxBus
+// so it mixes independently of background music.
+
+import { audioCore } from "./audio";
 
 class Sfx {
-  private ctx: AudioContext | null = null;
-  private master: GainNode | null = null;
-
   /** Call from any user-gesture handler; safe to call repeatedly. */
   ensure(): void {
-    if (!this.ctx) {
-      this.ctx = new AudioContext();
-      this.master = this.ctx.createGain();
-      this.master.gain.value = 0.32;
-      this.master.connect(this.ctx.destination);
-    }
-    if (this.ctx.state === "suspended") void this.ctx.resume();
+    audioCore.ensure();
   }
 
   private tone(
@@ -26,36 +19,38 @@ class Sfx {
     vol: number,
     delay = 0,
   ): void {
-    if (!this.ctx || !this.master || this.ctx.state !== "running") return;
-    const t0 = this.ctx.currentTime + delay;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    const ctx = audioCore.ctx;
+    if (!ctx || !audioCore.sfxBus || !audioCore.running) return;
+    const t0 = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, t0);
     osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
     gain.gain.setValueAtTime(vol, t0);
     gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-    osc.connect(gain).connect(this.master);
+    osc.connect(gain).connect(audioCore.sfxBus);
     osc.start(t0);
     osc.stop(t0 + dur + 0.02);
   }
 
   private noise(dur: number, vol: number, filterFreq: number, delay = 0): void {
-    if (!this.ctx || !this.master || this.ctx.state !== "running") return;
-    const t0 = this.ctx.currentTime + delay;
-    const len = Math.ceil(this.ctx.sampleRate * dur);
-    const buffer = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const ctx = audioCore.ctx;
+    if (!ctx || !audioCore.sfxBus || !audioCore.running) return;
+    const t0 = ctx.currentTime + delay;
+    const len = Math.ceil(ctx.sampleRate * dur);
+    const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-    const src = this.ctx.createBufferSource();
+    const src = ctx.createBufferSource();
     src.buffer = buffer;
-    const filter = this.ctx.createBiquadFilter();
+    const filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
     filter.frequency.value = filterFreq;
-    const gain = this.ctx.createGain();
+    const gain = ctx.createGain();
     gain.gain.setValueAtTime(vol, t0);
     gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-    src.connect(filter).connect(gain).connect(this.master);
+    src.connect(filter).connect(gain).connect(audioCore.sfxBus);
     src.start(t0);
   }
 
@@ -88,9 +83,16 @@ class Sfx {
     this.noise(0.5, 0.32, 900);
     this.tone(120, 35, 0.45, "sine", 0.3);
   }
+  bombThrow(): void {
+    this.tone(300, 700, 0.22, "sine", 0.09);
+  }
   dash(): void {
     this.noise(0.14, 0.1, 1800);
     this.tone(200, 600, 0.12, "sine", 0.08);
+  }
+  thrust(): void {
+    this.tone(140, 320, 0.22, "sine", 0.08);
+    this.noise(0.18, 0.06, 900);
   }
   knockdown(): void {
     this.tone(400, 60, 0.4, "sawtooth", 0.22);
@@ -115,6 +117,19 @@ class Sfx {
   }
   land(): void {
     this.noise(0.06, 0.12, 500);
+  }
+  mashTick(): void {
+    this.tone(900, 900, 0.03, "square", 0.06);
+  }
+  crateBreak(): void {
+    this.noise(0.12, 0.22, 1400);
+    this.tone(150, 60, 0.1, "triangle", 0.12);
+  }
+  podToggle(deployed: boolean): void {
+    this.tone(deployed ? 500 : 750, deployed ? 900 : 400, 0.14, "triangle", 0.12);
+  }
+  hazardSizzle(): void {
+    this.noise(0.25, 0.08, 3000);
   }
 
   // --- UI / run ---

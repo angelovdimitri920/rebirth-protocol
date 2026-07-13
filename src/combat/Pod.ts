@@ -52,6 +52,7 @@ export class Pod {
     if (this.deployed) {
       this.deployed = false;
       this.mesh.visible = false;
+      sfx.podToggle(false);
       return;
     }
     this.deployed = true;
@@ -59,6 +60,7 @@ export class Pod {
     this.mesh.position
       .copy(this.owner.position)
       .setY(this.owner.groundY + HOVER_HEIGHT);
+    sfx.podToggle(true);
   }
 
   update(dt: number, target: Robo): void {

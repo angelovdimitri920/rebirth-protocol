@@ -5,6 +5,7 @@ import {
   type Loadout,
 } from "../parts/parts";
 import { sfx } from "../core/sfx";
+import { music } from "../core/music";
 
 // Pre-fight loadout screen (Stage 2). Pure DOM overlay; resolves with the
 // chosen loadout when DEPLOY is clicked. Selection persists in localStorage.
@@ -70,6 +71,7 @@ export function showHangar(): Promise<Loadout> {
         card.innerHTML = `<div class="pname">${part.name}</div><div class="pblurb">${part.blurb}</div>`;
         card.addEventListener("click", () => {
           sfx.ensure(); // user gesture: safe point to start the AudioContext
+          music.start("hangar");
           sfx.uiClick();
           (loadout[slot] as typeof part) = part;
           cards
@@ -86,6 +88,10 @@ export function showHangar(): Promise<Loadout> {
     root.querySelector("#deploy")!.addEventListener("click", () => {
       sfx.ensure(); // user gesture: safe point to start the AudioContext
       sfx.draftPick();
+      // Fullscreen requires a direct user-gesture call; fine to fail
+      // silently (blocked by browser policy, already fullscreen, etc.) --
+      // the game is fully playable windowed too.
+      document.documentElement.requestFullscreen?.().catch(() => {});
       saveLoadout(loadout);
       root.remove();
       resolve(loadout);

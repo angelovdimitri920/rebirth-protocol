@@ -52,6 +52,7 @@ export class Robo {
   landingRecovery = 0; // s remaining of post-landing lockout
   overheated = false;
   private airDashesUsed = 0;
+  private wasThrusting = false;
 
   // Shield state (§3.2: front-arc, regenerating, breaks into knockdown)
   shieldHp: number;
@@ -298,8 +299,12 @@ export class Robo {
       this.externalMove === null;
 
     if (canBoost && this.intent.thrustHeld && this.dashTimer <= 0) {
+      if (!this.wasThrusting) sfx.thrust();
+      this.wasThrusting = true;
       this.velocity.y = this.stats.jumpThrust;
       this.spendBoost(T.boost.thrustDrainPerSec * dt);
+    } else {
+      this.wasThrusting = false;
     }
     const profile = DASH_PROFILES[this.stats.dashType];
     const dashCost = profile.cost * (this.effects?.dashCostMult() ?? 1);

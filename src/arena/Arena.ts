@@ -3,6 +3,7 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import { Physics } from "../physics/Physics";
 import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
+import { sfx } from "../core/sfx";
 
 // Arena with roguelite modifier rolls (GAME_DESIGN §3.4): each fight rolls
 // {layout, hazard} for variety without hand-building dozens of stages.
@@ -117,6 +118,7 @@ export class Arena {
   private lavaPools: LavaPool[] = [];
   private conveyors: ConveyorStrip[] = [];
   private bodies: RAPIER.RigidBody[] = [];
+  private lavaSoundCooldown = new WeakMap<Robo, number>();
 
   constructor(
     private physics: Physics,
@@ -303,6 +305,10 @@ export class Arena {
     for (const robo of robos) {
       robo.onIce = this.roll.hazard === "ice";
       robo.drift.set(0, 0, 0);
+
+      const cooldown = (this.lavaSoundCooldown.get(robo) ?? 0) - dt;
+      this.lavaSoundCooldown.set(robo, cooldown);
+
       if (!robo.grounded || robo.health.state === "dead") continue;
 
       const pos = robo.position;
@@ -313,6 +319,10 @@ export class Arena {
         ) {
           // Hazard DoT bypasses the shield: environmental, not directional
           robo.health.takeHit(24 * dt, 14 * dt);
+          if (cooldown <= 0) {
+            sfx.hazardSizzle();
+            this.lavaSoundCooldown.set(robo, 0.4);
+          }
         }
       }
       for (const strip of this.conveyors) {
@@ -374,6 +384,7 @@ export class Arena {
       this.physics.untag(crate.collider);
       this.physics.world.removeRigidBody(crate.collider.parent()!);
       this.crates.delete(id);
+      sfx.crateBreak();
       this.onCrateDestroyed(at);
       return true;
     }

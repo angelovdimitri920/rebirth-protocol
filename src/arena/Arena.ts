@@ -198,6 +198,21 @@ export class Arena {
       physics.tag(col, { kind: "arena" });
     }
 
+    // --- Invisible ceiling: seals the Holosseum into a full enclosed
+    // volume so nothing can hover/dash out over the top of the walls. ---
+    {
+      const ceilBody = this.makeBody();
+      const ceilCol = physics.world.createCollider(
+        RAPIER.ColliderDesc.cuboid(half + thick, 0.5, half + thick).setTranslation(
+          0,
+          wallH,
+          0,
+        ),
+        ceilBody,
+      );
+      physics.tag(ceilCol, { kind: "arena" });
+    }
+
     // --- Layout: cover walls + crates ---
     const layout = LAYOUTS[roll.layout];
     const coverMat = new THREE.MeshStandardMaterial({

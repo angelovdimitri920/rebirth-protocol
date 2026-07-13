@@ -5,7 +5,11 @@ export const TUNING = {
   // --- Arena ---
   arena: {
     size: 32, // square, meters
-    wallHeight: 6, // invisible boundary walls
+    // Invisible boundary extends well above the visible wall, and a
+    // matching invisible ceiling caps it -- a fully sealed Holosseum
+    // volume, tall enough that even a maxed-out hover (~29m, see the
+    // boost block below) can't clear it.
+    wallHeight: 34,
   },
 
   // --- Robo movement ---
@@ -78,15 +82,17 @@ export const TUNING = {
     maxRange: 40, // Stage 1: basically whole arena
   },
 
-  // --- Camera: Custom Robo-style elevated view from the player's side ---
-  // Fixed yaw (never rotates), so screen directions == world directions.
+  // --- Camera: Custom Robo / Virtual On-style elevated arena view ---
+  // Fixed yaw (never rotates) -- movement is derived from the camera's
+  // actual orientation each frame (see PlayerController), so this can be
+  // retuned freely without ever re-breaking WASD mapping.
   camera: {
-    height: 13, // camera height above the floor
-    back: 14, // distance behind the player (-z)
-    lookAhead: 3.5, // look-at point this far ahead of the player (+z)
-    targetBias: 0.22, // look-at slides toward the enemy by this fraction
+    height: 20, // camera height above the floor -- steep, near-overhead
+    back: 9, // distance behind the player (-z)
+    lookAhead: 1.5, // look-at point this far ahead of the player (+z)
+    targetBias: 0.16, // look-at slides toward the enemy by this fraction
     followLerp: 8, // per-second smoothing factor
-    fov: 55,
+    fov: 48,
   },
 
   // --- Crates (destructible cover) ---

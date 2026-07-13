@@ -36,12 +36,26 @@ export class PlayerController {
     const enemyAlive = this.enemy.health.state !== "dead";
     const target = this.lockedOn && enemyAlive ? this.enemy : null;
 
-    // --- Movement intent: screen == world directions (fixed camera) ---
+    // --- Movement intent: derived from the camera's actual orientation,
+    // not a hardcoded world axis. This is deliberate: a fixed camera still
+    // has a specific facing, and hand-picking which world axis is "screen
+    // right" is exactly what produced the inverted-controls bug twice in a
+    // row. Reading it straight off the camera's quaternion can't drift out
+    // of sync with whatever the camera is actually doing. ---
+    const screenRight = new THREE.Vector3(1, 0, 0)
+      .applyQuaternion(this.camera.quaternion)
+      .setY(0)
+      .normalize();
+    const screenForward = new THREE.Vector3(0, 0, -1)
+      .applyQuaternion(this.camera.quaternion)
+      .setY(0)
+      .normalize();
+
     const move = new THREE.Vector3();
-    if (input.held("KeyW")) move.z += 1;
-    if (input.held("KeyS")) move.z -= 1;
-    if (input.held("KeyA")) move.x -= 1;
-    if (input.held("KeyD")) move.x += 1;
+    if (input.held("KeyW")) move.add(screenForward);
+    if (input.held("KeyS")) move.sub(screenForward);
+    if (input.held("KeyD")) move.add(screenRight);
+    if (input.held("KeyA")) move.sub(screenRight);
     if (move.lengthSq() > 0) move.normalize();
 
     this.robo.intent.moveDir.copy(move);

@@ -170,6 +170,13 @@ Decisions made during Stage 1 prototyping where the design doc was ambiguous or 
 - **Arena walls are real**: connected visible perimeter walls with glowing trim enclose the Holosseum; colliders extend invisibly above the visible wall so nothing boosts out. Replaces the old invisible boundaries + floating rim strips.
 - Camera-occlusion polish gap from Stage 2 is largely mooted by the high camera angle.
 
+### Second playtest pass (2026-07-13) — control fix + top-down camera + full containment
+
+- **Root-caused the "inverted" controls**: it wasn't the key mapping, it was a sign error in the camera math. The fixed camera looks down world +Z, and in Three.js's right-handed convention that flips which world axis is screen-right (confirmed by the rotation math: a camera facing +Z has local "right" pointing at world −X, not +X). I'd hand-picked the wrong axis twice in a row. Fixed properly this time: movement is now derived every frame straight from `camera.quaternion` (`screenRight`/`screenForward` vectors), so WASD is correct by construction and can't drift out of sync again if the camera is retuned later.
+- **Camera pitched much steeper** — confirmed via the wiki's own framing of the series ("frantic action battles in confined 3D arenas, similar to Virtual On") that an elevated, near-overhead read is the right genre reference. Went from ~43° to ~65° (`height: 20, back: 9` in `tuning.ts`), with a full-arena screenshot confirming both robos, cover, and the pickup all read clearly at a glance.
+- **Deliberate divergence from the literal GameCube camera**: the original rotates to track the player's facing (Virtual On-style lock-on chase cam). We're keeping a fully fixed-yaw camera instead, because the user explicitly wants free movement without forced facing — a rotating camera would reintroduce the same "what does WASD mean right now" problem this pass just fixed. Worth revisiting if a future pass wants full camera fidelity.
+- **Arena is now a sealed volume, not just walled**: added an invisible ceiling collider matching the wall footprint, and raised the invisible wall height from 6 to 34 (verified: a fully-drained max-duration hover peaks at 31.67 before falling back, comfortably under the ceiling). This was a real exploit, not just a request — the boost economy's hover mechanic can carry a robo ~29m up, which cleared the old 6-unit wall collider entirely.
+
 ### Stage 4 slice (partial)
 
 - **Homing dash**: while locked on, active dashes curve toward the target at a capped turn rate (ZoE model) — works as approach and as escape-denial.

@@ -139,3 +139,15 @@ Decisions made during Stage 1 prototyping where the design doc was ambiguous or 
 - **Controls (KB+M):** WASD move (camera-relative), Space jump/hover + mash-to-recover, Shift air-dash, LMB gun, RMB melee, Tab lock-on toggle, R restart.
 - **Boost numbers** (gauge 100): hover drain 45/s, air-dash 28, landing recovery 0.1 s + 0.55 s × fraction spent, overheat +0.5 s. All in `src/core/tuning.ts`.
 - **Working title: REBIRTH PROTOCOL** (named for §2.2's rebirth window + the roguelite loop).
+
+### Stage 2 judgment calls
+
+- **Shields resolved as a Stage 2 feature** (§7 question closed): the regenerating front-arc energy shield ("Aegis Barrier") shipped first. Guard break feeds *directly* into the existing knockdown state — no separate stagger meter yet, endurance still fills that role.
+- **Shield is a sixth slot** (None / Aegis), not folded into body parts — keeps body archetypes about movement identity.
+- **Pods are persistent deployables** (§7 question closed): toggle deploy/recall at your position; the drone fires homing chip shots on its own regenerating energy pool, per §2.1's independent-pool rule.
+- **Bombs lead their target** (aim at predicted landing-time position) — without this a strafing opponent made bombs literally unhittable, the exact §4 "skippable" trap.
+- **Bomb AoE is friendly-fire**: your own bomb can guard-break or knock *you* down.
+- **Vanish dash (Wraith) grants projectile i-frames only** — melee still connects, so the evader body doesn't hard-counter melee builds.
+- **No charge attacks yet**: body identity = dash type + stat profile for now; charge attacks (§2.1) deferred.
+- **Enemy preset build**: Bulwark / Ram Cannon / Quake Bomb / Sentry Pod / Strider / Aegis — a tanky bruiser that contrasts with most player builds for the Stage 2 go/no-go ("do two different builds feel meaningfully different?").
+- **Known polish gap**: no camera collision — cover walls can briefly occlude the third-person camera.

@@ -1,10 +1,8 @@
 import * as THREE from "three";
-import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { Projectiles } from "./Projectiles";
 
-// One basic gun per robo: hold to fire, fixed interval, shots home toward
-// the locked target (homing strength/range live in tuning).
+// The equipped gun part drives all stats; body ATK multiplier scales damage.
 
 export class Gun {
   private cooldown = 0;
@@ -21,7 +19,8 @@ export class Gun {
     if (this.owner.controlLocked || this.owner.health.state === "knockdown")
       return;
 
-    this.cooldown = TUNING.gun.fireInterval;
+    const part = this.owner.loadout.gun;
+    this.cooldown = part.fireInterval;
 
     const muzzle = new THREE.Vector3();
     this.owner.mesh.gunMuzzle.getWorldPosition(muzzle);
@@ -37,6 +36,11 @@ export class Gun {
         .add(new THREE.Vector3(Math.sin(f) * 10, 0, Math.cos(f) * 10));
     }
 
-    this.projectiles.spawn(muzzle, aimPoint, this.ownerTag, target !== null);
+    this.projectiles.spawn(muzzle, aimPoint, this.ownerTag, {
+      damage: part.damage * this.owner.stats.atkMult,
+      enduranceDamage: part.enduranceDamage,
+      speed: part.projectileSpeed,
+      homingTurnRate: target !== null ? part.homingTurnRate : 0,
+    });
   }
 }

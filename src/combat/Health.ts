@@ -10,12 +10,18 @@ export type HealthState = "active" | "knockdown" | "rebirth" | "dead";
 export type HitResult = "hit" | "knockdown" | "killed" | "invulnerable";
 
 export class Health {
-  hp = TUNING.health.maxHp;
+  readonly maxHp: number;
+  hp: number;
   endurance = TUNING.health.maxEndurance;
   state: HealthState = "active";
   /** Remaining time in knockdown or rebirth, whichever is active. */
   stateTimer = 0;
   private timeSinceHit = Infinity;
+
+  constructor(maxHp: number) {
+    this.maxHp = maxHp;
+    this.hp = maxHp;
+  }
 
   takeHit(damage: number, enduranceDamage: number): HitResult {
     if (this.state === "dead") return "invulnerable";
@@ -33,11 +39,18 @@ export class Health {
     this.endurance -= enduranceDamage;
     if (this.endurance <= 0) {
       this.endurance = 0;
-      this.state = "knockdown";
-      this.stateTimer = TUNING.health.knockdownDuration;
+      this.knockDown();
       return "knockdown";
     }
     return "hit";
+  }
+
+  /** Immediate knockdown regardless of endurance (shield guard-break). */
+  knockDown(): void {
+    if (this.state !== "active") return;
+    this.endurance = 0;
+    this.state = "knockdown";
+    this.stateTimer = TUNING.health.knockdownDuration;
   }
 
   /** Mash press while downed: shaves recovery time. */

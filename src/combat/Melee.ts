@@ -133,9 +133,14 @@ export class Melee {
     if (Math.abs(diff) > (T.hitArcDegrees * Math.PI) / 360) return;
 
     this.didHit = true;
-    const result = target.health.takeHit(T.damage, T.enduranceDamage);
-    if (result !== "invulnerable") {
-      target.applyKnockback(toTarget.normalize(), T.knockbackSpeed);
+    const dir = toTarget.normalize();
+    const result = target.receiveHit(
+      T.damage * this.owner.stats.atkMult,
+      T.enduranceDamage,
+      dir,
+    );
+    if (result !== "invulnerable" && result !== "evaded") {
+      target.applyKnockback(dir, T.knockbackSpeed);
     }
   }
 

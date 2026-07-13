@@ -4,14 +4,16 @@ import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { Gun } from "../combat/Gun";
 import { Melee } from "../combat/Melee";
+import { Bomb } from "../combat/Bomb";
+import { Pod } from "../combat/Pod";
 
-// Reads input, writes the player robo's intent, drives gun/melee, and owns
+// Reads input, writes the player robo's intent, drives weapons, and owns
 // the third-person camera + lock-on state.
 // Controls: WASD move, Space jump/hover (mash during knockdown), Shift dash,
-// LMB gun, RMB melee, Tab toggle lock-on.
+// LMB gun, RMB melee, Q bomb, E pod deploy/recall, Tab toggle lock-on.
 
 export class PlayerController {
-  lockedOn = true; // Stage 1 default: locked to the only enemy
+  lockedOn = true; // default: locked to the only enemy
   private freeYaw = 0;
   private freePitch = 0.35;
 
@@ -22,6 +24,8 @@ export class PlayerController {
     private camera: THREE.PerspectiveCamera,
     public gun: Gun,
     public melee: Melee,
+    public bomb: Bomb,
+    public pod: Pod,
   ) {}
 
   update(dt: number): void {
@@ -77,6 +81,13 @@ export class PlayerController {
     }
     this.melee.update(dt, this.enemy);
     this.gun.update(dt, input.fireHeld && !this.melee.busy, target);
+    if (input.justPressed("KeyQ") && enemyAlive && !this.melee.busy) {
+      this.bomb.tryThrow(this.enemy);
+    }
+    if (input.justPressed("KeyE")) {
+      this.pod.toggle();
+    }
+    this.pod.update(dt, this.enemy);
 
     this.updateCamera(dt, camYaw, target);
   }

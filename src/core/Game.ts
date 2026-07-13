@@ -7,9 +7,12 @@ import { TUNING } from "./tuning";
 import { Projectiles } from "../combat/Projectiles";
 import { Gun } from "../combat/Gun";
 import { Melee } from "../combat/Melee";
+import { Bomb } from "../combat/Bomb";
+import { Pod } from "../combat/Pod";
 import { PlayerController } from "../player/PlayerController";
 import { DummyAI } from "../ai/DummyAI";
 import { Hud } from "../ui/Hud";
+import { enemyLoadout, type Loadout } from "../parts/parts";
 
 const STEP = 1 / 60;
 
@@ -24,11 +27,18 @@ export class Game {
   private playerController: PlayerController;
   private dummyAI: DummyAI;
   private projectiles: Projectiles;
+  private playerBomb: Bomb;
+  private enemyBomb: Bomb;
+  private playerPod: Pod;
   private hud: Hud;
   private accumulator = 0;
   private lastTime = 0;
 
-  private constructor(canvas: HTMLCanvasElement, physics: Physics) {
+  private constructor(
+    canvas: HTMLCanvasElement,
+    physics: Physics,
+    playerLoadout: Loadout,
+  ) {
     this.physics = physics;
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -72,6 +82,7 @@ export class Game {
       new THREE.Vector3(0, 0, -11),
       0x5577aa,
       0x33e0ff,
+      playerLoadout,
     );
     this.enemy = new Robo(
       this.physics,
@@ -80,6 +91,7 @@ export class Game {
       new THREE.Vector3(0, 0, 11),
       0x8a4444,
       0xff8833,
+      enemyLoadout(),
     );
     this.player.setFacing(0);
     this.enemy.setFacing(Math.PI);
@@ -88,6 +100,22 @@ export class Game {
     const playerGun = new Gun(this.player, "player", this.projectiles);
     const enemyGun = new Gun(this.enemy, "enemy", this.projectiles);
     const playerMelee = new Melee(this.player, this.scene);
+    this.playerBomb = new Bomb(this.player, this.scene, arena);
+    this.enemyBomb = new Bomb(this.enemy, this.scene, arena);
+    this.playerPod = new Pod(
+      this.player,
+      "player",
+      this.scene,
+      this.projectiles,
+      0x33e0ff,
+    );
+    const enemyPod = new Pod(
+      this.enemy,
+      "enemy",
+      this.scene,
+      this.projectiles,
+      0xff8833,
+    );
 
     this.playerController = new PlayerController(
       this.player,
@@ -96,8 +124,16 @@ export class Game {
       this.camera,
       playerGun,
       playerMelee,
+      this.playerBomb,
+      this.playerPod,
     );
-    this.dummyAI = new DummyAI(this.enemy, this.player, enemyGun);
+    this.dummyAI = new DummyAI(
+      this.enemy,
+      this.player,
+      enemyGun,
+      this.enemyBomb,
+      enemyPod,
+    );
 
     this.hud = new Hud(document.getElementById("hud")!);
 
@@ -107,14 +143,17 @@ export class Game {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
     window.addEventListener("keydown", (e) => {
-      if (e.code === "KeyR") location.reload(); // quick restart for testing
+      if (e.code === "KeyR") location.reload(); // back to hangar (persisted)
       if (e.code === "Tab") e.preventDefault();
     });
   }
 
-  static async create(canvas: HTMLCanvasElement): Promise<Game> {
+  static async create(
+    canvas: HTMLCanvasElement,
+    playerLoadout: Loadout,
+  ): Promise<Game> {
     const physics = await Physics.create();
-    return new Game(canvas, physics);
+    return new Game(canvas, physics, playerLoadout);
   }
 
   start(): void {
@@ -137,7 +176,7 @@ export class Game {
     // Only clear edge-triggered input once a sim step has consumed it
     if (stepped) this.input.endFrame();
 
-    this.hud.update(this.player, this.enemy);
+    this.hud.update(this.player, this.enemy, this.playerBomb, this.playerPod);
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -148,6 +187,8 @@ export class Game {
     this.enemy.update(dt);
     this.physics.step(dt);
     this.projectiles.update(dt, this.player, this.enemy);
+    this.playerBomb.update(dt, this.player, this.enemy);
+    this.enemyBomb.update(dt, this.player, this.enemy);
   }
 
   /** Console/testing hook: advance the sim N fixed steps, then render once.
@@ -157,7 +198,7 @@ export class Game {
       this.step(STEP);
       this.input.endFrame();
     }
-    this.hud.update(this.player, this.enemy);
+    this.hud.update(this.player, this.enemy, this.playerBomb, this.playerPod);
     this.renderer.render(this.scene, this.camera);
   }
 }

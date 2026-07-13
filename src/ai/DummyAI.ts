@@ -2,21 +2,26 @@ import * as THREE from "three";
 import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { Gun } from "../combat/Gun";
+import { Bomb } from "../combat/Bomb";
+import { Pod } from "../combat/Pod";
 
 // Basic pressure-test opponent, not a real AI: orbits the player at mid
-// range, strafes, occasionally jumps or dashes, fires in bursts. Enough to
-// judge whether the movement-and-punish loop feels tense (Stage 1 go/no-go).
+// range, strafes, occasionally jumps or dashes, fires in bursts, lobs its
+// bomb when it's off cooldown, and keeps its pod deployed.
 
 export class DummyAI {
   private strafeSign = 1;
   private decisionTimer = 0;
   private firing = false;
   private fireTimer = 0;
+  private bombTimer = 3; // don't open with a bomb
 
   constructor(
     private robo: Robo,
     private player: Robo,
     private gun: Gun,
+    private bomb: Bomb,
+    private pod: Pod,
   ) {}
 
   update(dt: number): void {
@@ -55,13 +60,27 @@ export class DummyAI {
         : Math.random() < A.jumpChancePerSec * dt;
     this.robo.intent.dashRequested = Math.random() < A.dashChancePerSec * dt;
 
-    // Fire in bursts when player is alive
+    const playerAlive = this.player.health.state !== "dead";
+
+    // Fire gun in bursts
     this.fireTimer -= dt;
     if (this.fireTimer <= 0) {
       this.firing = !this.firing;
-      this.fireTimer = this.firing ? 1.2 : TUNING.ai.fireInterval;
+      this.fireTimer = this.firing ? 1.2 : A.fireInterval;
     }
-    const playerAlive = this.player.health.state !== "dead";
     this.gun.update(dt, this.firing && playerAlive, playerAlive ? this.player : null);
+
+    // Bomb when ready-ish, preferring a downed-adjacent or cornered player
+    this.bombTimer -= dt;
+    if (this.bombTimer <= 0 && playerAlive && this.bomb.ready && dist < 18) {
+      this.bomb.tryThrow(this.player);
+      this.bombTimer = 2 + Math.random() * 3;
+    }
+
+    // Keep the pod out
+    if (!this.pod.deployed && this.robo.health.state === "active") {
+      this.pod.toggle();
+    }
+    this.pod.update(dt, this.player);
   }
 }

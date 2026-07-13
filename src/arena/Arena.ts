@@ -161,6 +161,16 @@ export class Arena {
     this.crates.set(id, { id, hp: TUNING.crate.hp, mesh, collider });
   }
 
+  /** Bomb blasts wipe out any crate inside the radius. */
+  damageCratesInRadius(at: THREE.Vector3, radius: number): void {
+    for (const crate of [...this.crates.values()]) {
+      if (crate.mesh.position.distanceTo(at) <= radius + TUNING.crate.size) {
+        crate.hp = 1;
+        this.damageCrate(crate.id);
+      }
+    }
+  }
+
   /** Returns true if the crate was destroyed. Crates don't respawn. */
   damageCrate(id: number): boolean {
     const crate = this.crates.get(id);

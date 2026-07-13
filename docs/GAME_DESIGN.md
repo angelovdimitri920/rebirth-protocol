@@ -1,0 +1,117 @@
+# [Working Title] — Design Document v1
+
+*A 3D arena mecha roguelite inspired by Custom Robo: Battle Revolution (GameCube), with weapon-loadout depth from Armored Core / Gundam and a real-time roguelike run structure. Replace [Working Title] once you've settled on a name.*
+
+---
+
+## 1. Concept & Pillars
+
+Build a robo from modular parts before a run, fight through a sequence of real-time arena duels, and get stronger *during* the run by picking up boons and items mid-fight — Custom Robo's beloved build-crafting, restructured as a roguelite.
+
+**Pillars:**
+1. **Build expression** — every part/boon changes *how you play*, not just your numbers.
+2. **Readable, skill-based combat** — no button-mashing; openings are earned, not given.
+3. **One more run** — clear direction, real (not fake) choices, escalating power that stays legible.
+
+**Competitive positioning:** No shipped game currently combines (a) a modular pre-battle parts loadout, (b) real-time 3D arena duels, and (c) roguelike run-based progression. Custom Robo's own spiritual successor, *Synaptic Drive* (2020, by series creator Koji Kenjo), has (a) and (b) but explicitly shipped without a roguelite layer — just an arcade score-attack mode. Every existing "mech roguelite" (Wolfstride, Mechabellum, MECHBORN, Mech Armada) is turn-based, an auto-battler, or a deckbuilder. This is open ground.
+
+---
+
+## 2. Core Loop — Inherited from Custom Robo
+
+### 2.1 The five-slot loadout
+Before a run (and adjusted between fights), assemble a robo from:
+- **Body** — base HP, DEF multiplier, ATK multiplier, air-dash class/identity, charge-attack animation (i-frames during it).
+- **Gun** — primary ranged weapon (ATK, bullet speed, homing strength, rate of fire, knockdown power).
+- **Bomb** — secondary, slower/AoE, on a cooldown.
+- **Pod** — deployable drone/mine for zoning; in our version, pods/funnels get their **own energy pool**, independent of guns/bombs, so they're an always-on pressure tool rather than a burst-damage opportunity cost (Gundam Breaker 4's mistake was tying funnels to the same meter as big attacks, which made them feel unusable — avoid that).
+- **Legs** — ground speed, jump height, air-dash count/type, turning, landing recovery.
+
+Any part fits any body. Each body should be a genuine *archetype* (not just a stat-stick) defined by its air-dash behavior — e.g., a balanced 2-dash all-rounder, a long-single-dash glass-cannon flier, a stealth/vanish-dash evader, a slow tank with high load capacity.
+
+### 2.2 HP, endurance, knockdown, rebirth
+Twin-bar system: a large HP pool plus a separate **endurance** bar. Taking hits drains endurance; when it empties, the robo is knocked down (briefly helpless, mash to recover faster), then enters a few seconds of **rebirth invincibility** on standing. This is the source of Custom Robo's signature comeback rhythm — pressure to force a knockdown, but respect the rebirth window. Endurance regenerates over time when unhit.
+
+### 2.3 Arenas ("Holosseums")
+Small, wall-bounded 3D arenas with cover geometry (walls, platforms), multi-tier verticality, and environmental hazards (lava, ice, conveyors). Cover matters — you duck behind walls to break homing lock, and arc-firing weapons exist specifically to dig enemies out of cover.
+
+---
+
+## 3. Differentiators — What Makes This Not Just Custom Robo
+
+### 3.1 Melee weapons (new to the formula)
+Custom Robo has no melee combat — this is the biggest single differentiator. Design menu, drawn from Armored Core 6 and Devil May Cry:
+- **Separate melee button** from gun/bomb/pod (Devil May Cry's foundational lesson — melee and ranged on different inputs let players weave both rather than choosing one).
+- **Gap-closer dash-attack** (Stinger/AC6-kick style): high commitment, punishable recovery if it whiffs, but closes distance on kiting ranged opponents.
+- **Combo strings**: 2–3 hit branching chains (stab → sweep → launcher), similar to Gundam Vs beam saber strings.
+- **Stagger/poise meter** (AC6's ACS system): melee and high-impact hits build a separate "stagger" gauge; filling it stuns the target for a big punish window. This gives melee a clear job (staggering) distinct from ranged's job (sustained damage), so both archetypes matter.
+- **Melee clash**: when two melee attacks connect simultaneously, resolve it via a fast step-cancel (a la Gundam Vs's "Rainbow Step") rather than a rock-paper-scissors minigame — whoever re-engages faster wins the exchange.
+
+### 3.2 Shields (new layer on top of endurance)
+Keep HP/endurance as the core Custom Robo system, and add shields as a genuinely distinct layer — don't let it double up with rebirth invincibility (a broken shield should feed into the *same* stagger/knockdown state, not stack a second free defense on top). Two shield archetypes to consider (pick one for v1, both are viable stretch goals):
+- **Regenerating energy shield** (Overwatch model): its own bar, absorbs damage, stops regenerating when recently hit, only blocks from the front, regenerates after ~2–3s without damage.
+- **Consumable/physical shield** (Gundam beam-shield model): finite, depletes permanently once broken this fight, doesn't regenerate mid-fight (refills between arenas as a run resource), guard-breaks into a stagger when it fails.
+- **Shield bash**: turn a successful block into an offensive stagger option (Brigitte/Gundam Breaker precedent) so shields aren't purely passive.
+
+### 3.3 Expanded air combat & flanking
+Layer these on top of Custom Robo's existing jump/air-dash:
+- **Boost economy**: movement (jump, air-dash, hover) spends a shared gauge that only refills on landing; landing recovery scales with how much you spent, and fully draining it ("overheating") adds an extra penalty. This single rule (borrowed from Gundam Vs) creates most of the aerial skill ceiling — positioning, baiting an opponent's landing, and managing your own gauge.
+- **Homing dash** (Zone of the Enders model): a dash that curves toward the locked target — becomes a melee lunge up close, or a homing ranged option at range.
+- **Momentum-building movement** (Titanfall 2 principle): if you add wall-contact or slide mechanics, have them *build* speed rather than just repositioning, so chaining movement feels rewarding.
+- **Range-gated lock-on** ("red lock / green lock" from Gundam Vs): homing tracking only works within an effective range band; outside it, shots fly straight. Gives ranged weapons meaningful falloff and rewards spacing.
+- **Landing-recovery flanking**: reward players who punish an opponent's post-landing vulnerability window — this is the core skill expression of Gundam Vs's aerial neutral game.
+
+### 3.4 Arena variety
+Go beyond Custom Robo's relatively flat Holosseums:
+- **Destructible cover** and throwable hazards (Power Stone).
+- **Dynamic mid-fight events**: randomly-triggered hazards that reshape the arena or force engagements (Anarchy Reigns' tsunamis/black holes/sawblades model).
+- **Roguelite modifier rolls**: treat each arena as a roll of {layout, hazard set, environmental modifier}, the same way Hades rolls encounter modifiers and Dead Cells varies biome hazards — keeps repeat runs feeling fresh without needing hundreds of hand-built arenas.
+
+---
+
+## 4. Roguelike Structure
+
+- **Pre-run base kit**: the five-slot loadout is your Hades-style "chosen weapon" — a deliberate, skill-expressing starting identity, not randomized.
+- **In-run boons**: offered as **3 choices** after cleared fights, one per ability slot (gun/bomb/pod/melee/dash) — enforce Hades's "one boon per slot" discipline to bound complexity. Boons should change *behavior* ("your dash now leaves a damaging afterimage"), not just add flat stats.
+- **Stacking items**: smaller passive pickups that stack linearly for additive effects; use **hyperbolic scaling** (`1 − 1/(1+a·x)`) for any %-chance effect so it approaches but never trivially hits 100% (Risk of Rain 2's model). Hook all items into a small set of universal trigger verbs (on-hit, on-kill, on-knockdown, on-dash) so synergies emerge combinatorially rather than needing hand-authored pairs.
+- **Real choices, not fake ones**: every reward option should open new possibilities rather than being an obvious best-pick or an obvious trap. Offer mitigation (rerolls, banish, shop) so a rough early run stays recoverable.
+- **Meta-progression unlocks options, not raw power**: new parts/boons/archetypes to draft from, not flat stat increases — keeps runs varied at hour 50, not just hour 5.
+- **Fix Custom Robo's own known weakness**: player/critic consensus on the GameCube game is that bombs and pods were often skippable next to a good gun. Make sure early boon/item design gives bombs and pods (and now melee, shields, and funnels) their own clear win conditions so no single tool dominates every build.
+
+---
+
+## 5. Engine & Tech Stack
+
+**Recommendation: Godot 4 (GDScript, with C# available if needed).**
+
+Rationale, in priority order for a solo dev using an AI coding agent as primary workflow:
+1. **AI-agent tooling is the most mature of any engine right now.** Multiple MCP servers target Claude Code specifically for Godot — one lets an agent launch the editor, run the project, and read back debug output/errors directly (a genuine feedback loop for agentic iteration), another gives version-aware access to official docs, and a more extensive one exposes dozens of tools across scene/node control and viewport screenshots the agent can visually inspect. No other engine's agent tooling is currently this complete.
+2. **GDScript is Python-like** — a natural fit given your ML/data-science background.
+3. **3D capability is more than sufficient** for a stylized, GameCube-era look — Godot 4's Vulkan-based 3D pipeline handles lock-on cameras, `CharacterBody3D` movement, and arena-scale combat without friction. Its known weakness is AAA-grade fidelity (Nanite/Lumen-class), which is irrelevant here.
+4. **Zero licensing cost**, one-click Steam-ready exports, well-trodden Steamworks integration via GDExtension.
+
+**Runner-up considered:** Three.js (browser/WebGL) is genuinely viable if web-first distribution ever becomes a strategic priority, but it means building physics, a scene editor equivalent, and Steam packaging (via Electron) from scratch — more friction for no gain given you're targeting Steam, not the web. Unity is a defensible second choice but heavier to iterate in and carries post-2023 pricing-trust baggage. Unreal is overkill for this art direction and adds a steep C++/Blueprint learning curve for no benefit here.
+
+---
+
+## 6. Staged Development Roadmap
+
+**Stage 1 — Core duel prototype (weeks 1–6).** One arena, one robo, the boost economy (jump/air-dash/hover spending a gauge that only refills on landing), lock-on, one gun + one melee weapon with a gap-closer, and the HP/endurance/knockdown/rebirth loop. *Go/no-go: does the movement-and-punish loop feel tense and good with zero upgrades, against a dummy or basic AI, for 10+ minutes?* If not, stop and fix this before adding anything else.
+
+**Stage 2 — Full loadout + one shield (weeks 6–12).** All five part slots as swappable resources with real stat tradeoffs; one shield archetype wired into the existing stagger/knockdown state. *Go/no-go: do two different builds (e.g., melee-rush vs. funnel-kiter) feel meaningfully different and counter each other?*
+
+**Stage 3 — Roguelite loop + arena modifiers (weeks 12–20).** Run structure across a sequence of duels; boon/item drafting between fights; arena modifier rolls. *Go/no-go: do playtesters describe their build, not just whether they won?*
+
+**Stage 4 — Aerial identity + funnels + melee clash (weeks 20+).** Remote drones with their own energy pool, homing dash, melee-clash/parry counterplay, momentum movement if maps support it.
+
+**Thresholds that should change the plan:** if projectile/particle counts approach bullet-hell scale, move hot paths to C#/GDExtension before considering an engine switch; if online PvP becomes a core pillar rather than a later add-on, re-evaluate engine choice at the end of Stage 2.
+
+---
+
+## 7. Open Design Questions (resolve during prototyping, not up front)
+
+- Exact stagger-meter numbers (fill rate per weapon type, decay rate, stun duration).
+- Whether shields are a Stage 2 feature or should wait until Stage 3 once the core loop is proven.
+- Whether funnels/pods deploy as persistent companions or single-use consumables.
+- How many arena layouts are needed at ship vs. how much variety comes from modifiers alone.
+- Whether multiplayer (local or online) is ever in scope, and if so, when to start planning netcode.

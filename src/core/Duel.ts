@@ -39,6 +39,8 @@ export class Duel {
   private dummyAI: DummyAI;
   private enemyBomb: Bomb;
   private projectiles: Projectiles;
+  private playerMelee!: Melee;
+  private enemyMelee!: Melee;
   private pickups: Pickup[] = [];
   private effects: Effects;
   /** Fires once when an item is collected (for HUD toasts). */
@@ -96,6 +98,9 @@ export class Duel {
     const playerGun = new Gun(this.player, "player", this.projectiles);
     const enemyGun = new Gun(this.enemy, "enemy", this.projectiles);
     const playerMelee = new Melee(this.player, this.root);
+    const enemyMelee = new Melee(this.enemy, this.root);
+    this.playerMelee = playerMelee;
+    this.enemyMelee = enemyMelee;
     this.playerBomb = new Bomb(this.player, this.root, this.arena);
     this.enemyBomb = new Bomb(this.enemy, this.root, this.arena);
     this.playerPod = new Pod(
@@ -135,6 +140,7 @@ export class Duel {
       enemyGun,
       this.enemyBomb,
       enemyPod,
+      enemyMelee,
     );
   }
 
@@ -147,6 +153,7 @@ export class Duel {
   step(dt: number): void {
     this.playerController.update(dt);
     this.dummyAI.update(dt);
+    this.checkMeleeClash();
     this.player.update(dt);
     this.enemy.update(dt);
     this.arena.applyHazards(dt, [this.player, this.enemy]);
@@ -156,6 +163,31 @@ export class Duel {
     this.enemyBomb.update(dt, this.player, this.enemy);
     this.effects.update(dt);
     this.updatePickups(dt);
+  }
+
+  /** Melee clash (GAME_DESIGN §3.1): simultaneous melee attacks in range
+   *  cancel both into a short step-cancel window rather than trading. */
+  private checkMeleeClash(): void {
+    if (!this.playerMelee.attacking || !this.enemyMelee.attacking) return;
+    if (this.player.position.distanceTo(this.enemy.position) > 3.5) return;
+    this.playerMelee.clashCancel();
+    this.enemyMelee.clashCancel();
+    const apart = this.enemy.position.clone().sub(this.player.position);
+    apart.setY(0).normalize();
+    this.enemy.applyKnockback(apart, 9);
+    this.player.applyKnockback(apart.clone().negate(), 9);
+    // Clash spark
+    const spark = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 10, 10),
+      new THREE.MeshBasicMaterial({ color: 0xffee66, transparent: true, opacity: 0.9 }),
+    );
+    spark.position
+      .copy(this.player.position)
+      .add(this.enemy.position)
+      .multiplyScalar(0.5)
+      .setY(1.2);
+    this.root.add(spark);
+    setTimeout(() => this.root.remove(spark), 150);
   }
 
   private maybeDropItem(at: THREE.Vector3): void {

@@ -33,6 +33,18 @@ export class Melee {
     return this.state !== "idle";
   }
 
+  /** True while this melee could clash (attacking, not recovering). */
+  get attacking(): boolean {
+    return this.state === "lunge" || this.state === "swing";
+  }
+
+  /** Melee clash (GAME_DESIGN §3.1): both attacks cancel into a short
+   *  step-cancel window — whoever re-engages faster wins the exchange. */
+  clashCancel(): void {
+    this.reset();
+    this.owner.actionLock = 0.25;
+  }
+
   tryStart(target: Robo): void {
     if (this.state !== "idle") return;
     if (this.owner.controlLocked) return;

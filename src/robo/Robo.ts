@@ -18,6 +18,9 @@ export interface RoboIntent {
   dashRequested: boolean;
   faceAngle: number | null; // yaw to face, or null to face moveDir
   mashPressed: boolean; // knockdown recovery mashing
+  /** Homing dash (GAME_DESIGN §3.3): while locked on, active dashes curve
+   *  toward this point. Null = dashes fly straight. */
+  dashHomingPoint: THREE.Vector3 | null;
 }
 
 export type ReceiveResult = HitResult | "evaded" | "shielded" | "guardbreak";
@@ -77,6 +80,7 @@ export class Robo {
     dashRequested: false,
     faceAngle: null,
     mashPressed: false,
+    dashHomingPoint: null,
   };
 
   private facing = 0;
@@ -233,6 +237,16 @@ export class Robo {
     } else if (this.dashTimer > 0) {
       this.dashTimer -= dt;
       const profile = DASH_PROFILES[this.stats.dashType];
+      // Homing dash: curve toward the locked target mid-dash
+      if (this.intent.dashHomingPoint) {
+        const toTarget = this.intent.dashHomingPoint
+          .clone()
+          .sub(this.position)
+          .setY(0);
+        if (toTarget.lengthSq() > 1) {
+          rotateFlat(this.dashDir, toTarget.normalize(), 3.5 * dt);
+        }
+      }
       horiz.copy(this.dashDir).multiplyScalar(profile.speed);
       this.velocity.y = 0; // dashes are horizontal; gravity suspended
       this.velocity.x = horiz.x;
@@ -405,4 +419,19 @@ function dampAngle(from: number, to: number, rate: number, dt: number): number {
   while (diff > Math.PI) diff -= 2 * Math.PI;
   while (diff < -Math.PI) diff += 2 * Math.PI;
   return from + diff * Math.min(1, rate * dt);
+}
+
+/** Rotate a horizontal unit vector toward another by at most maxAngle. */
+function rotateFlat(
+  current: THREE.Vector3,
+  desired: THREE.Vector3,
+  maxAngle: number,
+): void {
+  const cur = Math.atan2(current.x, current.z);
+  const des = Math.atan2(desired.x, desired.z);
+  let diff = des - cur;
+  while (diff > Math.PI) diff -= 2 * Math.PI;
+  while (diff < -Math.PI) diff += 2 * Math.PI;
+  const angle = cur + THREE.MathUtils.clamp(diff, -maxAngle, maxAngle);
+  current.set(Math.sin(angle), 0, Math.cos(angle));
 }

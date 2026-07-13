@@ -4,10 +4,12 @@ import { Robo } from "../robo/Robo";
 import { Gun } from "../combat/Gun";
 import { Bomb } from "../combat/Bomb";
 import { Pod } from "../combat/Pod";
+import { Melee } from "../combat/Melee";
 
 // Basic pressure-test opponent, not a real AI: orbits the player at mid
 // range, strafes, occasionally jumps or dashes, fires in bursts, lobs its
-// bomb when it's off cooldown, and keeps its pod deployed.
+// bomb when it's off cooldown, keeps its pod deployed, and goes for melee
+// when the player is close or landing-recovery vulnerable.
 
 export class DummyAI {
   private strafeSign = 1;
@@ -15,6 +17,7 @@ export class DummyAI {
   private firing = false;
   private fireTimer = 0;
   private bombTimer = 3; // don't open with a bomb
+  private meleeTimer = 2;
 
   constructor(
     private robo: Robo,
@@ -22,6 +25,7 @@ export class DummyAI {
     private gun: Gun,
     private bomb: Bomb,
     private pod: Pod,
+    private melee: Melee,
   ) {}
 
   update(dt: number): void {
@@ -62,13 +66,31 @@ export class DummyAI {
 
     const playerAlive = this.player.health.state !== "dead";
 
+    // Melee: punish a close player, especially during landing recovery
+    this.meleeTimer -= dt;
+    if (
+      playerAlive &&
+      !this.melee.busy &&
+      this.meleeTimer <= 0 &&
+      dist < 10 &&
+      (this.player.landingRecovery > 0 || Math.random() < 0.5)
+    ) {
+      this.melee.tryStart(this.player);
+      this.meleeTimer = 2.5 + Math.random() * 2;
+    }
+    this.melee.update(dt, this.player);
+
     // Fire gun in bursts
     this.fireTimer -= dt;
     if (this.fireTimer <= 0) {
       this.firing = !this.firing;
       this.fireTimer = this.firing ? 1.2 : A.fireInterval;
     }
-    this.gun.update(dt, this.firing && playerAlive, playerAlive ? this.player : null);
+    this.gun.update(
+      dt,
+      this.firing && playerAlive && !this.melee.busy,
+      playerAlive ? this.player : null,
+    );
 
     // Bomb when ready-ish, preferring a downed-adjacent or cornered player
     this.bombTimer -= dt;

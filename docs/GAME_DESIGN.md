@@ -161,3 +161,11 @@ Decisions made during Stage 1 prototyping where the design doc was ambiguous or 
 - **Arena modifier rolls**: {layout: crossfire/bastion/scatter} × {hazard: none/lava/ice/conveyor}; fight 1 is always hazard-free so run openings stay readable. Hazard damage bypasses shields (environmental, not directional).
 - **Mitigation shipped**: reroll only; banish and shops deferred until there's a currency to spend.
 - **Meta-progression not started** — §4's "unlock options, not power" layer is still open.
+
+### Stage 4 slice (partial)
+
+- **Homing dash**: while locked on, active dashes curve toward the target at a capped turn rate (ZoE model) — works as approach and as escape-denial.
+- **Enemy melee**: the AI now goes for melee up close, preferring to punish the player's landing recovery — landing-recovery flanking (§3.3) now cuts both ways.
+- **Melee clash**: simultaneous melee attacks within range cancel both into a 0.25 s step-cancel with mutual knockback — whoever re-engages faster wins the exchange (§3.1's Rainbow Step resolution, no RPS minigame).
+- **Still open from Stage 4**: strict red-lock/green-lock UI feedback (the range gate itself exists on gun homing), momentum-building wall movement, funnel behaviors beyond the static pod.
+- **Verification note (2026-07-13)**: Stage 4 slice is type-checked and builds; in-browser behavior verification pending (tooling outage) — verify homing-dash curve, AI melee pressure, and clash cancel first thing next session. Same for lava/ice/conveyor zone behavior (roll system itself is verified).

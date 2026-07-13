@@ -74,6 +74,8 @@ export class PlayerController {
           this.enemy.position.z - this.robo.position.z,
         )
       : null;
+    // Homing dash: while locked on, dashes curve toward the target
+    this.robo.intent.dashHomingPoint = target ? target.position : null;
 
     // --- Weapons ---
     if (input.meleePressed && !this.melee.busy && enemyAlive) {

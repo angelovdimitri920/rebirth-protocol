@@ -22,12 +22,6 @@ npm install
 npm run dev
 ```
 
-## Pushing to GitHub
+## GitHub
 
-This repo is initialized locally but has no remote yet. Whenever you're ready:
-
-```bash
-git remote add origin https://github.com/<you>/<repo-name>.git
-git branch -M main
-git push -u origin main
-```
+Hosted at [github.com/angelovdimitri920/rebirth-protocol](https://github.com/angelovdimitri920/rebirth-protocol).

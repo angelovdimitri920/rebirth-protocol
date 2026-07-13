@@ -22,9 +22,18 @@ export interface RoboIntent {
   /** Homing dash (GAME_DESIGN §3.3): while locked on, active dashes curve
    *  toward this point. Null = dashes fly straight. */
   dashHomingPoint: THREE.Vector3 | null;
+  /** Shield raised (only meaningful if leftArm.kind === "shield"): must be
+   *  held to block at all; costs ground speed and disables air-dash. */
+  shieldHeld: boolean;
 }
 
 export type ReceiveResult = HitResult | "evaded" | "shielded" | "guardbreak";
+export interface ReceiveOpts {
+  /** Boon multiplier on the portion of damage that hits the shield pool
+   *  (e.g. Guard Crusher). Does not affect the chip damage that still gets
+   *  through -- only how fast the shield's own bar drains. */
+  shieldDamageMult?: number;
+}
 
 const CAPSULE_HALF = 0.5;
 const CAPSULE_RADIUS = 0.5;
@@ -83,6 +92,7 @@ export class Robo {
     faceAngle: null,
     mashPressed: false,
     dashHomingPoint: null,
+    shieldHeld: false,
   };
 
   private facing = 0;
@@ -103,9 +113,9 @@ export class Robo {
     this.stats.maxHp = Math.round(this.stats.maxHp * powerMult);
     this.stats.atkMult *= powerMult;
     this.health = new Health(this.stats.maxHp);
-    this.shieldHp = loadout.shield.shieldHp;
+    this.shieldHp = loadout.leftArm.kind === "shield" ? loadout.leftArm.part.shieldHp : 0;
 
-    this.mesh = buildRoboMesh(hullColor, accentColor);
+    this.mesh = buildRoboMesh(loadout, hullColor, accentColor);
     this.mesh.root.position.copy(spawn).setY(CENTER_Y);
     scene.add(this.mesh.root);
 
@@ -163,36 +173,55 @@ export class Robo {
     damage: number,
     enduranceDamage: number,
     fromDir: THREE.Vector3,
-    opts?: { shieldDamageMult?: number },
+    opts?: ReceiveOpts,
   ): ReceiveResult {
     if (this.intangible) return "evaded";
     if (this.health.state !== "active") return "invulnerable";
 
     const scaledDamage = damage * this.stats.defMult;
 
-    // Shield: absorbs frontal hits while its bar holds (§3.2)
-    if (this.shieldHp > 0 && this.loadout.shield.shieldHp > 0) {
+    // Shield (§3.2): must be actively engaged to block at all. Even
+    // engaged, block is never 100% (chip damage always lands), and a hit
+    // from behind blocks far less than one from the front.
+    if (
+      this.loadout.leftArm.kind === "shield" &&
+      this.intent.shieldHeld &&
+      this.shieldHp > 0
+    ) {
+      const shield = this.loadout.leftArm.part;
       const facingVec = new THREE.Vector3(
         Math.sin(this.facing),
         0,
         Math.cos(this.facing),
       );
       const incoming = fromDir.clone().setY(0).normalize().negate();
-      const halfArc = (this.loadout.shield.arcDegrees * Math.PI) / 360;
-      if (facingVec.angleTo(incoming) <= halfArc) {
-        this.shieldHp -= scaledDamage * (opts?.shieldDamageMult ?? 1);
-        this.shieldHitTimer = 0;
-        if (this.shieldHp <= 0) {
-          // Guard break: feeds into the existing knockdown state --
-          // no second free defense stacked on rebirth (§3.2)
-          this.shieldHp = 0;
-          this.health.knockDown();
-          sfx.guardBreak();
-          return "guardbreak";
-        }
-        sfx.shielded();
-        return "shielded";
+      const isFront = facingVec.angleTo(incoming) <= Math.PI / 2;
+      const blockPercent = isFront
+        ? shield.frontBlockPercent
+        : shield.backBlockPercent;
+
+      const chipDamage = scaledDamage * (1 - blockPercent);
+      const chipEndurance = enduranceDamage * (1 - blockPercent);
+      const chipResult = this.health.takeHit(chipDamage, chipEndurance);
+      this.shieldHitTimer = 0;
+
+      if (chipResult === "killed" || chipResult === "knockdown") {
+        sfx.hit();
+        return chipResult;
       }
+
+      const blockedDamage = scaledDamage * blockPercent;
+      this.shieldHp -= blockedDamage * (opts?.shieldDamageMult ?? 1);
+      if (this.shieldHp <= 0) {
+        // Guard break: feeds into the existing knockdown state -- no
+        // second free defense stacked on rebirth (§3.2)
+        this.shieldHp = 0;
+        this.health.knockDown();
+        sfx.guardBreak();
+        return "guardbreak";
+      }
+      sfx.shielded();
+      return "shielded";
     }
 
     const result = this.health.takeHit(scaledDamage, enduranceDamage);
@@ -217,14 +246,20 @@ export class Robo {
 
     // Shield regen: stops while recently hit, never regens mid-knockdown
     this.shieldHitTimer += dt;
-    const S = this.loadout.shield;
-    if (
-      S.shieldHp > 0 &&
-      this.health.state === "active" &&
-      this.shieldHitTimer > S.regenDelay &&
-      this.shieldHp < S.shieldHp
-    ) {
-      this.shieldHp = Math.min(S.shieldHp, this.shieldHp + S.regenPerSec * dt);
+    const leftArm = this.loadout.leftArm;
+    let shieldActive = false;
+    let shieldMoveMult = 1;
+    if (leftArm.kind === "shield") {
+      const S = leftArm.part;
+      if (
+        this.health.state === "active" &&
+        this.shieldHitTimer > S.regenDelay &&
+        this.shieldHp < S.shieldHp
+      ) {
+        this.shieldHp = Math.min(S.shieldHp, this.shieldHp + S.regenPerSec * dt);
+      }
+      shieldActive = this.intent.shieldHeld && this.health.state === "active";
+      if (shieldActive) shieldMoveMult = S.moveSpeedMult;
     }
 
     const downed =
@@ -265,7 +300,7 @@ export class Robo {
     } else if (this.grounded) {
       const desired = this.intent.moveDir
         .clone()
-        .multiplyScalar(this.stats.runSpeed);
+        .multiplyScalar(this.stats.runSpeed * shieldMoveMult);
       if (this.onIce) {
         // Ice: momentum carries; steering is a slow correction
         this.velocity.x += (desired.x - this.velocity.x) * Math.min(1, 2.5 * dt);
@@ -313,7 +348,8 @@ export class Robo {
       this.intent.dashRequested &&
       this.dashTimer <= 0 &&
       this.boost >= dashCost &&
-      this.airDashesUsed < this.stats.dashCount
+      this.airDashesUsed < this.stats.dashCount &&
+      !(shieldActive && !this.grounded) // shield up: no air-dashing
     ) {
       const dir =
         this.intent.moveDir.lengthSq() > 0.01

@@ -38,7 +38,9 @@ export class Bomb {
 
   tryThrow(target: Robo): boolean {
     if (!this.ready || this.owner.controlLocked) return false;
-    const part = this.owner.loadout.bomb;
+    const leftArm = this.owner.loadout.leftArm;
+    if (leftArm.kind !== "bomb") return false; // left arm is a shield: no bomb
+    const part = leftArm.part;
     this.cooldownRemaining = part.cooldown;
 
     const start = this.owner.position.clone().add(new THREE.Vector3(0, 0.8, 0));
@@ -124,7 +126,9 @@ export class Bomb {
     enemy: Robo,
     isCluster = false,
   ): void {
-    const part = this.owner.loadout.bomb;
+    const leftArm = this.owner.loadout.leftArm;
+    if (leftArm.kind !== "bomb") return; // can't happen: tryThrow already gated this
+    const part = leftArm.part;
     const fx = this.owner.effects;
     const scale = isCluster ? 0.6 : 1;
 

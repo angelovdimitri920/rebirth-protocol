@@ -23,7 +23,7 @@ export class PlayerController {
     private robo: Robo,
     private enemy: Robo,
     private input: Input,
-    private camera: THREE.PerspectiveCamera,
+    private camera: THREE.Camera,
     public gun: Gun,
     public melee: Melee,
     public bomb: Bomb,
@@ -76,8 +76,11 @@ export class PlayerController {
     this.robo.intent.dashRequested = input.justPressed("ShiftLeft");
     this.robo.intent.mashPressed = input.justPressed("Space");
 
-    // Face movement direction by default; square up only while attacking
-    const attacking = input.fireHeld || this.melee.busy;
+    // Face movement direction by default; square up while attacking or
+    // holding the shield up (you want to face what you're blocking)
+    const shieldWillBeHeld =
+      this.robo.loadout.leftArm.kind === "shield" && input.held("KeyQ");
+    const attacking = input.fireHeld || this.melee.busy || shieldWillBeHeld;
     this.robo.intent.faceAngle =
       attacking && target
         ? Math.atan2(
@@ -89,16 +92,27 @@ export class PlayerController {
     // Homing dash: while locked on, dashes curve toward the target
     this.robo.intent.dashHomingPoint = target ? target.position : null;
 
-    // --- Weapons ---
+    // --- Right arm: gun (LMB/RT, held) or melee (RMB/RB, pressed) --
+    // whichever isn't equipped silently no-ops, so both buttons are always
+    // safe to read regardless of loadout. ---
     if (input.meleePressed && enemyAlive) {
       if (!this.melee.busy) this.melee.tryStart(this.enemy);
       else this.melee.chain(this.enemy); // combo string follow-up
     }
     this.melee.update(dt, this.enemy);
     this.gun.update(dt, input.fireHeld && !this.melee.busy, target);
-    if (input.justPressed("KeyQ") && enemyAlive && !this.melee.busy) {
-      this.bomb.tryThrow(this.enemy);
+
+    // --- Left arm: bomb (Q, pressed) or shield (Q, HELD) -- Q is
+    // context-sensitive on which part is actually equipped. ---
+    if (this.robo.loadout.leftArm.kind === "shield") {
+      this.robo.intent.shieldHeld = input.held("KeyQ") && !this.melee.busy;
+    } else {
+      this.robo.intent.shieldHeld = false;
+      if (input.justPressed("KeyQ") && enemyAlive && !this.melee.busy) {
+        this.bomb.tryThrow(this.enemy);
+      }
     }
+
     if (input.justPressed("KeyE")) {
       this.pod.toggle();
     }

@@ -8,8 +8,9 @@ import { Melee } from "../combat/Melee";
 
 // Basic pressure-test opponent, not a real AI: orbits the player at mid
 // range, strafes, occasionally jumps or dashes, fires in bursts, lobs its
-// bomb when it's off cooldown, keeps its pod deployed, and goes for melee
-// when the player is close or landing-recovery vulnerable.
+// bomb when it's off cooldown (or raises its shield periodically at close
+// range if that's its left arm instead), keeps its pod deployed, and goes
+// for melee when the player is close or landing-recovery vulnerable.
 
 export class DummyAI {
   private strafeSign = 1;
@@ -18,6 +19,8 @@ export class DummyAI {
   private fireTimer = 0;
   private bombTimer = 3; // don't open with a bomb
   private meleeTimer = 2;
+  private shieldTimer = 1;
+  private shieldEngaged = false;
 
   constructor(
     private robo: Robo,
@@ -96,11 +99,24 @@ export class DummyAI {
       playerAlive ? this.player : null,
     );
 
-    // Bomb when ready-ish, preferring a downed-adjacent or cornered player
-    this.bombTimer -= dt;
-    if (this.bombTimer <= 0 && playerAlive && this.bomb.ready && dist < 18) {
-      this.bomb.tryThrow(this.player);
-      this.bombTimer = 2 + Math.random() * 3;
+    // Left arm: bomb OR shield, whichever this build actually has
+    if (this.robo.loadout.leftArm.kind === "shield") {
+      this.shieldTimer -= dt;
+      if (this.shieldTimer <= 0) {
+        this.shieldEngaged = !this.shieldEngaged;
+        this.shieldTimer = this.shieldEngaged
+          ? 1.0 + Math.random() // hold it up for a beat
+          : 0.6 + Math.random() * 0.8; // then rest (movement penalty isn't free)
+      }
+      this.robo.intent.shieldHeld =
+        this.shieldEngaged && dist < 10 && !this.melee.busy;
+    } else {
+      this.robo.intent.shieldHeld = false;
+      this.bombTimer -= dt;
+      if (this.bombTimer <= 0 && playerAlive && this.bomb.ready && dist < 18) {
+        this.bomb.tryThrow(this.player);
+        this.bombTimer = 2 + Math.random() * 3;
+      }
     }
 
     // Keep the pod out

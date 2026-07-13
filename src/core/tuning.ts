@@ -38,7 +38,11 @@ export const TUNING = {
   // --- Health (GAME_DESIGN §2.2) ---
   health: {
     maxHp: 1000,
-    maxEndurance: 100,
+    // Doubled from 100 per playtest feedback: knockdown was coming off a
+    // single big hit (or one melee combo) too often. Scaling the pool
+    // uniformly doubles the hit count to knock down for every weapon at
+    // once, without having to re-tune each part's enduranceDamage by hand.
+    maxEndurance: 200,
     enduranceRegenPerSec: 35,
     enduranceRegenDelay: 1.8, // s unhit before regen starts
     knockdownDuration: 2.2, // s base
@@ -59,7 +63,10 @@ export const TUNING = {
     muzzleHeight: 1.2,
   },
 
-  // --- Melee ---
+  // --- Melee: shared gap-closer mechanics. Per-weapon numbers (damage,
+  // enduranceDamage, hitRange, hitArcDegrees, swingActiveTime, hitRecovery,
+  // whiffRecovery, knockbackSpeed) live on each MeleeWeaponPart instead,
+  // since "how it swings" is what makes weapons feel different. ---
   melee: {
     // Gap-closer: triggered when target beyond closeRange, within lungeRange
     closeRange: 4,
@@ -67,14 +74,6 @@ export const TUNING = {
     lungeSpeed: 26, // m/s toward target
     lungeMaxDuration: 0.65, // s before auto-whiff
     lungeReachDistance: 2.6, // m: close enough -> swing
-    swingActiveTime: 0.18, // s hitbox live
-    hitRecovery: 0.45, // s after a connecting swing
-    whiffRecovery: 0.95, // s punishable recovery on miss
-    damage: 130,
-    enduranceDamage: 55,
-    hitRange: 3.0, // m swing reach
-    hitArcDegrees: 70, // total arc in front of attacker
-    knockbackSpeed: 10, // m/s applied to victim
   },
 
   // --- Lock-on ---
@@ -82,17 +81,19 @@ export const TUNING = {
     maxRange: 40, // Stage 1: basically whole arena
   },
 
-  // --- Camera: Custom Robo / Virtual On-style elevated arena view ---
-  // Fixed yaw (never rotates) -- movement is derived from the camera's
-  // actual orientation each frame (see PlayerController), so this can be
-  // retuned freely without ever re-breaking WASD mapping.
+  // --- Camera: isometric-style elevated arena view (orthographic, no
+  // perspective convergence) -- Custom Robo / Virtual On inspired, pushed
+  // further overhead per playtest feedback. Fixed yaw (never rotates) --
+  // movement is derived from the camera's actual orientation each frame
+  // (see PlayerController), so this can be retuned freely without ever
+  // re-breaking WASD mapping. ---
   camera: {
-    height: 20, // camera height above the floor -- steep, near-overhead
-    back: 9, // distance behind the player (-z)
+    height: 24, // camera height above the floor -- steep, near-overhead
+    back: 8, // distance behind the player (-z)
     lookAhead: 1.5, // look-at point this far ahead of the player (+z)
     targetBias: 0.16, // look-at slides toward the enemy by this fraction
     followLerp: 8, // per-second smoothing factor
-    fov: 48,
+    frustumSize: 20, // orthographic: world units visible vertically
   },
 
   // --- Crates (destructible cover) ---

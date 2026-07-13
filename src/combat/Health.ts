@@ -65,6 +65,17 @@ export class Health {
     return "hit";
   }
 
+  /** Direct endurance drain outside the normal hit pipeline (shield-parry
+   *  punish) -- still triggers knockdown if it empties the bar. */
+  drainEndurance(amount: number): void {
+    if (this.state !== "active") return;
+    this.endurance -= amount;
+    if (this.endurance <= 0) {
+      this.endurance = 0;
+      this.knockDown();
+    }
+  }
+
   /** Immediate knockdown regardless of endurance (shield guard-break). */
   knockDown(): void {
     if (this.state !== "active") return;

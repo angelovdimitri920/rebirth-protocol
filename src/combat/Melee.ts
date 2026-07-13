@@ -2,13 +2,17 @@ import * as THREE from "three";
 import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { sfx } from "../core/sfx";
+import type { MeleeWeaponPart } from "../parts/parts";
 
 // Melee with a gap-closer (GAME_DESIGN §3.1): high commitment, punishable
 // recovery on whiff. State machine: idle -> lunge -> swing -> recovery.
 // Within closeRange the lunge is skipped and it's a direct swing.
 // Combo strings: pressing melee again during a CONNECTED swing's recovery
 // chains into swing 2, then a heavier finisher. Whiffs always end the
-// string in full punishable recovery.
+// string in full punishable recovery. Weapon numbers (damage, range,
+// speed, recovery) come from the equipped MeleeWeaponPart -- only the
+// gap-closer's own lunge mechanics (closeRange/lungeRange/etc.) are shared
+// across all melee weapons.
 
 type MeleeState = "idle" | "lunge" | "swing" | "recovery";
 
@@ -37,6 +41,12 @@ export class Melee {
     scene.add(this.swingBlade);
   }
 
+  /** Only valid if the right arm is actually a melee weapon. */
+  private get weapon(): MeleeWeaponPart | null {
+    const rightArm = this.owner.loadout.rightArm;
+    return rightArm.kind === "melee" ? rightArm.part : null;
+  }
+
   /** True while the owner is mid-melee (used to suppress gun/moves). */
   get busy(): boolean {
     return this.state !== "idle";
@@ -57,6 +67,7 @@ export class Melee {
   tryStart(target: Robo): void {
     if (this.state !== "idle") return;
     if (this.owner.controlLocked) return;
+    if (!this.weapon) return; // right arm is a gun: no melee to swing
 
     const dist = this.owner.position.distanceTo(target.position);
     if (dist > TUNING.melee.lungeRange) return; // out of range: no-op
@@ -97,7 +108,7 @@ export class Melee {
 
   private enterSwing(): void {
     this.state = "swing";
-    this.timer = TUNING.melee.swingActiveTime;
+    this.timer = this.weapon?.swingActiveTime ?? 0.18;
     this.owner.externalMove = null;
     // Planted on the ground / falls in the air, but can't act
     this.owner.actionLock = 10; // held while swing+recovery run; reset clears
@@ -113,6 +124,11 @@ export class Melee {
 
   update(dt: number, target: Robo): void {
     const T = TUNING.melee;
+    const weapon = this.weapon;
+    if (!weapon) {
+      this.reset();
+      return;
+    }
 
     // Knocked down mid-melee: cancel everything
     if (
@@ -141,17 +157,17 @@ export class Melee {
           this.enterSwing();
         } else if (this.timer <= 0) {
           // Lunge expired without reaching: whiff recovery
-          this.enterRecovery(T.whiffRecovery);
+          this.enterRecovery(weapon.whiffRecovery);
         }
         break;
       }
 
       case "swing": {
-        if (!this.didHit) this.checkHit(target);
+        if (!this.didHit) this.checkHit(target, weapon);
         this.updateBladeVisual();
         this.timer -= dt;
         if (this.timer <= 0) {
-          this.enterRecovery(this.didHit ? T.hitRecovery : T.whiffRecovery);
+          this.enterRecovery(this.didHit ? weapon.hitRecovery : weapon.whiffRecovery);
           this.swingBlade.visible = false;
         }
         break;
@@ -165,40 +181,50 @@ export class Melee {
     }
   }
 
-  private checkHit(target: Robo): void {
-    const T = TUNING.melee;
+  private checkHit(target: Robo, weapon: MeleeWeaponPart): void {
     const toTarget = target.position.clone().sub(this.owner.position);
     toTarget.y = 0;
     const dist = toTarget.length();
-    if (dist > T.hitRange) return;
+    if (dist > weapon.hitRange) return;
 
     const angleTo = Math.atan2(toTarget.x, toTarget.z);
     let diff = angleTo - this.owner.facingAngle;
     while (diff > Math.PI) diff -= 2 * Math.PI;
     while (diff < -Math.PI) diff += 2 * Math.PI;
-    if (Math.abs(diff) > (T.hitArcDegrees * Math.PI) / 360) return;
+    if (Math.abs(diff) > (weapon.hitArcDegrees * Math.PI) / 360) return;
 
     this.didHit = true;
     const dir = toTarget.normalize();
     const fx = this.owner.effects;
     const combo = this.comboIndex;
     const result = target.receiveHit(
-      (T.damage * COMBO_DAMAGE[combo] * this.owner.stats.atkMult +
+      (weapon.damage * COMBO_DAMAGE[combo] * this.owner.stats.atkMult +
         (fx?.flatDamageBonus() ?? 0)) *
         (fx?.meleeDamageMult() ?? 1),
-      T.enduranceDamage * COMBO_ENDURANCE[combo],
+      weapon.enduranceDamage * COMBO_ENDURANCE[combo],
       dir,
       { shieldDamageMult: fx?.meleeShieldMult() ?? 1 },
     );
     if (result !== "invulnerable" && result !== "evaded") {
       sfx.meleeHit();
-      target.applyKnockback(dir, T.knockbackSpeed * COMBO_KNOCKBACK[combo]);
+      target.applyKnockback(dir, weapon.knockbackSpeed * COMBO_KNOCKBACK[combo]);
       if (fx) {
         fx.onHit("melee", target.position.clone());
         if (result === "knockdown" || result === "guardbreak") {
           fx.onKnockdown();
         }
       }
+    }
+    // Shield parry: a melee hit that gets blocked by an ENGAGED shield
+    // drains the attacker's own endurance (GAME_DESIGN §3.2).
+    if (
+      (result === "shielded" || result === "guardbreak") &&
+      target.intent.shieldHeld &&
+      target.loadout.leftArm.kind === "shield"
+    ) {
+      const parryDamage = target.loadout.leftArm.part.meleeParryEnduranceDamage;
+      this.owner.health.drainEndurance(parryDamage);
+      sfx.guardBreak(); // sharp counter cue distinct from the normal block tone
     }
   }
 

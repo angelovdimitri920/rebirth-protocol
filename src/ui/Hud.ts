@@ -18,6 +18,7 @@ export class Hud {
   private playerBoost: HTMLElement;
   private boostRow: HTMLElement;
   private bombFill: HTMLElement;
+  private arm2Label: HTMLElement;
   private podFill: HTMLElement;
   private enemyHp: HTMLElement;
   private enemyEnd: HTMLElement;
@@ -113,7 +114,7 @@ export class Hud {
         </div>
         <div class="ability-row">
           <div class="ability bomb">
-            <div class="hud-label">Bomb [Q]</div>
+            <div class="hud-label" id="p-arm2-label">Bomb [Q]</div>
             <div class="bar"><div class="bar-fill" id="p-bomb"></div></div>
           </div>
           <div class="ability pod">
@@ -137,7 +138,8 @@ export class Hud {
       <div id="hud-toast"></div>
       <div id="hud-controls">
         WASD move &nbsp; SPACE jump/hover &nbsp; SHIFT dash<br>
-        LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; R rebuild &nbsp; F fullscreen
+        LMB gun &nbsp; RMB melee &nbsp; Q bomb/shield &nbsp; E pod<br>
+        P pause &nbsp; R instant hangar &nbsp; F fullscreen
       </div>
       <div id="hud-pad-legend">
         <div class="pad-title">Controller</div>
@@ -149,7 +151,7 @@ export class Hud {
         <div class="pad-row"><span class="pad-btn grey">LB</span> Lock-On</div>
         <div class="pad-row"><span class="pad-btn grey">RB</span> Melee</div>
         <div class="pad-row"><span class="pad-btn grey">RT</span> Fire</div>
-        <div class="pad-row"><span class="pad-btn grey">☰</span> Rebuild</div>
+        <div class="pad-row"><span class="pad-btn grey">☰</span> Pause</div>
       </div>
     `;
     this.playerHp = document.getElementById("p-hp")!;
@@ -159,6 +161,7 @@ export class Hud {
     this.playerBoost = document.getElementById("p-boost")!;
     this.boostRow = document.getElementById("p-boost-row")!;
     this.bombFill = document.getElementById("p-bomb")!;
+    this.arm2Label = document.getElementById("p-arm2-label")!;
     this.podFill = document.getElementById("p-pod")!;
     this.enemyHp = document.getElementById("e-hp")!;
     this.enemyEnd = document.getElementById("e-end")!;
@@ -192,7 +195,7 @@ export class Hud {
   updateReticle(
     player: Robo,
     enemy: Robo,
-    camera: THREE.PerspectiveCamera,
+    camera: THREE.Camera,
     lockedOn: boolean,
   ): void {
     const el = document.getElementById("hud-reticle")!;
@@ -229,21 +232,33 @@ export class Hud {
     this.enemyHp.style.width = `${(enemy.health.hp / enemy.health.maxHp) * 100}%`;
     this.enemyEnd.style.width = `${(enemy.health.endurance / H.maxEndurance) * 100}%`;
 
-    // Shields: hide the row entirely for shieldless builds
-    const pMax = player.loadout.shield.shieldHp;
-    this.playerShieldRow.style.display = pMax > 0 ? "" : "none";
-    if (pMax > 0)
+    // Shields: hide the row entirely for robos with a bomb instead
+    const playerLeftArm = player.loadout.leftArm;
+    this.playerShieldRow.style.display = playerLeftArm.kind === "shield" ? "" : "none";
+    if (playerLeftArm.kind === "shield") {
+      const pMax = playerLeftArm.part.shieldHp;
       this.playerShield.style.width = `${(player.shieldHp / pMax) * 100}%`;
-    const eMax = enemy.loadout.shield.shieldHp;
-    this.enemyShieldRow.style.display = eMax > 0 ? "" : "none";
-    if (eMax > 0)
+    }
+    const enemyLeftArm = enemy.loadout.leftArm;
+    this.enemyShieldRow.style.display = enemyLeftArm.kind === "shield" ? "" : "none";
+    if (enemyLeftArm.kind === "shield") {
+      const eMax = enemyLeftArm.part.shieldHp;
       this.enemyShield.style.width = `${(enemy.shieldHp / eMax) * 100}%`;
+    }
 
-    // Bomb: fills up as it comes off cooldown
-    const bombPart = player.loadout.bomb;
-    this.bombFill.style.width = `${
-      (1 - Math.max(0, bomb.cooldownRemaining) / bombPart.cooldown) * 100
-    }%`;
+    // Second ability slot: bomb cooldown OR shield charge, whichever the
+    // player's left arm actually is (Q is context-sensitive between them).
+    if (playerLeftArm.kind === "shield") {
+      this.arm2Label.textContent = "Shield [Q]";
+      const pMax = playerLeftArm.part.shieldHp;
+      this.bombFill.style.width = `${(player.shieldHp / pMax) * 100}%`;
+    } else {
+      this.arm2Label.textContent = "Bomb [Q]";
+      const bombPart = playerLeftArm.part;
+      this.bombFill.style.width = `${
+        (1 - Math.max(0, bomb.cooldownRemaining) / bombPart.cooldown) * 100
+      }%`;
+    }
     this.podFill.style.width = `${(pod.energy / player.loadout.pod.energyMax) * 100}%`;
 
     let text = "";

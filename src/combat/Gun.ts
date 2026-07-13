@@ -23,8 +23,10 @@ export class Gun {
     if (!firing || this.cooldown > 0) return;
     if (this.owner.controlLocked || this.owner.health.state === "knockdown")
       return;
+    const rightArm = this.owner.loadout.rightArm;
+    if (rightArm.kind !== "gun") return; // right arm is melee: no gun to fire
 
-    const part = this.owner.loadout.gun;
+    const part = rightArm.part;
     this.cooldown = part.fireInterval;
     sfx.shot();
 

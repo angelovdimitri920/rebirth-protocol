@@ -3,20 +3,21 @@
 // there's no mouse-look and no pointer lock -- mouse is buttons only.
 //
 // Gamepad button -> action (standard mapping indices):
-//   Left stick    move (analog, direction only -- no analog speed model)
-//   A (0)         jump/hover, mash to recover from knockdown
-//   B (1)         dash
-//   X (2)         bomb
-//   Y (3)         pod deploy/recall
-//   LB (4)        lock-on toggle
-//   RB (5)        melee
-//   RT (7)        gun (held)
-//   Start (9)     restart
+//   Left stick     move (analog, direction only -- no analog speed model)
+//   D-pad          menu navigation (hangar/pause), merged onto Arrow keys
+//   A (0)          jump/hover, mash to recover from knockdown; menu confirm
+//   B (1)          dash
+//   X (2)          bomb / hold to raise shield
+//   Y (3)          pod deploy/recall
+//   LB (4)         lock-on toggle
+//   RB (5)         melee
+//   RT (7)         gun (held)
+//   Start (9)      pause
 //
 // Gamepad buttons are merged into the same key-code space the keyboard
 // uses ("Space", "ShiftLeft", etc.) so every consumer (PlayerController,
-// Game's restart listener) reads gamepad and keyboard through one API
-// without caring which produced the input.
+// Game's pause listener, menu navigation) reads gamepad and keyboard
+// through one API without caring which produced the input.
 
 import { sfx } from "./sfx";
 
@@ -26,7 +27,11 @@ const BUTTON_TO_CODE: [index: number, code: string][] = [
   [2, "KeyQ"],
   [3, "KeyE"],
   [4, "Tab"],
-  [9, "KeyR"],
+  [9, "KeyP"],
+  [12, "ArrowUp"],
+  [13, "ArrowDown"],
+  [14, "ArrowLeft"],
+  [15, "ArrowRight"],
 ];
 const BUTTON_MELEE = 5;
 const BUTTON_FIRE = 7;

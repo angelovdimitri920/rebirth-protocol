@@ -3,6 +3,7 @@ import {
   BOMBS,
   GUNS,
   LEGS,
+  MELEE_WEAPONS,
   PODS,
   SHIELDS,
   type Loadout,
@@ -10,57 +11,54 @@ import {
 
 // Run structure (GAME_DESIGN §4): a run is a fixed sequence of duels.
 // Enemy builds escalate and vary so different player builds meet different
-// problems; a flat power multiplier stacks on top per fight.
+// problems; a flat power multiplier stacks on top per fight. Enemy arm
+// choices deliberately sample gun/melee and bomb/shield so the player sees
+// every combat pattern across a run.
 
 export const FIGHTS_PER_RUN = 5;
 
 /** Enemy loadout per fight index — variety first, then raw power. */
 export function enemyForFight(i: number): Loadout {
   const presets: Loadout[] = [
-    // F1: mirror-ish all-rounder, no shield -- teachable opener
+    // F1: mirror-ish all-rounder, gun + bomb -- teachable opener
     {
       body: BODIES[0],
-      gun: GUNS[0],
-      bomb: BOMBS[0],
-      pod: PODS[0],
+      rightArm: { kind: "gun", part: GUNS[0] },
+      leftArm: { kind: "bomb", part: BOMBS[0] },
       legs: LEGS[0],
-      shield: SHIELDS[0],
+      pod: PODS[0],
     },
-    // F2: fast harasser
+    // F2: fast harasser, still ranged
     {
       body: BODIES[1],
-      gun: GUNS[1],
-      bomb: BOMBS[0],
-      pod: PODS[1],
+      rightArm: { kind: "gun", part: GUNS[1] },
+      leftArm: { kind: "bomb", part: BOMBS[0] },
       legs: LEGS[1],
-      shield: SHIELDS[0],
+      pod: PODS[1],
     },
-    // F3: evasive skirmisher with shield
+    // F3: melee rush with a shield -- teaches the player to respect range
     {
       body: BODIES[2],
-      gun: GUNS[0],
-      bomb: BOMBS[1],
-      pod: PODS[0],
+      rightArm: { kind: "melee", part: MELEE_WEAPONS[2] }, // Twin Fang
+      leftArm: { kind: "shield", part: SHIELDS[0] },
       legs: LEGS[2],
-      shield: SHIELDS[1],
-    },
-    // F4: the wall
-    {
-      body: BODIES[3],
-      gun: GUNS[2],
-      bomb: BOMBS[1],
       pod: PODS[0],
-      legs: LEGS[0],
-      shield: SHIELDS[1],
     },
-    // F5: everything at once
+    // F4: the wall -- heavy gun + heavy shield
     {
       body: BODIES[3],
-      gun: GUNS[2],
-      bomb: BOMBS[1],
-      pod: PODS[1],
+      rightArm: { kind: "gun", part: GUNS[2] },
+      leftArm: { kind: "shield", part: SHIELDS[1] },
+      legs: LEGS[0],
+      pod: PODS[0],
+    },
+    // F5: heavy melee brawler, everything at once
+    {
+      body: BODIES[3],
+      rightArm: { kind: "melee", part: MELEE_WEAPONS[1] }, // Warhammer
+      leftArm: { kind: "shield", part: SHIELDS[1] },
       legs: LEGS[1],
-      shield: SHIELDS[1],
+      pod: PODS[1],
     },
   ];
   return presets[Math.min(i, presets.length - 1)];

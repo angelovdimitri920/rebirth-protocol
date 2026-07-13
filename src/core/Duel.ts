@@ -49,7 +49,7 @@ export class Duel {
 
   constructor(
     scene: THREE.Scene,
-    camera: THREE.PerspectiveCamera,
+    camera: THREE.Camera,
     input: Input,
     physics: Physics,
     playerLoadout: Loadout,

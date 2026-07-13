@@ -162,6 +162,14 @@ Decisions made during Stage 1 prototyping where the design doc was ambiguous or 
 - **Mitigation shipped**: reroll only; banish and shops deferred until there's a currency to spend.
 - **Meta-progression not started** — §4's "unlock options, not power" layer is still open.
 
+### First playtest feedback (2026-07-13) — controls & camera revision
+
+- **Camera is now the Custom Robo GameCube view**: elevated, fixed-yaw, anchored to the player's side of the arena. It never rotates, so WASD maps 1:1 to screen directions — this also eliminated the "inverted A/D" feel, which was really the old orbiting lock-on camera constantly re-basing what "left" meant.
+- **Free facing**: the robo faces its movement direction; it only squares up to the enemy while actually attacking (gun held / melee active). Lock-on (Tab) still governs homing, melee targeting, and homing dash — it no longer steers the camera or facing.
+- **No pointer lock / mouse-look anymore** — mouse is buttons only (LMB gun, RMB melee).
+- **Arena walls are real**: connected visible perimeter walls with glowing trim enclose the Holosseum; colliders extend invisibly above the visible wall so nothing boosts out. Replaces the old invisible boundaries + floating rim strips.
+- Camera-occlusion polish gap from Stage 2 is largely mooted by the high camera angle.
+
 ### Stage 4 slice (partial)
 
 - **Homing dash**: while locked on, active dashes curve toward the target at a capped turn rate (ZoE model) — works as approach and as escape-denial.

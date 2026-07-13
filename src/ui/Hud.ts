@@ -106,7 +106,7 @@ export class Hud {
       <div id="hud-toast"></div>
       <div id="hud-controls">
         WASD move &nbsp; SPACE jump/hover &nbsp; SHIFT dash<br>
-        LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; TAB lock-on &nbsp; R rebuild
+        LMB gun &nbsp; RMB melee &nbsp; Q bomb &nbsp; E pod &nbsp; R rebuild
       </div>
     `;
     this.playerHp = document.getElementById("p-hp")!;

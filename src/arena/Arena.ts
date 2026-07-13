@@ -145,20 +145,6 @@ export class Arena {
     grid.position.y = 0.02;
     this.group.add(grid);
 
-    // Glowing rim strips marking the holosseum boundary
-    const rimMat = new THREE.MeshBasicMaterial({ color: 0x3355ff });
-    const rimStrips: [number, number, number, number][] = [
-      [0, -half - 0.15, size + 0.6, 0.3],
-      [0, half + 0.15, size + 0.6, 0.3],
-      [-half - 0.15, 0, 0.3, size],
-      [half + 0.15, 0, 0.3, size],
-    ];
-    for (const [cx, cz, w, d] of rimStrips) {
-      const strip = new THREE.Mesh(new THREE.BoxGeometry(w, 0.3, d), rimMat);
-      strip.position.set(cx, 0.05, cz);
-      this.group.add(strip);
-    }
-
     const floorBody = this.makeBody();
     const floorCol = physics.world.createCollider(
       RAPIER.ColliderDesc.cuboid(half, 0.5, half).setTranslation(0, -0.5, 0),
@@ -166,18 +152,43 @@ export class Arena {
     );
     physics.tag(floorCol, { kind: "arena" });
 
-    // --- Invisible boundary walls ---
+    // --- Perimeter walls: visible, connected, enclosing the Holosseum.
+    // The collider extends above the visible wall (the classic "invisible
+    // walls are impenetrable" rule) so nothing boosts out of the arena. ---
     const wallH = TUNING.arena.wallHeight;
-    const wallDefs: [number, number, number, number][] = [
-      [0, -half, half, 0.5],
-      [0, half, half, 0.5],
-      [-half, 0, 0.5, half],
-      [half, 0, 0.5, half],
+    const visH = 2.6; // visible wall height
+    const thick = 0.8;
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0x2c3152,
+      roughness: 0.55,
+      metalness: 0.45,
+    });
+    const trimMat = new THREE.MeshBasicMaterial({ color: 0x3355ff });
+    const wallDefs: { cx: number; cz: number; w: number; d: number }[] = [
+      // Full-length north/south walls; east/west tuck between them
+      { cx: 0, cz: -half - thick / 2, w: size + thick * 2, d: thick },
+      { cx: 0, cz: half + thick / 2, w: size + thick * 2, d: thick },
+      { cx: -half - thick / 2, cz: 0, w: thick, d: size },
+      { cx: half + thick / 2, cz: 0, w: thick, d: size },
     ];
-    for (const [cx, cz, hx, hz] of wallDefs) {
+    for (const { cx, cz, w, d } of wallDefs) {
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(w, visH, d), wallMat);
+      wall.position.set(cx, visH / 2, cz);
+      wall.castShadow = true;
+      wall.receiveShadow = true;
+      this.group.add(wall);
+
+      // Glowing trim along the top edge
+      const trim = new THREE.Mesh(
+        new THREE.BoxGeometry(w + 0.04, 0.14, d + 0.04),
+        trimMat,
+      );
+      trim.position.set(cx, visH + 0.07, cz);
+      this.group.add(trim);
+
       const body = this.makeBody();
       const col = physics.world.createCollider(
-        RAPIER.ColliderDesc.cuboid(hx, wallH / 2, hz).setTranslation(
+        RAPIER.ColliderDesc.cuboid(w / 2, wallH / 2, d / 2).setTranslation(
           cx,
           wallH / 2,
           cz,

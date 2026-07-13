@@ -1,11 +1,10 @@
-// Keyboard + mouse state. Pointer lock is requested on first click so the
-// mouse can drive the camera without leaving the window.
+// Keyboard + mouse buttons. The camera never rotates (Custom Robo-style
+// fixed view), so there's no mouse-look and no pointer lock — the mouse
+// only fires (LMB) and melees (RMB).
 
 export class Input {
   private keys = new Set<string>();
   private pressed = new Set<string>(); // cleared each frame: edge-triggered
-  mouseDx = 0;
-  mouseDy = 0;
   fireHeld = false;
   meleePressed = false;
 
@@ -15,19 +14,12 @@ export class Input {
       this.keys.add(e.code);
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
-    window.addEventListener("blur", () => this.keys.clear());
+    window.addEventListener("blur", () => {
+      this.keys.clear();
+      this.fireHeld = false;
+    });
 
-    canvas.addEventListener("click", () => {
-      if (document.pointerLockElement !== canvas) canvas.requestPointerLock();
-    });
-    window.addEventListener("mousemove", (e) => {
-      if (document.pointerLockElement) {
-        this.mouseDx += e.movementX;
-        this.mouseDy += e.movementY;
-      }
-    });
-    window.addEventListener("mousedown", (e) => {
-      if (!document.pointerLockElement) return;
+    canvas.addEventListener("mousedown", (e) => {
       if (e.button === 0) this.fireHeld = true;
       if (e.button === 2) this.meleePressed = true;
     });
@@ -50,7 +42,5 @@ export class Input {
   endFrame(): void {
     this.pressed.clear();
     this.meleePressed = false;
-    this.mouseDx = 0;
-    this.mouseDy = 0;
   }
 }

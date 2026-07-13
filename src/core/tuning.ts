@@ -78,15 +78,15 @@ export const TUNING = {
     maxRange: 40, // Stage 1: basically whole arena
   },
 
-  // --- Camera ---
+  // --- Camera: Custom Robo-style elevated view from the player's side ---
+  // Fixed yaw (never rotates), so screen directions == world directions.
   camera: {
-    distance: 7.5,
-    height: 3.2,
-    lookAtHeight: 1.5,
-    // When locked on, look-at point slides toward target by this fraction
-    targetBias: 0.28,
-    followLerp: 10, // per-second smoothing factor
-    fov: 62,
+    height: 13, // camera height above the floor
+    back: 14, // distance behind the player (-z)
+    lookAhead: 3.5, // look-at point this far ahead of the player (+z)
+    targetBias: 0.22, // look-at slides toward the enemy by this fraction
+    followLerp: 8, // per-second smoothing factor
+    fov: 55,
   },
 
   // --- Crates (destructible cover) ---

@@ -8,14 +8,15 @@ import { Bomb } from "../combat/Bomb";
 import { Pod } from "../combat/Pod";
 
 // Reads input, writes the player robo's intent, drives weapons, and owns
-// the third-person camera + lock-on state.
+// the Custom Robo-style camera: an elevated view from the player's side of
+// the arena that never rotates, so WASD maps directly to screen directions.
+// The robo faces where it's moving; it only squares up to the enemy while
+// actually attacking (firing or melee).
 // Controls: WASD move, Space jump/hover (mash during knockdown), Shift dash,
 // LMB gun, RMB melee, Q bomb, E pod deploy/recall, Tab toggle lock-on.
 
 export class PlayerController {
-  lockedOn = true; // default: locked to the only enemy
-  private freeYaw = 0;
-  private freePitch = 0.35;
+  lockedOn = true; // targeting for homing/melee -- not camera or facing
 
   constructor(
     private robo: Robo,
@@ -35,45 +36,29 @@ export class PlayerController {
     const enemyAlive = this.enemy.health.state !== "dead";
     const target = this.lockedOn && enemyAlive ? this.enemy : null;
 
-    // --- Camera yaw basis for movement ---
-    let camYaw: number;
-    if (target) {
-      const toEnemy = this.enemy.position.clone().sub(this.robo.position);
-      camYaw = Math.atan2(toEnemy.x, toEnemy.z);
-      this.freeYaw = camYaw; // stay in sync so unlocking doesn't snap
-    } else {
-      this.freeYaw -= input.mouseDx * 0.003;
-      this.freePitch = THREE.MathUtils.clamp(
-        this.freePitch + input.mouseDy * 0.003,
-        -0.2,
-        1.2,
-      );
-      camYaw = this.freeYaw;
-    }
-
-    // --- Movement intent (camera-relative WASD) ---
+    // --- Movement intent: screen == world directions (fixed camera) ---
     const move = new THREE.Vector3();
     if (input.held("KeyW")) move.z += 1;
     if (input.held("KeyS")) move.z -= 1;
     if (input.held("KeyA")) move.x -= 1;
     if (input.held("KeyD")) move.x += 1;
-    if (move.lengthSq() > 0) {
-      move.normalize();
-      const sin = Math.sin(camYaw);
-      const cos = Math.cos(camYaw);
-      move.set(move.x * cos + move.z * sin, 0, -move.x * sin + move.z * cos);
-    }
+    if (move.lengthSq() > 0) move.normalize();
 
     this.robo.intent.moveDir.copy(move);
     this.robo.intent.thrustHeld = input.held("Space");
     this.robo.intent.dashRequested = input.justPressed("ShiftLeft");
     this.robo.intent.mashPressed = input.justPressed("Space");
-    this.robo.intent.faceAngle = target
-      ? Math.atan2(
-          this.enemy.position.x - this.robo.position.x,
-          this.enemy.position.z - this.robo.position.z,
-        )
-      : null;
+
+    // Face movement direction by default; square up only while attacking
+    const attacking = input.fireHeld || this.melee.busy;
+    this.robo.intent.faceAngle =
+      attacking && target
+        ? Math.atan2(
+            this.enemy.position.x - this.robo.position.x,
+            this.enemy.position.z - this.robo.position.z,
+          )
+        : null;
+
     // Homing dash: while locked on, dashes curve toward the target
     this.robo.intent.dashHomingPoint = target ? target.position : null;
 
@@ -91,33 +76,27 @@ export class PlayerController {
     }
     this.pod.update(dt, this.enemy);
 
-    this.updateCamera(dt, camYaw, target);
+    this.updateCamera(dt);
   }
 
-  private updateCamera(
-    dt: number,
-    camYaw: number,
-    target: Robo | null,
-  ): void {
+  private updateCamera(dt: number): void {
     const C = TUNING.camera;
     const playerPos = this.robo.position;
 
-    const pitch = target ? 0.3 : this.freePitch;
-    const back = new THREE.Vector3(
-      -Math.sin(camYaw) * Math.cos(pitch),
-      Math.sin(pitch),
-      -Math.cos(camYaw) * Math.cos(pitch),
+    const desiredPos = new THREE.Vector3(
+      playerPos.x,
+      C.height,
+      playerPos.z - C.back,
     );
-    const desiredPos = playerPos
-      .clone()
-      .addScaledVector(back, C.distance)
-      .add(new THREE.Vector3(0, C.height * 0.4, 0));
-    if (desiredPos.y < 0.5) desiredPos.y = 0.5;
 
-    const lookAt = playerPos.clone().setY(playerPos.y + C.lookAtHeight);
-    if (target) {
+    const lookAt = new THREE.Vector3(
+      playerPos.x,
+      1,
+      playerPos.z + C.lookAhead,
+    );
+    if (this.enemy.health.state !== "dead") {
       lookAt.lerp(
-        target.position.clone().setY(target.groundY + 1),
+        this.enemy.position.clone().setY(this.enemy.groundY + 1),
         C.targetBias,
       );
     }

@@ -23,8 +23,16 @@ export interface RoboIntent {
    *  toward this point. Null = dashes fly straight. */
   dashHomingPoint: THREE.Vector3 | null;
   /** Shield raised (only meaningful if leftArm.kind === "shield"): must be
-   *  held to block at all; costs ground speed and disables air-dash. */
+   *  held to block at all. */
   shieldHeld: boolean;
+  /** Right arm is a gun and actively firing (HOLOSSEUM_REFERENCE.md): on
+   *  the ground this makes movement slide (momentum carries, slow
+   *  steering correction) instead of instant; airborne it halts
+   *  horizontal drift instead of the normal air-steering accel. */
+  firingGun: boolean;
+  /** Shield held or a bomb currently being aimed: instantly halts all
+   *  horizontal momentum, even mid-air, and blocks dashing entirely. */
+  leftArmActive: boolean;
 }
 
 export type ReceiveResult = HitResult | "evaded" | "shielded" | "guardbreak";
@@ -93,6 +101,8 @@ export class Robo {
     mashPressed: false,
     dashHomingPoint: null,
     shieldHeld: false,
+    firingGun: false,
+    leftArmActive: false,
   };
 
   private facing = 0;
@@ -247,8 +257,6 @@ export class Robo {
     // Shield regen: stops while recently hit, never regens mid-knockdown
     this.shieldHitTimer += dt;
     const leftArm = this.loadout.leftArm;
-    let shieldActive = false;
-    let shieldMoveMult = 1;
     if (leftArm.kind === "shield") {
       const S = leftArm.part;
       if (
@@ -258,8 +266,6 @@ export class Robo {
       ) {
         this.shieldHp = Math.min(S.shieldHp, this.shieldHp + S.regenPerSec * dt);
       }
-      shieldActive = this.intent.shieldHeld && this.health.state === "active";
-      if (shieldActive) shieldMoveMult = S.moveSpeedMult;
     }
 
     const downed =
@@ -297,26 +303,38 @@ export class Robo {
       this.velocity.y = 0; // dashes are horizontal; gravity suspended
       this.velocity.x = horiz.x;
       this.velocity.z = horiz.z;
+    } else if (this.intent.leftArmActive) {
+      // Bomb aiming / shield engaged (HOLOSSEUM_REFERENCE.md): instantly
+      // halts all horizontal momentum, even mid-air. Rooted and vulnerable.
+      this.velocity.x = 0;
+      this.velocity.z = 0;
+      horiz.set(0, 0, 0);
     } else if (this.grounded) {
-      const desired = this.intent.moveDir
-        .clone()
-        .multiplyScalar(this.stats.runSpeed * shieldMoveMult);
+      const desired = this.intent.moveDir.clone().multiplyScalar(this.stats.runSpeed);
       if (this.onIce) {
         // Ice: momentum carries; steering is a slow correction
         this.velocity.x += (desired.x - this.velocity.x) * Math.min(1, 2.5 * dt);
         this.velocity.z += (desired.z - this.velocity.z) * Math.min(1, 2.5 * dt);
+      } else if (this.intent.firingGun) {
+        // Firing the gun on the ground: momentum carries, a "slide"
+        this.velocity.x +=
+          (desired.x - this.velocity.x) * Math.min(1, T.move.fireSlideCorrection * dt);
+        this.velocity.z +=
+          (desired.z - this.velocity.z) * Math.min(1, T.move.fireSlideCorrection * dt);
       } else {
         this.velocity.x = desired.x;
         this.velocity.z = desired.z;
       }
       horiz.set(this.velocity.x, 0, this.velocity.z).add(this.drift);
     } else {
-      // Air steering: accelerate toward desired air velocity
-      const desired = this.intent.moveDir
-        .clone()
-        .multiplyScalar(T.move.airControlSpeed);
-      this.velocity.x += (desired.x - this.velocity.x) * Math.min(1, 4 * dt);
-      this.velocity.z += (desired.z - this.velocity.z) * Math.min(1, 4 * dt);
+      // Air steering: accelerate toward desired air velocity. Firing the
+      // gun mid-air instead decays horizontal drift toward zero -- a halt.
+      const desired = this.intent.firingGun
+        ? new THREE.Vector3()
+        : this.intent.moveDir.clone().multiplyScalar(T.move.airControlSpeed);
+      const rate = this.intent.firingGun ? T.move.fireAirHaltRate : 4;
+      this.velocity.x += (desired.x - this.velocity.x) * Math.min(1, rate * dt);
+      this.velocity.z += (desired.z - this.velocity.z) * Math.min(1, rate * dt);
       horiz.set(this.velocity.x, 0, this.velocity.z);
     }
 
@@ -349,7 +367,7 @@ export class Robo {
       this.dashTimer <= 0 &&
       this.boost >= dashCost &&
       this.airDashesUsed < this.stats.dashCount &&
-      !(shieldActive && !this.grounded) // shield up: no air-dashing
+      !this.intent.leftArmActive // rooted while aiming a bomb or holding the shield up
     ) {
       const dir =
         this.intent.moveDir.lengthSq() > 0.01

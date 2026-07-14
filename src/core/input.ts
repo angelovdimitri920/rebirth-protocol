@@ -1,25 +1,29 @@
 // Keyboard + mouse + gamepad (Xbox layout via the standard Gamepad API
-// mapping). The camera never rotates (Custom Robo-style fixed view), so
-// there's no mouse-look and no pointer lock -- mouse is buttons only.
+// mapping). The camera rotates to keep both fighters framed, but movement
+// is derived from the camera's actual orientation each frame (see
+// PlayerController), so it can't drift out of sync -- mouse is buttons
+// only, no mouse-look/pointer-lock.
 //
-// Gamepad mapping follows the original Custom Robo GameCube scheme as
-// closely as our loadout system allows, with L/R read off the Xbox
-// triggers per the reference: Stick=Move, A=Jump, B=Fire Gun, L=Fire Pod,
-// R=Fire Bomb, X=Dash, Y=Switch Targets. Since gun/melee and bomb/shield
-// are mutually-exclusive loadout choices here, B and RT do double duty for
-// whichever half of the pair is actually equipped -- the underlying combat
-// systems already no-op on the unequipped half, same as LMB/RMB do on
-// keyboard.
+// Gamepad mapping (HOLOSSEUM_REFERENCE.md "Robo Controller Layout"), L/R
+// read off the Xbox triggers: Stick=Move, A=Jump (double-tap while
+// airborne also triggers the chassis's air-dash/mobility move, same as
+// X=Dash), B=Fire Pod, L=Fire Gun/Melee, R=Fire Bomb/Block Shield,
+// X=Dash, Y=Switch Targets. Since gun/melee and bomb/shield are
+// mutually-exclusive loadout choices here, L and R each do double duty
+// for whichever half of the pair is actually equipped -- the underlying
+// combat systems already no-op on the unequipped half, same as LMB/RMB do
+// on keyboard.
 //
 // Gamepad button -> action (standard mapping indices):
 //   Left stick     move (analog, direction only -- no analog speed model)
 //   D-pad          menu navigation (hangar/pause), merged onto Arrow keys
 //   A (0)          jump/hover, mash to recover from knockdown; menu confirm
-//   B (1)          right arm: fire gun (held) / swing melee (pressed)
+//   B (1)          fire pod (deploy/recall)
 //   X (2)          dash
 //   Y (3)          switch targets / lock-on toggle
-//   LT (6)         fire pod (deploy/recall)
-//   RT (7)         left arm: throw bomb (pressed) / hold shield (held)
+//   LT (6)         right arm: fire gun (held) / swing melee (pressed)
+//   RT (7)         left arm: throw bomb (held to aim, release to fire) /
+//                  hold shield (held)
 //   Start (9)      pause
 //
 // Gamepad buttons are merged into the same key-code space the keyboard
@@ -31,9 +35,9 @@ import { sfx } from "./sfx";
 
 const BUTTON_TO_CODE: [index: number, code: string][] = [
   [0, "Space"],
+  [1, "KeyE"],
   [2, "ShiftLeft"],
   [3, "Tab"],
-  [6, "KeyE"],
   [7, "KeyQ"],
   [9, "KeyP"],
   [12, "ArrowUp"],
@@ -41,12 +45,15 @@ const BUTTON_TO_CODE: [index: number, code: string][] = [
   [14, "ArrowLeft"],
   [15, "ArrowRight"],
 ];
-const BUTTON_RIGHT_ARM = 1; // B: fire gun (held) / swing melee (pressed)
+const BUTTON_RIGHT_ARM = 6; // LT: fire gun (held) / swing melee (pressed)
 const STICK_DEADZONE = 0.2;
+const DOUBLE_TAP_WINDOW_MS = 300;
 
 export class Input {
   private keys = new Set<string>();
   private pressed = new Set<string>(); // cleared each frame: edge-triggered
+  private doubleTap = new Set<string>(); // cleared each frame: edge-triggered
+  private lastPressTime = new Map<string, number>();
   private mouseFire = false;
   private padFire = false;
   private padHeld = new Set<string>();
@@ -62,9 +69,19 @@ export class Input {
     return this.mouseFire || this.padFire;
   }
 
+  /** Records a fresh press of `code`, detecting a double-tap gesture
+   *  (A+A: jump-again-while-airborne triggers the chassis air-dash). */
+  private registerPress(code: string): void {
+    this.pressed.add(code);
+    const now = performance.now();
+    const last = this.lastPressTime.get(code) ?? -Infinity;
+    if (now - last <= DOUBLE_TAP_WINDOW_MS) this.doubleTap.add(code);
+    this.lastPressTime.set(code, now);
+  }
+
   constructor(canvas: HTMLCanvasElement) {
     window.addEventListener("keydown", (e) => {
-      if (!this.keys.has(e.code)) this.pressed.add(e.code);
+      if (!this.keys.has(e.code)) this.registerPress(e.code);
       this.keys.add(e.code);
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
@@ -103,6 +120,12 @@ export class Input {
     return this.pressed.has(code);
   }
 
+  /** True only on the frame a second press of `code` lands within
+   *  DOUBLE_TAP_WINDOW_MS of the previous one. */
+  wasDoubleTapped(code: string): boolean {
+    return this.doubleTap.has(code);
+  }
+
   /** Poll the gamepad. Call once per rendered frame (not per fixed step) so
    *  held/edge state stays stable across however many sim steps run this
    *  frame -- mirrors how the event-driven keyboard state behaves. */
@@ -128,7 +151,7 @@ export class Input {
       const wasDown = this.padPrevPressed.get(index) ?? false;
       if (isDown) {
         this.padHeld.add(code);
-        if (!wasDown) this.pressed.add(code);
+        if (!wasDown) this.registerPress(code);
       }
       this.padPrevPressed.set(index, isDown);
     }
@@ -144,6 +167,7 @@ export class Input {
   /** Call once per rendered frame, after all systems have read input. */
   endFrame(): void {
     this.pressed.clear();
+    this.doubleTap.clear();
     this.meleePressed = false;
   }
 }

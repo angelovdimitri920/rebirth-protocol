@@ -3,10 +3,13 @@ import { Robo } from "../robo/Robo";
 import { Arena } from "../arena/Arena";
 import { sfx } from "../core/sfx";
 
-// Bomb slot (GAME_DESIGN §2.1): slower AoE secondary on a cooldown.
-// Lobbed in an arc to the target's position at launch; detonates on
-// arrival (or floor contact) and applies AoE damage with falloff-free
-// simplicity -- inside the radius is inside the blast.
+// Bomb slot (GAME_DESIGN §2.1): slower AoE secondary on a cooldown, aimed
+// with a hold-to-aim / release-to-throw reticule (HOLOSSEUM_REFERENCE.md).
+// Holding the bomb input opens the reticule and keeps it live-tracking its
+// default aim point every frame; releasing deploys the bomb wherever the
+// reticule currently sits. Lobbed in an arc; detonates on arrival and
+// applies AoE damage with falloff-free simplicity -- inside the radius is
+// inside the blast.
 
 interface LiveBomb {
   mesh: THREE.Mesh;
@@ -19,6 +22,11 @@ interface LiveBomb {
 
 export class Bomb {
   cooldownRemaining = 0;
+  /** True while the reticule is open (button held). Movement halts hard
+   *  while this is true -- you're rooted and vulnerable while aiming. */
+  aiming = false;
+  /** Current reticule world position while aiming, or null. */
+  aimPoint: THREE.Vector3 | null = null;
   private live: LiveBomb[] = [];
   private blasts: { mesh: THREE.Mesh; timer: number }[] = [];
 
@@ -36,24 +44,63 @@ export class Bomb {
     this.cooldownRemaining = 0;
   }
 
-  tryThrow(target: Robo): boolean {
+  /** Opens the reticule. Call once when the bomb input is first pressed. */
+  startAim(target: Robo): boolean {
     if (!this.ready || this.owner.controlLocked) return false;
+    if (this.owner.loadout.leftArm.kind !== "bomb") return false;
+    this.aiming = true;
+    this.updateAim(target);
+    return true;
+  }
+
+  /** Call every frame the bomb input is held, to keep the reticule tracking
+   *  its default aim point (the enemy, or a fixed point ahead of self). */
+  updateAim(target: Robo): void {
+    if (!this.aiming) return;
     const leftArm = this.owner.loadout.leftArm;
-    if (leftArm.kind !== "bomb") return false; // left arm is a shield: no bomb
+    if (leftArm.kind !== "bomb") return;
+    const part = leftArm.part;
+    const start = this.owner.position;
+
+    if (part.reticuleAnchor === "target" && target.health.state !== "dead") {
+      const toTarget = target.position.clone().sub(start).setY(0);
+      if (toTarget.lengthSq() > 1e-4) {
+        const dist = Math.min(toTarget.length(), part.reticuleRange);
+        this.aimPoint = start
+          .clone()
+          .addScaledVector(toTarget.normalize(), dist)
+          .setY(target.groundY + 0.2);
+        return;
+      }
+    }
+    // Self-anchored (or target anchor with no valid target): fixed point
+    // straight ahead, at reticuleRange -- can't be aimed further out.
+    const f = this.owner.facingAngle;
+    this.aimPoint = start
+      .clone()
+      .add(
+        new THREE.Vector3(
+          Math.sin(f) * part.reticuleRange,
+          0,
+          Math.cos(f) * part.reticuleRange,
+        ),
+      )
+      .setY(this.owner.groundY + 0.2);
+  }
+
+  /** Deploys the bomb at the current reticule position and closes it.
+   *  Call when the bomb input is released. No-ops if not currently aiming. */
+  release(target: Robo): boolean {
+    if (!this.aiming) return false;
+    this.aiming = false;
+    const leftArm = this.owner.loadout.leftArm;
+    if (leftArm.kind !== "bomb") return false;
     const part = leftArm.part;
     this.cooldownRemaining = part.cooldown;
 
     const start = this.owner.position.clone().add(new THREE.Vector3(0, 0.8, 0));
-    // Lead the throw: aim where the target will be when the bomb lands.
-    // Two passes: estimate flight time from current position, then re-aim.
-    let end = target.position.clone().setY(target.groundY + 0.2);
-    for (let pass = 0; pass < 2; pass++) {
-      const flight = Math.max(0.5, start.distanceTo(end) / 18);
-      end = target.position
-        .clone()
-        .addScaledVector(target.horizontalVelocity, flight)
-        .setY(target.groundY + 0.2);
-    }
+    const end = (this.aimPoint ?? target.position.clone().setY(target.groundY + 0.2)).clone();
+    this.aimPoint = null;
     const dist = start.distanceTo(end);
     const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.28, 10, 10),
@@ -77,8 +124,20 @@ export class Bomb {
     return true;
   }
 
+  /** Closes the reticule without throwing (knockdown/death mid-aim). */
+  cancelAim(): void {
+    this.aiming = false;
+    this.aimPoint = null;
+  }
+
   update(dt: number, player: Robo, enemy: Robo): void {
     this.cooldownRemaining -= dt;
+    if (
+      this.aiming &&
+      (this.owner.health.state === "knockdown" || this.owner.health.state === "dead")
+    ) {
+      this.cancelAim();
+    }
 
     // Delayed cluster mini-blasts (sim-time, not wall-clock)
     for (let i = this.pendingClusters.length - 1; i >= 0; i--) {

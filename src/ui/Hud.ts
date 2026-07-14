@@ -98,6 +98,12 @@ export class Hud {
           box-shadow: 0 0 10px #44dd8866, inset 0 0 6px #44dd8844; }
         #hud-reticle { color: #ff4444; }
         #hud-reticle.green { color: #44dd88; }
+        #hud-bomb-reticle { position: absolute; width: 26px; height: 26px;
+          margin: -13px 0 0 -13px; border: 2px solid #ffaa33;
+          transform: rotate(45deg); opacity: 0.9;
+          box-shadow: 0 0 10px #ffaa3388; }
+        #hud-bomb-reticle::after { content: ""; position: absolute;
+          inset: 7px; background: #ffaa33; opacity: 0.6; }
       </style>
       <div id="hud-player" class="hud-corner">
         <div class="hud-label">HP</div>
@@ -132,6 +138,7 @@ export class Hud {
         </div>
       </div>
       <div id="hud-reticle" style="display:none"></div>
+      <div id="hud-bomb-reticle" style="display:none"></div>
       <div id="hud-callout"></div>
       <div id="hud-run"></div>
       <div id="hud-build"></div>
@@ -145,10 +152,10 @@ export class Hud {
         <div class="pad-title">Controller</div>
         <div class="pad-row"><span class="pad-btn grey">LS</span> Move</div>
         <div class="pad-row"><span class="pad-btn a">A</span> Jump / Mash</div>
-        <div class="pad-row"><span class="pad-btn b">B</span> Gun / Melee</div>
+        <div class="pad-row"><span class="pad-btn b">B</span> Pod</div>
         <div class="pad-row"><span class="pad-btn x">X</span> Dash</div>
         <div class="pad-row"><span class="pad-btn y">Y</span> Lock-On</div>
-        <div class="pad-row"><span class="pad-btn grey">LT</span> Pod</div>
+        <div class="pad-row"><span class="pad-btn grey">LT</span> Gun / Melee</div>
         <div class="pad-row"><span class="pad-btn grey">RT</span> Bomb / Shield</div>
         <div class="pad-row"><span class="pad-btn grey">☰</span> Pause</div>
       </div>
@@ -214,6 +221,26 @@ export class Hud {
     const inRange =
       player.position.distanceTo(enemy.position) <= TUNING.gun.homingRange;
     el.classList.toggle("green", !inRange);
+  }
+
+  /** Bomb aim reticule (HOLOSSEUM_REFERENCE.md): visible only while the
+   *  player is actively holding the bomb button, tracking wherever
+   *  Bomb.aimPoint currently sits. */
+  updateBombReticle(bomb: Bomb, camera: THREE.Camera): void {
+    const el = document.getElementById("hud-bomb-reticle")!;
+    if (!bomb.aiming || !bomb.aimPoint) {
+      el.style.display = "none";
+      return;
+    }
+    const pos = bomb.aimPoint.clone();
+    pos.project(camera);
+    if (pos.z > 1) {
+      el.style.display = "none"; // behind the camera
+      return;
+    }
+    el.style.display = "";
+    el.style.left = `${((pos.x + 1) / 2) * window.innerWidth}px`;
+    el.style.top = `${((1 - pos.y) / 2) * window.innerHeight}px`;
   }
 
   update(

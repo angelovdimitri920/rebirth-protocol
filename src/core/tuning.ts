@@ -18,6 +18,11 @@ export const TUNING = {
     airControlSpeed: 6, // m/s horizontal steering while airborne
     gravity: -28, // stronger than earth gravity: snappy jumps
     turnRate: 14, // rad/s mesh facing interpolation
+    // Firing the gun (HOLOSSEUM_REFERENCE.md): grounded, momentum carries
+    // and steering is a slow correction (a "slide") instead of instant;
+    // airborne, horizontal drift decays toward zero fast (a "halt").
+    fireSlideCorrection: 3.2, // 1/s: grounded steering correction while firing
+    fireAirHaltRate: 9, // 1/s: airborne velocity decay toward zero while firing
   },
 
   // --- Boost economy (GAME_DESIGN §3.3) ---
@@ -82,18 +87,24 @@ export const TUNING = {
   },
 
   // --- Camera: isometric-style elevated arena view (orthographic, no
-  // perspective convergence) -- Custom Robo / Virtual On inspired, pushed
-  // further overhead per playtest feedback. Fixed yaw (never rotates) --
-  // movement is derived from the camera's actual orientation each frame
-  // (see PlayerController), so this can be retuned freely without ever
-  // re-breaking WASD mapping. ---
+  // perspective convergence) -- Custom Robo / Virtual On inspired. Yaw now
+  // rotates to keep both fighters framed as they move (HOLOSSEUM_REFERENCE
+  // "Normal View"); movement is derived from the camera's actual
+  // orientation each frame (see PlayerController), so this can rotate
+  // freely without ever breaking WASD/stick mapping. ---
   camera: {
     height: 24, // camera height above the floor -- steep, near-overhead
-    back: 8, // distance behind the player (-z)
-    lookAhead: 1.5, // look-at point this far ahead of the player (+z)
-    targetBias: 0.16, // look-at slides toward the enemy by this fraction
-    followLerp: 8, // per-second smoothing factor
-    frustumSize: 20, // orthographic: world units visible vertically
+    back: 8, // horizontal distance from the look-at point
+    // Look-at point sits this fraction of the way from the player (0)
+    // toward the enemy (1) -- biased toward the player so they stay
+    // clearly readable, but not dead-centered like a pure player-follow.
+    targetBias: 0.4,
+    followLerp: 8, // per-second smoothing factor for position/zoom
+    rotateLerp: 2.5, // per-second smoothing factor for the camera's yaw
+    frustumSize: 20, // orthographic: base world units visible vertically
+    zoomStartDistance: 12, // fighter separation (m) before zoom-out begins
+    zoomRange: 16, // additional separation (m) to reach max zoom-out
+    zoomMax: 0.7, // fraction of extra frustum size added at max zoom-out
   },
 
   // --- Crates (destructible cover) ---

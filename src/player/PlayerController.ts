@@ -9,15 +9,19 @@ import { Pod } from "../combat/Pod";
 import { sfx } from "../core/sfx";
 
 // Reads input, writes the player robo's intent, drives weapons, and owns
-// the Custom Robo-style camera: an elevated view from the player's side of
-// the arena that never rotates, so WASD maps directly to screen directions.
+// the Custom Robo-style camera: an elevated isometric view that rotates to
+// keep both fighters framed (HOLOSSEUM_REFERENCE.md), so WASD maps to
+// screen directions recomputed from the camera's actual orientation every
+// frame -- rotation can't desync movement.
 // The robo faces where it's moving; it only squares up to the enemy while
-// actually attacking (firing or melee).
-// Controls: WASD move, Space jump/hover (mash during knockdown), Shift dash,
-// LMB gun, RMB melee, Q bomb, E pod deploy/recall, Tab toggle lock-on.
+// actually attacking (firing, meleeing, aiming a bomb, or shielding).
+// Controls: WASD move, Space jump/hover (mash during knockdown, double-tap
+// while airborne also air-dashes), Shift dash, LMB gun, RMB melee, Q hold
+// to aim bomb/raise shield, E pod deploy/recall, Tab toggle lock-on.
 
 export class PlayerController {
   lockedOn = true; // targeting for homing/melee -- not camera or facing
+  private cameraViewDir = new THREE.Vector3(1, 0, 0); // matches the fixed Z-axis spawn line
 
   constructor(
     private robo: Robo,
@@ -73,14 +77,19 @@ export class PlayerController {
 
     this.robo.intent.moveDir.copy(move);
     this.robo.intent.thrustHeld = input.held("Space");
-    this.robo.intent.dashRequested = input.justPressed("ShiftLeft");
+    // A+A: tapping jump again while airborne triggers the same chassis-
+    // specific air-dash/mobility move as the dedicated dash button.
+    const airDashTap = !this.robo.grounded && input.wasDoubleTapped("Space");
+    this.robo.intent.dashRequested = input.justPressed("ShiftLeft") || airDashTap;
     this.robo.intent.mashPressed = input.justPressed("Space");
 
-    // Face movement direction by default; square up while attacking or
-    // holding the shield up (you want to face what you're blocking)
+    // Face movement direction by default; square up while attacking,
+    // holding the shield up, or aiming a bomb (you want to face what
+    // you're blocking or throwing at)
     const shieldWillBeHeld =
       this.robo.loadout.leftArm.kind === "shield" && input.held("KeyQ");
-    const attacking = input.fireHeld || this.melee.busy || shieldWillBeHeld;
+    const attacking =
+      input.fireHeld || this.melee.busy || shieldWillBeHeld || this.bomb.aiming;
     this.robo.intent.faceAngle =
       attacking && target
         ? Math.atan2(
@@ -92,7 +101,7 @@ export class PlayerController {
     // Homing dash: while locked on, dashes curve toward the target
     this.robo.intent.dashHomingPoint = target ? target.position : null;
 
-    // --- Right arm: gun (LMB/RT, held) or melee (RMB/RB, pressed) --
+    // --- Right arm: gun (LMB/L, held) or melee (RMB/L, pressed) --
     // whichever isn't equipped silently no-ops, so both buttons are always
     // safe to read regardless of loadout. ---
     if (input.meleePressed && enemyAlive) {
@@ -100,17 +109,23 @@ export class PlayerController {
       else this.melee.chain(this.enemy); // combo string follow-up
     }
     this.melee.update(dt, this.enemy);
-    this.gun.update(dt, input.fireHeld && !this.melee.busy, target);
+    const gunFiring =
+      this.robo.loadout.rightArm.kind === "gun" && input.fireHeld && !this.melee.busy;
+    this.robo.intent.firingGun = gunFiring;
+    this.gun.update(dt, gunFiring, target);
 
-    // --- Left arm: bomb (Q, pressed) or shield (Q, HELD) -- Q is
-    // context-sensitive on which part is actually equipped. ---
+    // --- Left arm: bomb (Q/R, hold to aim, release to throw) or shield
+    // (Q/R, HELD) -- Q is context-sensitive on which part is equipped. ---
     if (this.robo.loadout.leftArm.kind === "shield") {
       this.robo.intent.shieldHeld = input.held("KeyQ") && !this.melee.busy;
+      this.robo.intent.leftArmActive = this.robo.intent.shieldHeld;
     } else {
       this.robo.intent.shieldHeld = false;
-      if (input.justPressed("KeyQ") && enemyAlive && !this.melee.busy) {
-        this.bomb.tryThrow(this.enemy);
-      }
+      const aimHeld = input.held("KeyQ") && enemyAlive && !this.melee.busy;
+      if (aimHeld && !this.bomb.aiming) this.bomb.startAim(this.enemy);
+      else if (aimHeld && this.bomb.aiming) this.bomb.updateAim(this.enemy);
+      else if (!aimHeld && this.bomb.aiming) this.bomb.release(this.enemy);
+      this.robo.intent.leftArmActive = this.bomb.aiming;
     }
 
     if (input.justPressed("KeyE")) {
@@ -121,30 +136,74 @@ export class PlayerController {
     this.updateCamera(dt);
   }
 
+  /** Isometric arena view that rotates to keep both fighters in frame
+   *  (HOLOSSEUM_REFERENCE.md "Normal View"): looks at a point biased
+   *  toward the player but not centered on them, from a direction kept
+   *  perpendicular to the line between the two robos so that line reads
+   *  left-right on screen no matter which way the fight drifts. Zooms out
+   *  (orthographic frustum, not camera distance -- distance does nothing
+   *  for an orthographic projection) as the fighters separate. */
   private updateCamera(dt: number): void {
     const C = TUNING.camera;
     const playerPos = this.robo.position;
+    const enemyAlive = this.enemy.health.state !== "dead";
 
-    const desiredPos = new THREE.Vector3(
-      playerPos.x,
-      C.height,
-      playerPos.z - C.back,
-    );
+    let midpoint: THREE.Vector3;
+    let desiredViewDir: THREE.Vector3;
+    let sepDist = 0;
 
-    const lookAt = new THREE.Vector3(
-      playerPos.x,
-      1,
-      playerPos.z + C.lookAhead,
-    );
-    if (this.enemy.health.state !== "dead") {
-      lookAt.lerp(
-        this.enemy.position.clone().setY(this.enemy.groundY + 1),
-        C.targetBias,
+    if (enemyAlive) {
+      const enemyPos = this.enemy.position;
+      midpoint = playerPos.clone().lerp(enemyPos, C.targetBias);
+      const sep = enemyPos.clone().sub(playerPos).setY(0);
+      sepDist = sep.length();
+      if (sepDist > 0.5) {
+        // Perpendicular to the separation line, picking whichever of the
+        // two valid perpendiculars is closer to the current direction so
+        // the camera eases instead of flipping sides.
+        desiredViewDir = new THREE.Vector3(-sep.z, 0, sep.x).normalize();
+        if (desiredViewDir.dot(this.cameraViewDir) < 0) desiredViewDir.negate();
+      } else {
+        desiredViewDir = this.cameraViewDir.clone();
+      }
+    } else {
+      midpoint = playerPos.clone();
+      desiredViewDir = new THREE.Vector3(
+        Math.sin(this.robo.facingAngle),
+        0,
+        Math.cos(this.robo.facingAngle),
       );
     }
 
     const k = Math.min(1, C.followLerp * dt);
+    this.cameraViewDir.lerp(desiredViewDir, Math.min(1, C.rotateLerp * dt));
+    if (this.cameraViewDir.lengthSq() > 1e-6) this.cameraViewDir.normalize();
+
+    const desiredPos = midpoint
+      .clone()
+      .addScaledVector(this.cameraViewDir, -C.back)
+      .setY(C.height);
+    const lookAt = midpoint.clone().setY(1);
+
     this.camera.position.lerp(desiredPos, k);
     this.camera.lookAt(lookAt);
+
+    if (this.camera instanceof THREE.OrthographicCamera) {
+      const zoomT = THREE.MathUtils.clamp(
+        (sepDist - C.zoomStartDistance) / C.zoomRange,
+        0,
+        1,
+      );
+      const targetSize = C.frustumSize * (1 + zoomT * C.zoomMax);
+      const aspect =
+        (this.camera.right - this.camera.left) / (this.camera.top - this.camera.bottom);
+      const currentSize = this.camera.top - this.camera.bottom;
+      const size = currentSize + (targetSize - currentSize) * k;
+      this.camera.top = size / 2;
+      this.camera.bottom = -size / 2;
+      this.camera.left = (-size * aspect) / 2;
+      this.camera.right = (size * aspect) / 2;
+      this.camera.updateProjectionMatrix();
+    }
   }
 }

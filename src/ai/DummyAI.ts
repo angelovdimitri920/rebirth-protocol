@@ -18,6 +18,8 @@ export class DummyAI {
   private firing = false;
   private fireTimer = 0;
   private bombTimer = 3; // don't open with a bomb
+  private bombAiming = false;
+  private bombAimTimer = 0;
   private meleeTimer = 2;
   private shieldTimer = 1;
   private shieldEngaged = false;
@@ -93,11 +95,13 @@ export class DummyAI {
       this.firing = !this.firing;
       this.fireTimer = this.firing ? 1.2 : A.fireInterval;
     }
-    this.gun.update(
-      dt,
-      this.firing && playerAlive && !this.melee.busy,
-      playerAlive ? this.player : null,
-    );
+    const gunFiring =
+      this.robo.loadout.rightArm.kind === "gun" &&
+      this.firing &&
+      playerAlive &&
+      !this.melee.busy;
+    this.robo.intent.firingGun = gunFiring;
+    this.gun.update(dt, gunFiring, playerAlive ? this.player : null);
 
     // Left arm: bomb OR shield, whichever this build actually has
     if (this.robo.loadout.leftArm.kind === "shield") {
@@ -106,17 +110,35 @@ export class DummyAI {
         this.shieldEngaged = !this.shieldEngaged;
         this.shieldTimer = this.shieldEngaged
           ? 1.0 + Math.random() // hold it up for a beat
-          : 0.6 + Math.random() * 0.8; // then rest (movement penalty isn't free)
+          : 0.6 + Math.random() * 0.8; // then rest -- rooted isn't free
       }
       this.robo.intent.shieldHeld =
         this.shieldEngaged && dist < 10 && !this.melee.busy;
+      this.robo.intent.leftArmActive = this.robo.intent.shieldHeld;
     } else {
       this.robo.intent.shieldHeld = false;
       this.bombTimer -= dt;
-      if (this.bombTimer <= 0 && playerAlive && this.bomb.ready && dist < 18) {
-        this.bomb.tryThrow(this.player);
-        this.bombTimer = 2 + Math.random() * 3;
+      if (
+        !this.bombAiming &&
+        this.bombTimer <= 0 &&
+        playerAlive &&
+        this.bomb.ready &&
+        dist < 18
+      ) {
+        this.bomb.startAim(this.player);
+        this.bombAiming = true;
+        this.bombAimTimer = 0.25 + Math.random() * 0.3; // hold, then release
       }
+      if (this.bombAiming) {
+        this.bomb.updateAim(this.player);
+        this.bombAimTimer -= dt;
+        if (this.bombAimTimer <= 0 || !playerAlive) {
+          this.bomb.release(this.player);
+          this.bombAiming = false;
+          this.bombTimer = 2 + Math.random() * 3;
+        }
+      }
+      this.robo.intent.leftArmActive = this.bombAiming;
     }
 
     // Keep the pod out

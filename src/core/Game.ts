@@ -177,6 +177,7 @@ export class Game {
       this.camera,
       this.duel.playerController.lockedOn,
     );
+    this.hud.updateBombReticle(this.duel.playerBomb, this.camera);
     this.hud.setControllerConnected(this.input.gamepadConnected);
     this.renderer.render(this.scene, this.camera);
   }

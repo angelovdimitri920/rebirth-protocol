@@ -51,6 +51,12 @@ export interface MeleeWeaponPart {
   knockbackSpeed: number;
 }
 
+/** Bombs are hold-to-aim, release-to-throw: a reticule tracks the default
+ *  aim point while the bomb button is held, and deploys where the reticule
+ *  sits the instant it's released. `reticuleAnchor` "target" tracks the
+ *  enemy (clamped to `reticuleRange`); "self" is a fixed point straight
+ *  ahead of your own robo at `reticuleRange` -- a closer-range, higher-
+ *  commitment throw that can't be aimed further out. */
 export interface BombPart {
   id: string;
   name: string;
@@ -60,12 +66,15 @@ export interface BombPart {
   cooldown: number;
   blastRadius: number;
   arcHeight: number; // lob apex above the midpoint
+  reticuleAnchor: "target" | "self";
+  reticuleRange: number; // m: clamp for "target", fixed ahead-distance for "self"
 }
 
 /** Shields (GAME_DESIGN §3.2): must be actively engaged (held) to block --
- *  engaging costs ground speed and disables air-dashing. Even engaged,
- *  block percentages are never 100%, so some chip damage always lands, and
- *  a hit from behind blocks far less than one from the front. The blocked
+ *  engaging instantly halts all horizontal momentum, even mid-air, and
+ *  disables dashing entirely for as long as it's held. Even engaged, block
+ *  percentages are never 100%, so some chip damage always lands, and a hit
+ *  from behind blocks far less than one from the front. The blocked
  *  portion drains shieldHp instead of the robo's own HP/endurance; when
  *  shieldHp hits 0 it guard-breaks into the same knockdown state a
  *  depleted endurance bar causes -- no second free defense layer. */
@@ -78,7 +87,6 @@ export interface ShieldPart {
   regenDelay: number; // seconds unengaged and unhit before regen resumes
   frontBlockPercent: number; // fraction of incoming damage blocked, front arc
   backBlockPercent: number; // fraction blocked when hit from behind while up
-  moveSpeedMult: number; // ground speed while engaged
   meleeParryEnduranceDamage: number; // bonus endurance dealt back to an
   // attacker whose melee swing connects into this shield while it's up
 }
@@ -278,22 +286,27 @@ export const BOMBS: BombPart[] = [
   {
     id: "impact",
     name: "Impact Bomb",
-    blurb: "Standard lobbed shell. Area denial on a short clock.",
+    blurb: "Standard lobbed shell. Reticule tracks the enemy -- hold to aim, release to throw.",
     damage: 80,
     enduranceDamage: 35,
     cooldown: 5,
     blastRadius: 3.2,
     arcHeight: 5,
+    reticuleAnchor: "target",
+    reticuleRange: 20,
   },
   {
     id: "quake",
     name: "Quake Bomb",
-    blurb: "Huge blast, heavy endurance crush, long rearm.",
+    blurb:
+      "Huge blast, heavy endurance crush, long rearm. Reticule is fixed just ahead of you -- close-range, high commitment.",
     damage: 120,
     enduranceDamage: 70,
     cooldown: 9,
     blastRadius: 4.5,
     arcHeight: 6.5,
+    reticuleAnchor: "self",
+    reticuleRange: 4,
   },
 ];
 
@@ -302,26 +315,24 @@ export const SHIELDS: ShieldPart[] = [
     id: "aegis",
     name: "Aegis Barrier",
     blurb:
-      "Energy shield: fast regen, but only blocks ~75% up front and ~25% from behind. Hold to raise.",
+      "Energy shield: fast regen, but only blocks ~75% up front and ~25% from behind. Hold to raise -- rooted in place while up.",
     shieldHp: 180,
     regenPerSec: 25,
     regenDelay: 2.0,
     frontBlockPercent: 0.75,
     backBlockPercent: 0.25,
-    moveSpeedMult: 0.6,
     meleeParryEnduranceDamage: 20,
   },
   {
     id: "bastion",
     name: "Bastion Plate",
     blurb:
-      "Physical plate: bigger buffer, blocks ~92% up front, barely slows you down, but recharges slowly.",
+      "Physical plate: bigger buffer, blocks ~92% up front, recharges slowly. Hold to raise -- rooted in place while up.",
     shieldHp: 260,
     regenPerSec: 6,
     regenDelay: 3.5,
     frontBlockPercent: 0.92,
     backBlockPercent: 0.4,
-    moveSpeedMult: 0.75,
     meleeParryEnduranceDamage: 32,
   },
 ];

@@ -181,17 +181,27 @@ function buildVanguardChassis(body: THREE.Group, { hull, accent, joint }: Mats):
 }
 
 function buildSkylanceChassis(body: THREE.Group, { hull, accent, joint }: Mats): ChassisAnchors {
-  // Tall, sleek, sweptback wing-fins -- glass-cannon flier identity
+  // Valkyrie (docs/WARBAND_THEME_REFERENCE.md §5): a cinched waist belt,
+  // layered sweptback wing-blades, and a raised head crest -- Norse
+  // winged-warrior silhouette language layered onto the existing tall,
+  // sleek flier proportions (informed by the Seeker reference model's
+  // measured height/width ratio -- notably narrower-waisted than the
+  // other three chassis, widening again toward the shoulders).
   box(body, hull, 0.5, 0.64, 0.32, 0, 0.36, 0);
   box(body, accent, 0.32, 0.22, 0.24, 0, 0.36, 0.1);
+  box(body, hull, 0.34, 0.04, 0.06, 0, 0.48, 0.23); // chest crest trim
   box(body, joint, 0.38, 0.22, 0.28, 0, 0.02, 0);
+  box(body, accent, 0.34, 0.04, 0.3, 0, 0.02, 0); // cinched waist belt
   box(body, hull, 0.24, 0.2, 0.24, 0, 0.84, 0);
   box(body, accent, 0.18, 0.05, 0.04, 0, 0.85, 0.11);
+  box(body, hull, 0.05, 0.14, 0.05, 0, 0.99, -0.02); // head crest spike
   box(body, hull, 0.2, 0.2, 0.26, -0.38, 0.5, 0);
   box(body, hull, 0.2, 0.2, 0.26, 0.38, 0.5, 0);
-  // Sweptback fins
+  // Layered sweptback wing-blades: primary + a shorter secondary per side
   box(body, accent, 0.5, 0.06, 0.2, -0.58, 0.5, -0.14, 0.5);
   box(body, accent, 0.5, 0.06, 0.2, 0.58, 0.5, -0.14, -0.5);
+  box(body, hull, 0.3, 0.05, 0.14, -0.44, 0.42, -0.18, 0.4);
+  box(body, hull, 0.3, 0.05, 0.14, 0.44, 0.42, -0.18, -0.4);
   box(body, joint, 0.14, 0.46, 0.16, -0.38, 0.14, 0);
   box(body, joint, 0.14, 0.46, 0.16, 0.38, 0.14, 0);
   return {
@@ -205,18 +215,26 @@ function buildSkylanceChassis(body: THREE.Group, { hull, accent, joint }: Mats):
 }
 
 function buildWraithChassis(body: THREE.Group, { hull, joint }: Mats): ChassisAnchors {
-  // Shorter, angular, fully-armored, minimal glow -- stealth/evader identity
+  // Shinobi (docs/WARBAND_THEME_REFERENCE.md §5): a low hood/cowl over the
+  // crown instead of a boxy helmet, a diagonal wrap-sash, and a longer
+  // trailing cloth panel -- stealth silhouette kept deliberately glow-free
+  // (no accent material used anywhere in this chassis) to sell "built to
+  // not be seen." Informed by the Shrike reference model's measured
+  // proportions: the shortest and proportionally widest of the four --
+  // low and compact, not a tall willowy read.
   box(body, hull, 0.56, 0.48, 0.34, 0, 0.22, 0);
   box(body, joint, 0.34, 0.14, 0.26, 0, 0.22, 0.1);
   box(body, joint, 0.42, 0.22, 0.32, 0, -0.1, 0);
+  box(body, joint, 0.5, 0.06, 0.36, 0, 0.02, -0.02, 0.15); // diagonal wrap-sash
   box(body, hull, 0.24, 0.2, 0.22, 0, 0.6, 0);
+  box(body, joint, 0.28, 0.1, 0.26, 0, 0.68, -0.03); // hood/cowl over the crown
   box(body, joint, 0.18, 0.03, 0.04, 0, 0.61, 0.1); // narrow visor slit
   box(body, hull, 0.22, 0.18, 0.28, -0.42, 0.36, 0);
   box(body, hull, 0.22, 0.18, 0.28, 0.42, 0.36, 0);
   box(body, joint, 0.15, 0.46, 0.17, -0.42, 0, 0);
   box(body, joint, 0.15, 0.46, 0.17, 0.42, 0, 0);
-  // Cape/vent panel, angular
-  box(body, joint, 0.5, 0.4, 0.05, 0, 0.16, -0.2, 0.06);
+  // Trailing cloth panel, longer and lower than a plain vent
+  box(body, joint, 0.52, 0.5, 0.05, 0, 0.08, -0.22, 0.06);
   return {
     rightArm: new THREE.Vector3(0.42, -0.08, 0.04),
     leftArm: new THREE.Vector3(-0.42, -0.08, 0.04),
@@ -228,14 +246,27 @@ function buildWraithChassis(body: THREE.Group, { hull, joint }: Mats): ChassisAn
 }
 
 function buildBulwarkChassis(body: THREE.Group, { hull, accent, joint }: Mats): ChassisAnchors {
-  // Wide, bulky, huge pauldrons -- tank identity
+  // Crusader Knight (docs/WARBAND_THEME_REFERENCE.md §5): a heraldic
+  // cross emblem on the chest, a great-helm brow band, a mail-hem trim at
+  // the waist, and stepped pauldron caps -- Gundam/AC panel-line detail
+  // on the widest, bulkiest chassis in the roster. Informed by the Metal
+  // Ox reference model's measured proportions: wide even in its resting
+  // silhouette (not just at the arms), and the tallest of the four --
+  // confirms this chassis should read as both bulkier AND a head taller
+  // than the others, not just wider.
   box(body, hull, 0.86, 0.62, 0.52, 0, 0.26, 0);
-  box(body, accent, 0.5, 0.22, 0.36, 0, 0.26, 0.14);
+  box(body, accent, 0.5, 0.22, 0.36, 0, 0.26, 0.14); // chest core
+  box(body, accent, 0.1, 0.4, 0.06, 0, 0.26, 0.28); // heraldic cross, vertical bar
+  box(body, accent, 0.3, 0.08, 0.06, 0, 0.34, 0.28); // heraldic cross, crossbar
   box(body, joint, 0.62, 0.28, 0.46, 0, -0.12, 0);
-  box(body, hull, 0.32, 0.28, 0.32, 0, 0.72, 0);
-  box(body, accent, 0.24, 0.06, 0.05, 0, 0.73, 0.15);
+  box(body, joint, 0.66, 0.05, 0.5, 0, -0.24, 0); // mail-hem trim
+  box(body, hull, 0.32, 0.28, 0.32, 0, 0.72, 0); // head
+  box(body, joint, 0.34, 0.05, 0.33, 0, 0.62, 0); // great-helm brow band
+  box(body, accent, 0.24, 0.06, 0.05, 0, 0.73, 0.15); // visor
   box(body, hull, 0.36, 0.32, 0.38, -0.6, 0.42, 0);
   box(body, hull, 0.36, 0.32, 0.38, 0.6, 0.42, 0);
+  box(body, joint, 0.4, 0.08, 0.4, -0.6, 0.56, 0); // pauldron cap
+  box(body, joint, 0.4, 0.08, 0.4, 0.6, 0.56, 0);
   box(body, joint, 0.2, 0.5, 0.22, -0.58, -0.02, 0);
   box(body, joint, 0.2, 0.5, 0.22, 0.58, -0.02, 0);
   return {

@@ -2,16 +2,24 @@
 // mapping). The camera never rotates (Custom Robo-style fixed view), so
 // there's no mouse-look and no pointer lock -- mouse is buttons only.
 //
+// Gamepad mapping follows the original Custom Robo GameCube scheme as
+// closely as our loadout system allows, with L/R read off the Xbox
+// triggers per the reference: Stick=Move, A=Jump, B=Fire Gun, L=Fire Pod,
+// R=Fire Bomb, X=Dash, Y=Switch Targets. Since gun/melee and bomb/shield
+// are mutually-exclusive loadout choices here, B and RT do double duty for
+// whichever half of the pair is actually equipped -- the underlying combat
+// systems already no-op on the unequipped half, same as LMB/RMB do on
+// keyboard.
+//
 // Gamepad button -> action (standard mapping indices):
 //   Left stick     move (analog, direction only -- no analog speed model)
 //   D-pad          menu navigation (hangar/pause), merged onto Arrow keys
 //   A (0)          jump/hover, mash to recover from knockdown; menu confirm
-//   B (1)          dash
-//   X (2)          bomb / hold to raise shield
-//   Y (3)          pod deploy/recall
-//   LB (4)         lock-on toggle
-//   RB (5)         melee
-//   RT (7)         gun (held)
+//   B (1)          right arm: fire gun (held) / swing melee (pressed)
+//   X (2)          dash
+//   Y (3)          switch targets / lock-on toggle
+//   LT (6)         fire pod (deploy/recall)
+//   RT (7)         left arm: throw bomb (pressed) / hold shield (held)
 //   Start (9)      pause
 //
 // Gamepad buttons are merged into the same key-code space the keyboard
@@ -23,18 +31,17 @@ import { sfx } from "./sfx";
 
 const BUTTON_TO_CODE: [index: number, code: string][] = [
   [0, "Space"],
-  [1, "ShiftLeft"],
-  [2, "KeyQ"],
-  [3, "KeyE"],
-  [4, "Tab"],
+  [2, "ShiftLeft"],
+  [3, "Tab"],
+  [6, "KeyE"],
+  [7, "KeyQ"],
   [9, "KeyP"],
   [12, "ArrowUp"],
   [13, "ArrowDown"],
   [14, "ArrowLeft"],
   [15, "ArrowRight"],
 ];
-const BUTTON_MELEE = 5;
-const BUTTON_FIRE = 7;
+const BUTTON_RIGHT_ARM = 1; // B: fire gun (held) / swing melee (pressed)
 const STICK_DEADZONE = 0.2;
 
 export class Input {
@@ -126,17 +133,12 @@ export class Input {
       this.padPrevPressed.set(index, isDown);
     }
 
-    const rtDown = !!gp.buttons[BUTTON_FIRE]?.pressed;
-    if (rtDown) sfx.ensure();
-    this.padFire = rtDown;
-
-    const rbDown = !!gp.buttons[BUTTON_MELEE]?.pressed;
-    const rbWasDown = this.padPrevPressed.get(BUTTON_MELEE) ?? false;
-    if (rbDown && !rbWasDown) {
-      sfx.ensure();
-      this.meleePressed = true;
-    }
-    this.padPrevPressed.set(BUTTON_MELEE, rbDown);
+    const bDown = !!gp.buttons[BUTTON_RIGHT_ARM]?.pressed;
+    const bWasDown = this.padPrevPressed.get(BUTTON_RIGHT_ARM) ?? false;
+    if (bDown) sfx.ensure();
+    this.padFire = bDown; // gun: fire while held
+    if (bDown && !bWasDown) this.meleePressed = true; // melee: swing on press
+    this.padPrevPressed.set(BUTTON_RIGHT_ARM, bDown);
   }
 
   /** Call once per rendered frame, after all systems have read input. */

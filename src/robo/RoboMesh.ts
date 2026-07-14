@@ -19,6 +19,23 @@ interface Mats {
   joint: THREE.MeshStandardMaterial;
 }
 
+// Each chassis gets its own base paint identity (not just silhouette) so
+// they're recognizable at a glance regardless of who's piloting them. Team
+// identity still reads clearly through the accent glow (always the
+// player's cyan or the enemy's orange) plus a light tint of the team's hull
+// color blended in here, so player vs. enemy stays legible even when both
+// happen to be flying the same chassis.
+const CHASSIS_PALETTE: Record<string, { hull: number; joint: number }> = {
+  vanguard: { hull: 0x5a7099, joint: 0x262b38 }, // steel blue-grey, all-rounder
+  skylance: { hull: 0xdde4f0, joint: 0x3c4658 }, // pale aerospace silver
+  wraith: { hull: 0x342a44, joint: 0x171320 }, // dark violet-black, stealth
+  bulwark: { hull: 0x9a7038, joint: 0x3e2c16 }, // bronze-olive, heavy armor
+};
+
+function tint(base: number, teamColor: number, amount: number): number {
+  return new THREE.Color(base).lerp(new THREE.Color(teamColor), amount).getHex();
+}
+
 interface ChassisAnchors {
   rightArm: THREE.Vector3;
   leftArm: THREE.Vector3;
@@ -37,8 +54,13 @@ export function buildRoboMesh(
   const body = new THREE.Group();
   root.add(body);
 
+  const palette = CHASSIS_PALETTE[loadout.body.id] ?? CHASSIS_PALETTE.vanguard;
   const mats: Mats = {
-    hull: new THREE.MeshStandardMaterial({ color: hull, roughness: 0.5, metalness: 0.55 }),
+    hull: new THREE.MeshStandardMaterial({
+      color: tint(palette.hull, hull, 0.22),
+      roughness: 0.5,
+      metalness: 0.55,
+    }),
     accent: new THREE.MeshStandardMaterial({
       color: accent,
       roughness: 0.35,
@@ -46,7 +68,11 @@ export function buildRoboMesh(
       emissive: accent,
       emissiveIntensity: 0.35,
     }),
-    joint: new THREE.MeshStandardMaterial({ color: 0x222228, roughness: 0.8, metalness: 0.3 }),
+    joint: new THREE.MeshStandardMaterial({
+      color: tint(palette.joint, hull, 0.15),
+      roughness: 0.8,
+      metalness: 0.3,
+    }),
   };
 
   const anchors = buildChassis(loadout.body.id, body, mats);

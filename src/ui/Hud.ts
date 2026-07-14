@@ -145,12 +145,11 @@ export class Hud {
         <div class="pad-title">Controller</div>
         <div class="pad-row"><span class="pad-btn grey">LS</span> Move</div>
         <div class="pad-row"><span class="pad-btn a">A</span> Jump / Mash</div>
-        <div class="pad-row"><span class="pad-btn b">B</span> Dash</div>
-        <div class="pad-row"><span class="pad-btn x">X</span> Bomb</div>
-        <div class="pad-row"><span class="pad-btn y">Y</span> Pod</div>
-        <div class="pad-row"><span class="pad-btn grey">LB</span> Lock-On</div>
-        <div class="pad-row"><span class="pad-btn grey">RB</span> Melee</div>
-        <div class="pad-row"><span class="pad-btn grey">RT</span> Fire</div>
+        <div class="pad-row"><span class="pad-btn b">B</span> Gun / Melee</div>
+        <div class="pad-row"><span class="pad-btn x">X</span> Dash</div>
+        <div class="pad-row"><span class="pad-btn y">Y</span> Lock-On</div>
+        <div class="pad-row"><span class="pad-btn grey">LT</span> Pod</div>
+        <div class="pad-row"><span class="pad-btn grey">RT</span> Bomb / Shield</div>
         <div class="pad-row"><span class="pad-btn grey">☰</span> Pause</div>
       </div>
     `;
@@ -262,7 +261,7 @@ export class Hud {
     this.podFill.style.width = `${(pod.energy / player.loadout.pod.energyMax) * 100}%`;
 
     let text = "";
-    if (player.health.state === "knockdown") text = "DOWN — MASH SPACE";
+    if (player.health.state === "knockdown") text = "DOWN — MASH SPACE / A";
     else if (player.health.state === "rebirth") text = "REBIRTH";
     else if (player.health.state === "dead") text = "DESTROYED";
     else if (enemy.health.state === "dead") text = "TARGET ELIMINATED";

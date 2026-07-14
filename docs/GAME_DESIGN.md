@@ -249,3 +249,33 @@ The hangar is now a split-screen: a rotating 3D preview (its own small `HangarPr
 - The controller legend panel's visual fade-in still hasn't been screenshotted (see §8's note — same backgrounded-tab limitation, now also confirmed to affect `getComputedStyle`, not just `requestAnimationFrame`). The underlying class-toggle logic is verified correct.
 - AI shield-engagement (`DummyAI`) uses a simple randomized hold/release timer gated by proximity, not a reaction to what the player is actually doing (the AI has no visibility into the player's current action, only position) — reasonable but unsophisticated.
 - Melee weapon meshes (saber/hammer/daggers) are static, always-visible attachments; they don't currently animate distinctly from the existing generic swing-arc VFX in `Melee.ts`.
+
+## 10. Chassis Color Identity + Original Custom Robo Control Scheme (2026-07-13)
+
+### 10.1 Each chassis now has its own paint identity
+
+`RoboMesh.ts` previously colored every chassis identically (hull/accent/joint all came straight from the passed-in team colors), so the only visual distinction between chassis was silhouette. Added a `CHASSIS_PALETTE` (Vanguard: steel blue-grey / Skylance: pale aerospace silver / Wraith: dark violet-black / Bulwark: bronze-olive) that now drives the hull and joint materials directly, keyed off `loadout.body.id`. Team identity (player cyan vs. enemy orange) is preserved two ways: the accent glow (visor, chest core, weapon highlights) is still 100% the passed-in team color, and the hull/joint are lightly tinted (22%/15%) toward the team color so the two robos stay readable at a glance even when both are flying the same chassis. Verified visually via the hangar's live preview: all 4 chassis screenshotted with clearly distinct base colors while the cyan accent stayed consistent.
+
+### 10.2 Gamepad remapped to the original Holosseum control scheme
+
+Per the reference table (Stick=Move, A=Jump, B=Fire Gun, L=Fire Pod, R=Fire Bomb, X=Dash, Y=Switch Targets), with L/R read off the Xbox left/right triggers as directed. New mapping in `input.ts`:
+
+| Button | Action |
+|---|---|
+| Left stick | Move |
+| A (0) | Jump/hover, mash to recover, menu confirm |
+| B (1) | Right arm: fire gun (held) / swing melee (pressed) |
+| X (2) | Dash |
+| Y (3) | Switch targets / lock-on toggle |
+| LT (6) | Fire pod (deploy/recall) |
+| RT (7) | Left arm: throw bomb (pressed) / hold shield (held) |
+| Start (9) | Pause |
+| D-pad | Menu navigation |
+
+Since gun/melee and bomb/shield are mutually-exclusive loadout choices (§9.1) rather than always-on slots like the original game, B and RT each do double duty for whichever half of the pair is actually equipped — mirroring how LMB/RMB already worked on keyboard, the unequipped half's system just no-ops. This let the whole remap live entirely in `Input.ts`: `PlayerController` already read `fireHeld`/`meleePressed`/`held("KeyQ")`/`justPressed("KeyE")` etc. generically, so retargeting which physical button produces which merged key-code was sufficient — no combat-code changes needed. "Switch Targets" maps to the existing lock-on toggle, since a 1v1 duel makes them functionally the same action (the original table's own caveat, "if against more than one robo," concedes this).
+
+Verified precisely, not just by inspection: mocked a fake Gamepad object and drove `Input.poll()` directly, confirming each button produces exactly the intended merged key-code (A→Space, X→ShiftLeft, Y→Tab, LT→KeyE, RT→KeyQ, Start→KeyP), that B correctly drives both a continuous `fireHeld` while held and an edge-triggered `meleePressed` only on the fresh-press frame (not on subsequent held frames), and that a gamepad Start press flows through the real `frame()` loop's `justPressed("KeyP")` check into an actual `togglePause()` state flip and back.
+
+### 10.3 On-screen control text updated to match
+
+`Hud.ts`'s `#hud-pad-legend` panel and the "DOWN — MASH SPACE" knockdown callout (now "DOWN — MASH SPACE / A", since A is no longer literally the "Space" key to a controller player) were updated to the new mapping. The keyboard-only `#hud-controls` hint, the pause menu, and the hangar's "Arrows/D-pad move · Enter/A select" nav hint were all left unchanged, since none of them reference a button that actually moved — keyboard bindings are untouched by this pass, and A still confirms in menus.

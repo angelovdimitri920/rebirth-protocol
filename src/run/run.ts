@@ -39,7 +39,7 @@ export function enemyForFight(i: number): Loadout {
     // F3: melee rush with a shield -- teaches the player to respect range
     {
       body: BODIES[2],
-      rightArm: { kind: "melee", part: MELEE_WEAPONS[2] }, // Twin Fang
+      rightArm: { kind: "melee", part: MELEE_WEAPONS[2] }, // Khopesh
       leftArm: { kind: "shield", part: SHIELDS[0] },
       legs: LEGS[2],
       pod: PODS[0],

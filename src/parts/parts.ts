@@ -154,12 +154,13 @@ export function computeStats(l: Loadout): RoboStats {
   };
 }
 
-// --- Catalogs (silhouette basis: docs/ROBOT_SHELL_DESIGN.md §2) ---
+// --- Catalogs (silhouette basis: docs/ROBOT_SHELL_DESIGN.md §2; historical
+// theme and naming basis: docs/WARBAND_THEME_REFERENCE.md) ---
 
 export const BODIES: BodyPart[] = [
   {
     id: "vanguard",
-    name: "Vanguard",
+    name: "Legionnaire",
     blurb: "Balanced all-rounder. Two air-dashes, no weaknesses, no edges.",
     hpMult: 1.0,
     defMult: 1.0,
@@ -170,7 +171,7 @@ export const BODIES: BodyPart[] = [
   },
   {
     id: "skylance",
-    name: "Skylance",
+    name: "Valkyrie",
     blurb: "Glass-cannon flier. One long dash, hits hard, folds fast.",
     hpMult: 0.8,
     defMult: 1.2,
@@ -181,7 +182,7 @@ export const BODIES: BodyPart[] = [
   },
   {
     id: "wraith",
-    name: "Wraith",
+    name: "Shinobi",
     blurb: "Evader. Three short vanish-dashes that phase through shots.",
     hpMult: 0.9,
     defMult: 1.1,
@@ -192,7 +193,7 @@ export const BODIES: BodyPart[] = [
   },
   {
     id: "bulwark",
-    name: "Bulwark",
+    name: "Crusader Knight",
     blurb: "Slow tank. One dash, huge health pool, shrugs off hits.",
     hpMult: 1.45,
     defMult: 0.75,
@@ -206,7 +207,7 @@ export const BODIES: BodyPart[] = [
 export const GUNS: GunPart[] = [
   {
     id: "blaster",
-    name: "Blaster",
+    name: "Longbow",
     blurb: "The baseline. Honest damage, honest tracking.",
     damage: 35,
     enduranceDamage: 16,
@@ -216,7 +217,7 @@ export const GUNS: GunPart[] = [
   },
   {
     id: "needler",
-    name: "Needler",
+    name: "Chu-Ko-Nu",
     blurb: "Rapid stream of weak, hard-curving darts. Death by pressure.",
     damage: 14,
     enduranceDamage: 7,
@@ -226,7 +227,7 @@ export const GUNS: GunPart[] = [
   },
   {
     id: "ram-cannon",
-    name: "Ram Cannon",
+    name: "Ballista",
     blurb: "Slow, straight, brutal. One hit shreds endurance.",
     damage: 90,
     enduranceDamage: 48,
@@ -268,7 +269,7 @@ export const MELEE_WEAPONS: MeleeWeaponPart[] = [
   },
   {
     id: "twin-fang",
-    name: "Twin Fang",
+    name: "Khopesh",
     blurb: "Fast, light, low-commitment. Weaker per hit, but barely punishable.",
     weaponShape: "daggers",
     damage: 85,
@@ -285,7 +286,7 @@ export const MELEE_WEAPONS: MeleeWeaponPart[] = [
 export const BOMBS: BombPart[] = [
   {
     id: "impact",
-    name: "Impact Bomb",
+    name: "Greek Fire Pot",
     blurb: "Standard lobbed shell. Reticule tracks the enemy -- hold to aim, release to throw.",
     damage: 80,
     enduranceDamage: 35,
@@ -297,7 +298,7 @@ export const BOMBS: BombPart[] = [
   },
   {
     id: "quake",
-    name: "Quake Bomb",
+    name: "Zhen Tian Lei",
     blurb:
       "Huge blast, heavy endurance crush, long rearm. Reticule is fixed just ahead of you -- close-range, high commitment.",
     damage: 120,
@@ -340,7 +341,7 @@ export const SHIELDS: ShieldPart[] = [
 export const PODS: PodPart[] = [
   {
     id: "sentry",
-    name: "Sentry Pod",
+    name: "Terracotta Sentinel",
     blurb: "Steady chip fire. Keeps them honest while you reposition.",
     damage: 8,
     enduranceDamage: 5,
@@ -351,7 +352,7 @@ export const PODS: PodPart[] = [
   },
   {
     id: "hornet",
-    name: "Hornet Pod",
+    name: "War Kite",
     blurb: "Fast bursts that drain its cell quickly. Feast then famine.",
     damage: 6,
     enduranceDamage: 8,
@@ -365,7 +366,7 @@ export const PODS: PodPart[] = [
 export const LEGS: LegsPart[] = [
   {
     id: "strider",
-    name: "Strider Legs",
+    name: "Traveler's Boots",
     blurb: "Neutral gait. Nothing gained, nothing owed.",
     speedMult: 1.0,
     jumpMult: 1.0,
@@ -374,7 +375,7 @@ export const LEGS: LegsPart[] = [
   },
   {
     id: "cheetah",
-    name: "Cheetah Legs",
+    name: "Numidian Boots",
     blurb: "Fast and low. Ground speed up, jump suffers.",
     speedMult: 1.3,
     jumpMult: 0.85,
@@ -383,7 +384,7 @@ export const LEGS: LegsPart[] = [
   },
   {
     id: "cricket",
-    name: "Cricket Legs",
+    name: "Winged Sandals",
     blurb: "Sky rig: extra dash and clean landings, sluggish on foot.",
     speedMult: 0.85,
     jumpMult: 1.15,

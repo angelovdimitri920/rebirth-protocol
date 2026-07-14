@@ -145,13 +145,29 @@ function buildChassis(bodyId: string, body: THREE.Group, mats: Mats): ChassisAnc
 }
 
 function buildVanguardChassis(body: THREE.Group, { hull, accent, joint }: Mats): ChassisAnchors {
-  box(body, hull, 0.62, 0.55, 0.4, 0, 0.28, 0);
-  box(body, accent, 0.4, 0.2, 0.3, 0, 0.28, 0.12); // chest core
+  // Legionnaire (docs/WARBAND_THEME_REFERENCE.md §5): banded lorica-
+  // segmentata-style torso plating, a tall rectangular chest panel
+  // echoing a scutum shield, a transverse centurion-style helmet crest,
+  // a helmet brow rim, hanging pteruges strips at the waist, and stepped
+  // pauldron caps over the shoulders -- Gundam/Armored-Core panel-line
+  // detail layered onto Roman legionary silhouette language.
+  box(body, hull, 0.62, 0.55, 0.4, 0, 0.28, 0); // torso core
+  box(body, joint, 0.66, 0.04, 0.44, 0, 0.12, 0); // lower banding seam
+  box(body, joint, 0.66, 0.04, 0.44, 0, 0.4, 0); // upper banding seam
+  box(body, accent, 0.3, 0.32, 0.06, 0, 0.3, 0.23); // scutum-echo chest panel
+  box(body, hull, 0.34, 0.05, 0.07, 0, 0.47, 0.23); // chest panel top trim
   box(body, joint, 0.44, 0.25, 0.34, 0, -0.08, 0); // pelvis
+  box(body, joint, 0.07, 0.16, 0.05, -0.16, -0.24, 0.16); // pteruges strips
+  box(body, joint, 0.07, 0.16, 0.05, 0, -0.24, 0.16);
+  box(body, joint, 0.07, 0.16, 0.05, 0.16, -0.24, 0.16);
   box(body, hull, 0.28, 0.24, 0.28, 0, 0.72, 0); // head
+  box(body, joint, 0.3, 0.04, 0.29, 0, 0.79, 0); // helmet brow rim
   box(body, accent, 0.22, 0.06, 0.05, 0, 0.73, 0.13); // visor
+  box(body, hull, 0.34, 0.1, 0.06, 0, 0.88, 0); // transverse crest
   box(body, hull, 0.24, 0.22, 0.3, -0.46, 0.42, 0);
   box(body, hull, 0.24, 0.22, 0.3, 0.46, 0.42, 0);
+  box(body, joint, 0.27, 0.07, 0.33, -0.46, 0.55, 0); // pauldron cap
+  box(body, joint, 0.27, 0.07, 0.33, 0.46, 0.55, 0);
   box(body, joint, 0.16, 0.5, 0.18, -0.46, 0.05, 0);
   box(body, joint, 0.16, 0.5, 0.18, 0.46, 0.05, 0);
   return {

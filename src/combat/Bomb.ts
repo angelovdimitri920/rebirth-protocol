@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { Arena } from "../arena/Arena";
 import { sfx } from "../core/sfx";
@@ -7,9 +8,11 @@ import { sfx } from "../core/sfx";
 // with a hold-to-aim / release-to-throw reticule (HOLOSSEUM_REFERENCE.md).
 // Holding the bomb input opens the reticule and keeps it live-tracking its
 // default aim point every frame; releasing deploys the bomb wherever the
-// reticule currently sits. Lobbed in an arc; detonates on arrival and
-// applies AoE damage with falloff-free simplicity -- inside the radius is
-// inside the blast.
+// reticule currently sits. The stick can additionally nudge the reticule
+// away from its default point (steerAim), clamped so the total distance
+// from the robo never exceeds the part's reticuleRange. Lobbed in an arc;
+// detonates on arrival and applies AoE damage with falloff-free
+// simplicity -- inside the radius is inside the blast.
 
 interface LiveBomb {
   mesh: THREE.Mesh;
@@ -27,6 +30,9 @@ export class Bomb {
   aiming = false;
   /** Current reticule world position while aiming, or null. */
   aimPoint: THREE.Vector3 | null = null;
+  /** Player-steered nudge on top of the default aim point, persists for
+   *  the duration of one aim session (reset on startAim/release). */
+  private manualOffset = new THREE.Vector3();
   private live: LiveBomb[] = [];
   private blasts: { mesh: THREE.Mesh; timer: number }[] = [];
 
@@ -49,43 +55,57 @@ export class Bomb {
     if (!this.ready || this.owner.controlLocked) return false;
     if (this.owner.loadout.leftArm.kind !== "bomb") return false;
     this.aiming = true;
+    this.manualOffset.set(0, 0, 0);
     this.updateAim(target);
     return true;
   }
 
   /** Call every frame the bomb input is held, to keep the reticule tracking
-   *  its default aim point (the enemy, or a fixed point ahead of self). */
+   *  its default aim point (the enemy, or a fixed point ahead of self),
+   *  plus whatever manual offset steerAim has accumulated. */
   updateAim(target: Robo): void {
     if (!this.aiming) return;
     const leftArm = this.owner.loadout.leftArm;
     if (leftArm.kind !== "bomb") return;
     const part = leftArm.part;
     const start = this.owner.position;
+    const groundY =
+      part.reticuleAnchor === "target" && target.health.state !== "dead"
+        ? target.groundY
+        : this.owner.groundY;
 
+    let base: THREE.Vector3;
     if (part.reticuleAnchor === "target" && target.health.state !== "dead") {
       const toTarget = target.position.clone().sub(start).setY(0);
-      if (toTarget.lengthSq() > 1e-4) {
-        const dist = Math.min(toTarget.length(), part.reticuleRange);
-        this.aimPoint = start
-          .clone()
-          .addScaledVector(toTarget.normalize(), dist)
-          .setY(target.groundY + 0.2);
-        return;
-      }
+      base =
+        toTarget.lengthSq() > 1e-4
+          ? start.clone().addScaledVector(toTarget.normalize(), Math.min(toTarget.length(), part.reticuleRange))
+          : start.clone();
+    } else {
+      // Self-anchored (or target anchor with no valid target): fixed point
+      // straight ahead, at reticuleRange -- can't be aimed further out.
+      const f = this.owner.facingAngle;
+      base = start
+        .clone()
+        .add(new THREE.Vector3(Math.sin(f) * part.reticuleRange, 0, Math.cos(f) * part.reticuleRange));
     }
-    // Self-anchored (or target anchor with no valid target): fixed point
-    // straight ahead, at reticuleRange -- can't be aimed further out.
-    const f = this.owner.facingAngle;
-    this.aimPoint = start
-      .clone()
-      .add(
-        new THREE.Vector3(
-          Math.sin(f) * part.reticuleRange,
-          0,
-          Math.cos(f) * part.reticuleRange,
-        ),
-      )
-      .setY(this.owner.groundY + 0.2);
+
+    // Apply the manual offset, then clamp the TOTAL distance from the
+    // robo to reticuleRange -- steering can't out-range the weapon.
+    const point = base.clone().add(this.manualOffset).setY(0);
+    const fromSelf = point.clone().sub(start).setY(0);
+    if (fromSelf.length() > part.reticuleRange) {
+      fromSelf.setLength(part.reticuleRange);
+      point.copy(start).add(fromSelf);
+    }
+    this.aimPoint = point.setY(groundY + 0.2);
+  }
+
+  /** Call each frame the bomb input is held with stick deflection, to nudge
+   *  the reticule's manual offset away from its default aim point. */
+  steerAim(dir: THREE.Vector3, dt: number): void {
+    if (!this.aiming || dir.lengthSq() < 1e-4) return;
+    this.manualOffset.addScaledVector(dir, TUNING.aimSteer.bombOffsetSpeed * dt);
   }
 
   /** Deploys the bomb at the current reticule position and closes it.

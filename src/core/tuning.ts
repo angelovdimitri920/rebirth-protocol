@@ -93,8 +93,11 @@ export const TUNING = {
   // orientation each frame (see PlayerController), so this can rotate
   // freely without ever breaking WASD/stick mapping. ---
   camera: {
-    height: 24, // camera height above the floor -- steep, near-overhead
-    back: 8, // horizontal distance from the look-at point
+    // 45-45 isometric rule (per HOLOSSEUM_REFERENCE.md and the classic
+    // isometric-camera guideline it cites): height == back gives exactly
+    // a 45 degree look-down angle -- angled, not top-down.
+    height: 16, // camera height above the floor
+    back: 16, // horizontal distance from the look-at point
     // Look-at point sits this fraction of the way from the player (0)
     // toward the enemy (1) -- biased toward the player so they stay
     // clearly readable, but not dead-centered like a pure player-follow.
@@ -105,6 +108,14 @@ export const TUNING = {
     zoomStartDistance: 12, // fighter separation (m) before zoom-out begins
     zoomRange: 16, // additional separation (m) to reach max zoom-out
     zoomMax: 0.7, // fraction of extra frustum size added at max zoom-out
+  },
+
+  // --- Manual aim steering (HOLOSSEUM_REFERENCE.md): hold the pod/bomb
+  // input and use the stick to steer the pod's launch direction or nudge
+  // the bomb reticule, instead of (or alongside) their default auto-aim. ---
+  aimSteer: {
+    podTurnRate: 4, // rad/s the pod's manual launch direction can turn
+    bombOffsetSpeed: 6, // m/s the bomb reticule's manual offset can move
   },
 
   // --- Crates (destructible cover) ---

@@ -313,3 +313,28 @@ Because the camera is `THREE.OrthographicCamera`, "zoom" can't be done by moving
 Verified precisely: with fighters separated along Z (the spawn-line default), the camera settles at `x=-8` (offset perpendicular to Z, i.e. along X) — a side-on isometric read matching the reference screenshots. Re-run with fighters separated along X instead, the camera settles at `z=-8` (offset swapped to the other axis) — confirmed the rotation actually re-derives per fight geometry rather than being hardcoded. Frustum height measured exactly 20 (base) at 2m separation and exactly 34 (`20×1.7`, the configured max) at 30m separation, matching the zoom formula exactly. A rendered screenshot with fighters on the spawn line confirms both robots clearly visible and the player robot legibly off-center rather than screen-centered.
 
 Removed `TUNING.camera.lookAhead` (dead once the look-at point became midpoint-based instead of "player position + forward nudge").
+
+## 12. True 45° Isometric Pitch, B↔LT Swap-Back, Manual Aim Steering (2026-07-14, later same-day session)
+
+Direct follow-up to §11: the camera was rotating/zooming correctly but still read as too top-down, the gamepad mapping needed the right/left arm and pod buttons swapped back, and the bomb/pod holds needed real stick-driven aim control instead of pure auto-tracking.
+
+### 12.1 Camera pitch: 45-45 isometric rule
+
+`TUNING.camera.height`/`back` were `24`/`8` (≈71.5° from horizontal — nearly a top-down look). Per the classic isometric-camera guideline the user linked (height == back == a 45° look-down angle, with the ground plane reading as visibly tilted rather than flat), both are now `16`/`16` — an exact 45°. Nothing else about the camera's rotate-to-frame-both-fighters or dynamic-zoom behavior from §11.5 changed; this was purely the pitch constant. Verified: `camera.position` settles with `|x| === |y|` (16/16) when offset along X, confirming the exact angle; a rendered screenshot shows crates with clearly visible top *and* front faces (vs. the old near-flat top-down read) and both robos legibly in a 3D volume rather than as flat top-down sprites.
+
+### 12.2 Gamepad B↔LT swapped back
+
+The user's newest reference reorders the mapping again: **B = Fire Gun/Melee** (right arm), **L = Fire Pod** — the reverse of §11.1's B=Pod/LT=Gun-Melee. This is the same two-line change as §11.1, just undone: `BUTTON_TO_CODE`'s `[1,"KeyE"]` reverted to `[6,"KeyE"]`, and `BUTTON_RIGHT_ARM` reverted from `6` back to `1`. RT (bomb/shield), X (dash), Y (lock-on), Start (pause) were all already correct and untouched.
+
+### 12.3 Manual aim steering: pod launch direction, bomb reticule offset
+
+Both bomb and pod holds now accept stick input to manually influence their aim, on top of (bomb) or instead of (pod) their existing auto-aim, using the exact same `move` vector `PlayerController` already derives from stick-or-WASD for movement — meaning this works identically on keyboard (WASD) and gamepad (left stick) for free, and required no new input-reading code.
+
+- **Pod** (`Pod.steerAim(dir, dt)` / `clearAim()`): holding the pod input (E/L) while it's deployed turns a manual `aimDir` toward the stick's direction at a limited rate (`aimSteer.podTurnRate`, 4 rad/s — a turret-like gradual swing, not a snap), used as the shot's *launch heading* the next time it auto-fires. Releasing the pod input clears `aimDir` back to `null`, reverting to auto-aim-at-the-enemy. Since `Projectiles.update()`'s homing re-derives the target every frame regardless of initial heading (`target = owner === player ? enemy : player`, not tied to the spawn aim point), manual aim only changes the shot's initial curve-in path, not its ultimate destination -- a tactical nudge, not a full manual-fire override, matching the user's own "in case that matters" hedge. Since holding the pod input repurposes the movement stick, movement is frozen for that duration (`moveDir` zeroed) — you can't steer the pod and walk at the same time with one stick, which was true either way once the same stick does both.
+- **Bomb** (`Bomb.steerAim(dir, dt)`): holding the bomb input already halts movement entirely (§11.4's `leftArmActive`), so redirecting the same stick to the reticule was free. Adds a persistent `manualOffset` (velocity-integrated at `aimSteer.bombOffsetSpeed`, 6 m/s, reset every fresh `startAim()`) on top of the anchor-computed base point (enemy-tracking or fixed-ahead, per §11.3), with the *combined* point's distance from the robo clamped to the bomb's own `reticuleRange` — steering can nudge the aim within the weapon's envelope but never past it.
+
+Verified precisely: pod `aimDir` locks fully onto a steered direction after sustained input, then turns gradually (not snaps) toward a new direction over subsequent frames, and clears to `null` on release. Bomb reticule, steered hard in one direction for 5 seconds of simulated input, settled at exactly `reticuleRange` (20m for Impact Bomb) from the robo — confirmed the clamp holds even under sustained maximum steering.
+
+### 12.4 On-screen text updated again
+
+`Hud.ts`'s pad legend now shows `B: Gun / Melee`, `LT: Pod (hold: steer)`, `RT: Bomb (hold: steer) / Shield`, and the left-stick row now reads "Move / steer aim". The keyboard `#hud-controls` hint gained "(WASD steers)" notes on the Q and E entries. `PlayerController`'s and `input.ts`'s header comments were updated to match the restored B/LT mapping and document the new steering behavior.

@@ -17,7 +17,9 @@ import { sfx } from "../core/sfx";
 // actually attacking (firing, meleeing, aiming a bomb, or shielding).
 // Controls: WASD move, Space jump/hover (mash during knockdown, double-tap
 // while airborne also air-dashes), Shift dash, LMB gun, RMB melee, Q hold
-// to aim bomb/raise shield, E pod deploy/recall, Tab toggle lock-on.
+// to aim bomb/raise shield (WASD steers the reticule while held), E pod
+// deploy/recall (WASD steers its launch direction while held), Tab toggle
+// lock-on.
 
 export class PlayerController {
   lockedOn = true; // targeting for homing/melee -- not camera or facing
@@ -101,7 +103,7 @@ export class PlayerController {
     // Homing dash: while locked on, dashes curve toward the target
     this.robo.intent.dashHomingPoint = target ? target.position : null;
 
-    // --- Right arm: gun (LMB/L, held) or melee (RMB/L, pressed) --
+    // --- Right arm: gun (LMB/B, held) or melee (RMB/B, pressed) --
     // whichever isn't equipped silently no-ops, so both buttons are always
     // safe to read regardless of loadout. ---
     if (input.meleePressed && enemyAlive) {
@@ -114,8 +116,10 @@ export class PlayerController {
     this.robo.intent.firingGun = gunFiring;
     this.gun.update(dt, gunFiring, target);
 
-    // --- Left arm: bomb (Q/R, hold to aim, release to throw) or shield
-    // (Q/R, HELD) -- Q is context-sensitive on which part is equipped. ---
+    // --- Left arm: bomb (Q/R, hold to aim -- stick steers the reticule,
+    // release to throw) or shield (Q/R, HELD) -- Q is context-sensitive on
+    // which part is equipped. Movement is already frozen while aiming
+    // (leftArmActive), so reusing `move` for reticule-steering is free. ---
     if (this.robo.loadout.leftArm.kind === "shield") {
       this.robo.intent.shieldHeld = input.held("KeyQ") && !this.melee.busy;
       this.robo.intent.leftArmActive = this.robo.intent.shieldHeld;
@@ -123,13 +127,24 @@ export class PlayerController {
       this.robo.intent.shieldHeld = false;
       const aimHeld = input.held("KeyQ") && enemyAlive && !this.melee.busy;
       if (aimHeld && !this.bomb.aiming) this.bomb.startAim(this.enemy);
-      else if (aimHeld && this.bomb.aiming) this.bomb.updateAim(this.enemy);
-      else if (!aimHeld && this.bomb.aiming) this.bomb.release(this.enemy);
+      else if (aimHeld && this.bomb.aiming) {
+        this.bomb.updateAim(this.enemy);
+        this.bomb.steerAim(move, dt);
+      } else if (!aimHeld && this.bomb.aiming) this.bomb.release(this.enemy);
       this.robo.intent.leftArmActive = this.bomb.aiming;
     }
 
+    // --- Pod: E deploys/recalls on press; holding E steers its launch
+    // direction with the stick instead of moving (one stick, one job at a
+    // time -- releasing E falls back to auto-aiming at the enemy). ---
     if (input.justPressed("KeyE")) {
       this.pod.toggle();
+    }
+    if (input.held("KeyE") && this.pod.deployed) {
+      this.pod.steerAim(move, dt);
+      this.robo.intent.moveDir.set(0, 0, 0);
+    } else {
+      this.pod.clearAim();
     }
     this.pod.update(dt, this.enemy);
 

@@ -145,18 +145,18 @@ export class Hud {
       <div id="hud-toast"></div>
       <div id="hud-controls">
         WASD move &nbsp; SPACE jump/hover &nbsp; SHIFT dash<br>
-        LMB gun &nbsp; RMB melee &nbsp; Q bomb/shield &nbsp; E pod<br>
+        LMB gun &nbsp; RMB melee &nbsp; Q hold bomb/shield (WASD steers) &nbsp; E hold pod (WASD steers)<br>
         P pause &nbsp; R instant hangar &nbsp; F fullscreen
       </div>
       <div id="hud-pad-legend">
         <div class="pad-title">Controller</div>
-        <div class="pad-row"><span class="pad-btn grey">LS</span> Move</div>
+        <div class="pad-row"><span class="pad-btn grey">LS</span> Move / steer aim</div>
         <div class="pad-row"><span class="pad-btn a">A</span> Jump / Mash</div>
-        <div class="pad-row"><span class="pad-btn b">B</span> Pod</div>
+        <div class="pad-row"><span class="pad-btn b">B</span> Gun / Melee</div>
         <div class="pad-row"><span class="pad-btn x">X</span> Dash</div>
         <div class="pad-row"><span class="pad-btn y">Y</span> Lock-On</div>
-        <div class="pad-row"><span class="pad-btn grey">LT</span> Gun / Melee</div>
-        <div class="pad-row"><span class="pad-btn grey">RT</span> Bomb / Shield</div>
+        <div class="pad-row"><span class="pad-btn grey">LT</span> Pod (hold: steer)</div>
+        <div class="pad-row"><span class="pad-btn grey">RT</span> Bomb (hold: steer) / Shield</div>
         <div class="pad-row"><span class="pad-btn grey">☰</span> Pause</div>
       </div>
     `;

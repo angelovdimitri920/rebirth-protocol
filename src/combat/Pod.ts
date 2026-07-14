@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { TUNING } from "../core/tuning";
 import { Robo } from "../robo/Robo";
 import { Projectiles } from "./Projectiles";
 import { sfx } from "../core/sfx";
@@ -7,6 +8,12 @@ import { sfx } from "../core/sfx";
 // independent of gun/bomb, so it's always-on pressure rather than a burst
 // opportunity cost. Deploy drops it at your position; it hovers there and
 // fires weak homing shots at the enemy while its cell holds charge.
+//
+// Manual aim (HOLOSSEUM_REFERENCE.md): holding the pod input lets the
+// player steer its launch direction with the stick instead of always
+// auto-aiming at the enemy. Since shots still home onto the enemy after
+// launch (Projectiles.update), this only changes the initial heading --
+// a stylistic/tactical nudge, not a full manual-fire override.
 
 const HOVER_HEIGHT = 2.4;
 const FIRE_RANGE = 22;
@@ -14,6 +21,8 @@ const FIRE_RANGE = 22;
 export class Pod {
   deployed = false;
   energy: number;
+  /** Manually-steered launch direction, or null for default auto-aim. */
+  aimDir: THREE.Vector3 | null = null;
   private fireCooldown = 0;
   private mesh: THREE.Group;
   private bobTime = 0;
@@ -63,6 +72,30 @@ export class Pod {
     sfx.podToggle(true);
   }
 
+  /** Call each frame the pod input is held with stick deflection, to turn
+   *  the manual launch direction toward `dir` at a limited turn rate. */
+  steerAim(dir: THREE.Vector3, dt: number): void {
+    if (!this.deployed || dir.lengthSq() < 1e-4) return;
+    const desired = dir.clone().setY(0).normalize();
+    if (!this.aimDir) {
+      this.aimDir = desired;
+      return;
+    }
+    const cur = Math.atan2(this.aimDir.x, this.aimDir.z);
+    const want = Math.atan2(desired.x, desired.z);
+    let diff = want - cur;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    const maxTurn = TUNING.aimSteer.podTurnRate * dt;
+    const angle = cur + THREE.MathUtils.clamp(diff, -maxTurn, maxTurn);
+    this.aimDir.set(Math.sin(angle), 0, Math.cos(angle));
+  }
+
+  /** Call when the pod input is released, to fall back to auto-aim. */
+  clearAim(): void {
+    this.aimDir = null;
+  }
+
   update(dt: number, target: Robo): void {
     const part = this.owner.loadout.pod;
 
@@ -100,7 +133,9 @@ export class Pod {
       this.fireCooldown = part.fireInterval * (fx?.podFireIntervalMult() ?? 1);
       this.energy -= part.energyPerShot;
       sfx.podShot();
-      const aim = target.position.clone().setY(target.groundY + 1.0);
+      const aim = this.aimDir
+        ? this.mesh.position.clone().addScaledVector(this.aimDir, 15)
+        : target.position.clone().setY(target.groundY + 1.0);
       this.projectiles.spawn(this.mesh.position.clone(), aim, this.ownerTag, {
         damage:
           part.damage * this.owner.stats.atkMult + (fx?.flatDamageBonus() ?? 0),

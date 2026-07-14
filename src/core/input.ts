@@ -7,23 +7,26 @@
 // Gamepad mapping (HOLOSSEUM_REFERENCE.md "Robo Controller Layout"), L/R
 // read off the Xbox triggers: Stick=Move, A=Jump (double-tap while
 // airborne also triggers the chassis's air-dash/mobility move, same as
-// X=Dash), B=Fire Pod, L=Fire Gun/Melee, R=Fire Bomb/Block Shield,
+// X=Dash), B=Fire Gun/Melee, L=Fire Pod, R=Fire Bomb/Block Shield,
 // X=Dash, Y=Switch Targets. Since gun/melee and bomb/shield are
-// mutually-exclusive loadout choices here, L and R each do double duty
+// mutually-exclusive loadout choices here, B and R each do double duty
 // for whichever half of the pair is actually equipped -- the underlying
 // combat systems already no-op on the unequipped half, same as LMB/RMB do
-// on keyboard.
+// on keyboard. Holding L or R (once the pod is deployed / while aiming a
+// bomb) also redirects the stick to steer the pod's launch direction or
+// nudge the bomb reticule (PlayerController), instead of moving.
 //
 // Gamepad button -> action (standard mapping indices):
-//   Left stick     move (analog, direction only -- no analog speed model)
+//   Left stick     move (analog, direction only -- no analog speed model);
+//                  redirected to aim-steering while L/R is held, see above
 //   D-pad          menu navigation (hangar/pause), merged onto Arrow keys
 //   A (0)          jump/hover, mash to recover from knockdown; menu confirm
-//   B (1)          fire pod (deploy/recall)
+//   B (1)          right arm: fire gun (held) / swing melee (pressed)
 //   X (2)          dash
 //   Y (3)          switch targets / lock-on toggle
-//   LT (6)         right arm: fire gun (held) / swing melee (pressed)
-//   RT (7)         left arm: throw bomb (held to aim, release to fire) /
-//                  hold shield (held)
+//   LT (6)         fire pod (deploy/recall on press; hold to steer aim)
+//   RT (7)         left arm: throw bomb (held to aim -- hold to steer,
+//                  release to fire) / hold shield (held)
 //   Start (9)      pause
 //
 // Gamepad buttons are merged into the same key-code space the keyboard
@@ -35,9 +38,9 @@ import { sfx } from "./sfx";
 
 const BUTTON_TO_CODE: [index: number, code: string][] = [
   [0, "Space"],
-  [1, "KeyE"],
   [2, "ShiftLeft"],
   [3, "Tab"],
+  [6, "KeyE"],
   [7, "KeyQ"],
   [9, "KeyP"],
   [12, "ArrowUp"],
@@ -45,7 +48,7 @@ const BUTTON_TO_CODE: [index: number, code: string][] = [
   [14, "ArrowLeft"],
   [15, "ArrowRight"],
 ];
-const BUTTON_RIGHT_ARM = 6; // LT: fire gun (held) / swing melee (pressed)
+const BUTTON_RIGHT_ARM = 1; // B: fire gun (held) / swing melee (pressed)
 const STICK_DEADZONE = 0.2;
 const DOUBLE_TAP_WINDOW_MS = 300;
 

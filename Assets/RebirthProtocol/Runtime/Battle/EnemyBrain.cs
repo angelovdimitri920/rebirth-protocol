@@ -1,0 +1,113 @@
+using RebirthProtocol.Domain;
+using UnityEngine;
+
+namespace RebirthProtocol.Battle
+{
+    // Port of the prototype's DummyAI (Stage 1 slice: gun + melee only, no
+    // bomb/pod/shield yet). Basic pressure-test opponent: orbits at mid
+    // range, strafes, occasionally jumps or dashes, fires in bursts, and
+    // goes for melee when the player is close or landing-recovery
+    // vulnerable. Deterministic: all randomness from one seeded Random.
+    public sealed class EnemyBrain : MonoBehaviour
+    {
+        private RoboAvatar _avatar;
+        private RoboAvatar _player;
+        private System.Random _rng;
+
+        private float _strafeSign = 1f;
+        private float _decisionTimer;
+        private bool _firing;
+        private float _fireTimer;
+        private float _meleeTimer = 2f;
+        private bool _thrustHeld;
+
+        public void Init(RoboAvatar avatar, RoboAvatar player, int seed)
+        {
+            _avatar = avatar;
+            _player = player;
+            _rng = new System.Random(seed);
+        }
+
+        private float NextFloat() => (float)_rng.NextDouble();
+
+        public void Tick(float dt)
+        {
+            var toPlayer = _player.Position - _avatar.Position;
+            toPlayer.y = 0f;
+            var dist = toPlayer.magnitude;
+            var dirToPlayer = dist > 0.0001f ? toPlayer / dist : Vector3.forward;
+
+            // Rethink strafe direction periodically.
+            _decisionTimer -= dt;
+            if (_decisionTimer <= 0f)
+            {
+                _decisionTimer = CombatTuning.Ai.DecisionInterval * (0.6f + NextFloat() * 0.8f);
+                if (NextFloat() < 0.4f)
+                {
+                    _strafeSign = -_strafeSign;
+                }
+            }
+
+            // Movement: hold the orbit distance band, strafe around the player.
+            var move = Vector3.zero;
+            var strafe = new Vector3(-dirToPlayer.z * _strafeSign, 0f, dirToPlayer.x * _strafeSign);
+            if (dist > CombatTuning.Ai.OrbitRadiusMax)
+            {
+                move += dirToPlayer;
+            }
+            else if (dist < CombatTuning.Ai.OrbitRadiusMin)
+            {
+                move -= dirToPlayer;
+            }
+
+            move = (move + strafe).normalized;
+
+            // Occasional jump / dash to be a harder target.
+            _thrustHeld = _thrustHeld && _avatar.Boost.Value > 20f
+                ? NextFloat() > 0.1f // keep short hops short
+                : NextFloat() < CombatTuning.Ai.JumpChancePerSec * dt;
+
+            var playerAlive = _player.Health.State != HealthState.Dead;
+
+            _avatar.Intent = new RoboIntent
+            {
+                MoveDir = move,
+                ThrustHeld = _thrustHeld,
+                DashRequested = NextFloat() < CombatTuning.Ai.DashChancePerSec * dt,
+                MashPressed = NextFloat() < 8f * dt, // ~8 mash/s
+                FiringGun = false, // set below once the burst gate resolves
+                HasFaceYaw = true,
+                FaceYaw = Mathf.Atan2(dirToPlayer.x, dirToPlayer.z),
+                HasDashHoming = playerAlive,
+                DashHomingPoint = _player.Position
+            };
+
+            // Melee: punish a close player, especially during landing recovery.
+            _meleeTimer -= dt;
+            if (playerAlive && !_avatar.Melee.Busy && _meleeTimer <= 0f && dist < 10f
+                && (_player.Boost.LandingRecovery > 0f || NextFloat() < 0.5f))
+            {
+                _avatar.TryMelee(_player);
+                _meleeTimer = 2.5f + NextFloat() * 2f;
+            }
+
+            // Sometimes press the string through (~7 attempts/s in recovery).
+            if (_avatar.Melee.Busy && NextFloat() < 7f * dt)
+            {
+                _avatar.TryMeleeChain(_player);
+            }
+
+            // Fire the gun in bursts.
+            _fireTimer -= dt;
+            if (_fireTimer <= 0f)
+            {
+                _firing = !_firing;
+                _fireTimer = _firing ? CombatTuning.Ai.BurstDuration : CombatTuning.Ai.FireInterval;
+            }
+
+            var gunFiring = _firing && playerAlive && !_avatar.Melee.Busy;
+            _avatar.Intent.FiringGun = gunFiring;
+            _avatar.TickGun(dt, gunFiring, playerAlive ? _player : null);
+        }
+    }
+}

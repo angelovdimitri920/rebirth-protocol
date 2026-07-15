@@ -9,6 +9,7 @@ namespace RebirthProtocol.Editor
     {
         private static readonly string[] Scenes =
         {
+            "Assets/RebirthProtocol/Scenes/Duel.unity",
             "Assets/RebirthProtocol/Scenes/Bootstrap.unity"
         };
 

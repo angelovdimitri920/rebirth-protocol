@@ -1,0 +1,23 @@
+{
+  "asset": "KnightRobot",
+  "status": "pass",
+  "blend": {
+    "status": "pass",
+    "issues": [],
+    "meshObjectCount": 159,
+    "moduleCounts": {
+      "basic_bomb": 8,
+      "basic_gun": 12,
+      "basic_legs": 38,
+      "basic_pod": 12,
+      "body": 89
+    },
+    "projectileOrEffectCount": 7
+  },
+  "exports": {
+    "status": "pass",
+    "issues": [],
+    "fbxCount": 6,
+    "fbxDir": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\Assets\\RebirthProtocol\\Art\\Mechs\\KnightRobot\\FBX"
+  }
+}

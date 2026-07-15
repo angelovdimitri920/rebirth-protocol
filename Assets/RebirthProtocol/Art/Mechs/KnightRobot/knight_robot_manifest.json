@@ -1,0 +1,34 @@
+{
+  "asset": "KnightRobot",
+  "status": "original_production_track",
+  "design": "Cobalt Knight heavy mech redesign with original generated hard-surface geometry.",
+  "scale": "meters",
+  "rig": {
+    "type": "hard_surface_rigid_skin",
+    "deformation": "single-bone rigid weights per mesh",
+    "animationRig": "Unity Generic"
+  },
+  "modules": {
+    "body": 89,
+    "basic_legs": 38,
+    "basic_gun": 12,
+    "basic_bomb": 8,
+    "basic_pod": 12
+  },
+  "exports": {
+    "loadout": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\Assets\\RebirthProtocol\\Art\\Mechs\\KnightRobot\\FBX\\KnightRobot_Loadout.fbx",
+    "body": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\Assets\\RebirthProtocol\\Art\\Mechs\\KnightRobot\\FBX\\KnightRobot_Body.fbx",
+    "basic_gun": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\Assets\\RebirthProtocol\\Art\\Mechs\\KnightRobot\\FBX\\KnightRobot_BasicGun.fbx",
+    "basic_bomb": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\Assets\\RebirthProtocol\\Art\\Mechs\\KnightRobot\\FBX\\KnightRobot_BasicBomb.fbx",
+    "basic_legs": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\Assets\\RebirthProtocol\\Art\\Mechs\\KnightRobot\\FBX\\KnightRobot_BasicLegs.fbx",
+    "basic_pod": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\Assets\\RebirthProtocol\\Art\\Mechs\\KnightRobot\\FBX\\KnightRobot_BasicPod.fbx",
+    "source_blend": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\SourceArt\\KnightRobot\\KnightRobot_Loadout.blend",
+    "preview": "C:\\Users\\angel\\claude_code\\rebirth-protocol-unity\\docs\\images\\knight_robot_preview.png"
+  },
+  "notes": [
+    "Original geometry and material language; no source meshes from Custom Robo are reused.",
+    "Second pass intentionally adds broad shoulders, enlarged horns, layered cuirass armor, larger feet, rivets, and heavier weapon silhouettes.",
+    "Includes basic gun projectile, basic bomb effect guide, and basic pod projectile reference meshes.",
+    "Further polish should add animation clips, LODs, final collision, and hand-authored texture maps."
+  ]
+}

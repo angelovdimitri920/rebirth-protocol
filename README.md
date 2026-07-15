@@ -10,6 +10,9 @@ A 3D arena mecha roguelite — Custom Robo's build-and-battle loop, crossed with
 - `prompts/MASTER_BUILD_PROMPT.md` — the prompt used to kick off full development with Claude Code / Fable 5.
 - `CLAUDE.md` — project instructions Claude Code reads automatically at session start.
 - `src/` — the actual Three.js project (created once development begins: `npm create vite@latest . -- --template vanilla-ts`).
+- `Assets/`, `Packages/`, `ProjectSettings/` — Unity 6000.3.19f1 project foundation for the production track.
+- `SourceArt/KnightRobot/` — Blender source for the original Cobalt Knight robot asset.
+- `docs/UNITY_SETUP.md` and `docs/KNIGHT_ROBOT_ASSET.md` — Unity setup notes and current robot asset validation report.
 
 ## Status
 
@@ -20,6 +23,15 @@ Stage 1 (core duel prototype) in development. See `docs/GAME_DESIGN.md` §6 for 
 ```bash
 npm install
 npm run dev
+```
+
+Unity commands are run from PowerShell with Unity 6000.3.19f1 installed:
+
+```powershell
+.\scripts\unity-compile.ps1
+.\scripts\run-editmode-tests.ps1
+.\scripts\run-playmode-tests.ps1
+.\scripts\build-windows-dev.ps1
 ```
 
 ## GitHub

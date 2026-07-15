@@ -139,6 +139,43 @@ namespace RebirthProtocol.Tests.EditMode
         }
 
         [Test]
+        public void MashAfterFloorAlreadyServedIsUnrestricted()
+        {
+            var health = new CombatantHealth(Tuning());
+            health.TakeHit(0f, 200f);
+
+            health.Tick(1.0f);
+            for (var i = 0; i < 20; i++)
+            {
+                health.Mash();
+            }
+
+            // 1.0s served > 0.9 floor, so the floor term goes negative and
+            // mash may drive the timer below zero — stand-up happens on the
+            // next tick, which is not a floor violation.
+            Assert.That(health.StateTimer, Is.EqualTo(-0.1f).Within(0.0001f));
+            Assert.That(health.State, Is.EqualTo(HealthState.KnockedDown));
+        }
+
+        [Test]
+        public void StandUpFromNegativeTimerGrantsFullRebirthWindow()
+        {
+            var health = new CombatantHealth(Tuning());
+            health.TakeHit(0f, 200f);
+            health.Tick(1.0f);
+            for (var i = 0; i < 20; i++)
+            {
+                health.Mash();
+            }
+
+            health.Tick(0.01f);
+
+            Assert.That(health.State, Is.EqualTo(HealthState.Rebirth));
+            Assert.That(health.StateTimer, Is.EqualTo(2.5f).Within(0.0001f), "full rebirth window, overshoot not carried");
+            Assert.That(health.Endurance, Is.EqualTo(200f));
+        }
+
+        [Test]
         public void MashOutsideKnockdownDoesNothing()
         {
             var health = new CombatantHealth(Tuning());

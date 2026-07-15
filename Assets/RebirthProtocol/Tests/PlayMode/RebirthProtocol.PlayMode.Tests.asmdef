@@ -1,0 +1,19 @@
+{
+  "name": "RebirthProtocol.PlayMode.Tests",
+  "rootNamespace": "RebirthProtocol.Tests.PlayMode",
+  "references": [
+    "RebirthProtocol.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "noEngineReferences": false
+}

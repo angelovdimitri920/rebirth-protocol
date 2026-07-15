@@ -12,6 +12,20 @@ dist
 dist-ssr
 *.local
 
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Tt]est[Rr]esults/
+[Rr]eference[Oo]nly/
+3D_models/
+*.blend1
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +36,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Unity cache/crash artifacts
+sysinfo.txt
+*.stackdump
+CrashlyticsGeneratedSettings.c
+
+# Keep Unity assets and metadata versioned
+!Assets/**/*.meta
+!ProjectSettings/**/*.asset
+!Packages/manifest.json
+!Packages/packages-lock.json

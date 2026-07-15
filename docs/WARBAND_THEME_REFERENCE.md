@@ -1,5 +1,7 @@
 # Warband Theme Reference v1
 
+**SUPERSEDED (2026-07-15) — kept for historical record only.** The world/theme is now the neo-feudal used-future setting in [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md); read that doc first. The chassis silhouettes, mesh work, and part-name renames below are all still valid and don't need rebuilding — only the framing changes, from "this chassis IS a historical Earth culture" to "this chassis belongs to an in-fiction Order inspired by one." See the faction table in the new doc for the current Order name per chassis.
+
 *Canonical art-direction and naming bible: every chassis, part, and Holosseum draws from real historical warrior cultures and armies, filtered through a Gundam/Armored Core mecha silhouette language. This is the layer that ties `ROBOT_SHELL_DESIGN.md`, `PARTS_AND_DAMAGE_REFERENCE.md`, and `HOLOSSEUM_REFERENCE.md`'s abstract archetypes into a concrete, final, original identity — nothing here is a copy of a named Custom Robo design; the source material's silhouette *proportions* (tall-and-sleek, short-and-armored, tallest-and-bulkiest, etc.) are the starting scaffold, the historical theme is what actually defines the final look.*
 
 ## 1. Why this direction

@@ -29,6 +29,14 @@ namespace RebirthProtocol.Editor
 
         public static void EnsureBootstrapScene()
         {
+            // Never regenerate an existing scene: ConfigureProject runs as the
+            // routine compile check (scripts/unity-compile.ps1), and rebuilding
+            // from an empty scene here would silently wipe manual scene work.
+            if (File.Exists(BootstrapScenePath))
+            {
+                return;
+            }
+
             Directory.CreateDirectory("Assets/RebirthProtocol/Scenes");
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -85,14 +93,25 @@ namespace RebirthProtocol.Editor
 
         private static void SetActiveInputHandling()
         {
-            var property = typeof(PlayerSettings).GetProperty("activeInputHandling");
-            if (property == null)
+            // 0 = legacy Input Manager, 1 = Input System package, 2 = both.
+            // Serialized-property write instead of reflection so a rename in a
+            // future Unity version fails loudly here rather than silently
+            // leaving the wrong input backend configured.
+            var playerSettings = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (playerSettings.Length == 0)
             {
-                return;
+                throw new System.InvalidOperationException("Could not load ProjectSettings/ProjectSettings.asset.");
             }
 
-            var enumValue = System.Enum.Parse(property.PropertyType, "InputSystemPackage");
-            property.SetValue(null, enumValue);
+            var serialized = new SerializedObject(playerSettings[0]);
+            var property = serialized.FindProperty("activeInputHandler");
+            if (property == null)
+            {
+                throw new System.InvalidOperationException("ProjectSettings has no 'activeInputHandler' property.");
+            }
+
+            property.intValue = 1;
+            serialized.ApplyModifiedProperties();
         }
     }
 }

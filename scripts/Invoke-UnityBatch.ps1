@@ -5,11 +5,17 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $Log,
 
-    [int] $TimeoutSeconds = 900
+    [int] $TimeoutSeconds = 900,
+
+    # Override per-machine with -Unity or the REBIRTH_UNITY_EXE env var.
+    [string] $Unity = $(if ($env:REBIRTH_UNITY_EXE) { $env:REBIRTH_UNITY_EXE } else { "D:\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe" })
 )
 
 $ErrorActionPreference = "Stop"
-$Unity = "D:\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe"
+
+if (-not (Test-Path -LiteralPath $Unity)) {
+    throw "Unity editor not found at '$Unity'. Pass -Unity or set REBIRTH_UNITY_EXE."
+}
 
 Remove-Item -LiteralPath $Log -Force -ErrorAction SilentlyContinue
 $process = Start-Process -FilePath $Unity -ArgumentList $UnityArgs -PassThru

@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/RebirthProtocol/Scenes/Duel.unity
+    guid: 5a02e27066163c048af3dfb6b1f08368
+  - enabled: 1
     path: Assets/RebirthProtocol/Scenes/Bootstrap.unity
     guid: 9174cad59c5aeb448a0b2e4e0188f932
   m_configObjects: {}

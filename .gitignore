@@ -47,3 +47,6 @@ CrashlyticsGeneratedSettings.c
 !ProjectSettings/**/*.asset
 !Packages/manifest.json
 !Packages/packages-lock.json
+
+# Unity generated project files
+*.csproj

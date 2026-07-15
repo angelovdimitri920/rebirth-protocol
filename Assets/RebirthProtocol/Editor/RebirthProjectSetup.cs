@@ -20,8 +20,10 @@ namespace RebirthProtocol.Editor
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Standalone, "com.rebirthprotocol.game");
             SetActiveInputHandling();
             EnsureBootstrapScene();
+            DuelSceneBuilder.CreateDuelScene();
             EditorBuildSettings.scenes = new[]
             {
+                new EditorBuildSettingsScene(DuelSceneBuilder.DuelScenePath, true),
                 new EditorBuildSettingsScene(BootstrapScenePath, true)
             };
             AssetDatabase.SaveAssets();

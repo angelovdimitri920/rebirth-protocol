@@ -185,6 +185,13 @@ namespace RebirthProtocol.Battle
 
                 _externalMove = to.normalized * Melee.Tuning.LungeSpeed;
             }
+            else if (Melee.Phase == MeleePhase.Swing)
+            {
+                // Hit check BEFORE the timer decrements (matching Melee.ts):
+                // a hitch frame with dt >= SwingActiveTime must not let an
+                // in-range swing expire into recovery unchecked.
+                TryApplyMeleeHit(target);
+            }
 
             var ev = Melee.Tick(dt, dist);
             switch (ev)
@@ -192,9 +199,6 @@ namespace RebirthProtocol.Battle
                 case MeleeTickEvent.EnteredSwing:
                     _externalMove = null;
                     _actionLock = 10f; // held while swing+recovery run
-                    TryApplyMeleeHit(target);
-                    break;
-                case MeleeTickEvent.SwingActive:
                     TryApplyMeleeHit(target);
                     break;
                 case MeleeTickEvent.EnteredRecovery:
@@ -263,6 +267,15 @@ namespace RebirthProtocol.Battle
             Melee.Cancel();
             _externalMove = null;
             _actionLock = 0f;
+        }
+
+        /// Melee clash (GAME_DESIGN §3.1): both attacks cancel into a short
+        /// step-cancel window — whoever re-engages faster wins the exchange.
+        public void ClashCancel()
+        {
+            Melee.Cancel();
+            _externalMove = null;
+            _actionLock = 0.25f;
         }
 
         // --- Motor: port of Robo.update ---

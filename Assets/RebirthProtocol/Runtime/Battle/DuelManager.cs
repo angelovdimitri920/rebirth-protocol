@@ -16,6 +16,11 @@ namespace RebirthProtocol.Battle
         public bool IsOver { get; private set; }
         public bool PlayerWon { get; private set; }
 
+        /// Turn off both brains for a training-dummy duel (and for
+        /// deterministic PlayMode tests): the simulation keeps running, but
+        /// nobody feeds the avatars intent.
+        public bool BrainsEnabled = true;
+
         private PlayerBrain _playerBrain;
         private EnemyBrain _enemyBrain;
         private ProjectileSystem _projectiles;
@@ -76,8 +81,13 @@ namespace RebirthProtocol.Battle
                 return;
             }
 
-            _playerBrain.Tick(dt);
-            _enemyBrain.Tick(dt);
+            if (BrainsEnabled)
+            {
+                _playerBrain.Tick(dt);
+                _enemyBrain.Tick(dt);
+            }
+
+            CheckMeleeClash();
 
             Player.TickMelee(dt, Enemy);
             Enemy.TickMelee(dt, Player);
@@ -102,6 +112,34 @@ namespace RebirthProtocol.Battle
                     PlayerWon = false;
                 }
             }
+        }
+
+        /// Melee clash (GAME_DESIGN §3.1): simultaneous melee attacks in
+        /// range cancel both into a short step-cancel rather than trading
+        /// hits in whatever order the loop happens to tick them.
+        private void CheckMeleeClash()
+        {
+            const float clashRange = 3.5f;
+            const float clashKnockback = 9f;
+
+            if (!Player.Melee.Attacking || !Enemy.Melee.Attacking)
+            {
+                return;
+            }
+
+            if (Vector3.Distance(Player.Position, Enemy.Position) > clashRange)
+            {
+                return;
+            }
+
+            Player.ClashCancel();
+            Enemy.ClashCancel();
+
+            var apart = Enemy.Position - Player.Position;
+            apart.y = 0f;
+            apart = apart.normalized;
+            Enemy.ApplyKnockback(apart, clashKnockback);
+            Player.ApplyKnockback(-apart, clashKnockback);
         }
 
         private static bool RestartPressed()

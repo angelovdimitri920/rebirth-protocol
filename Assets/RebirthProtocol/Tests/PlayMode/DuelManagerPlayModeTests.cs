@@ -51,6 +51,90 @@ namespace RebirthProtocol.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator SimultaneousMeleeInRangeClashesInsteadOfTrading()
+        {
+            var go = new GameObject("DuelTest");
+            var duel = go.AddComponent<DuelManager>();
+            duel.BrainsEnabled = false; // deterministic: nobody moves or fires
+            try
+            {
+                yield return null;
+
+                // Both in melee hit range: without clash resolution these
+                // swings would trade damage in player-first tick order.
+                Teleport(duel.Enemy, duel.Player.Position + new Vector3(2f, 0f, 0f));
+
+                // Start both swings on the domain state machines in the same
+                // C# turn — no frames pass, so this is order-proof: the next
+                // Update must resolve the clash BEFORE either melee ticks.
+                Assert.That(duel.Player.Melee.TryStart(2f), Is.True);
+                Assert.That(duel.Enemy.Melee.TryStart(2f), Is.True);
+                Assert.That(duel.Player.Melee.Attacking, Is.True);
+                Assert.That(duel.Enemy.Melee.Attacking, Is.True);
+
+                yield return null;
+
+                Assert.That(duel.Player.Melee.Busy, Is.False, "player attack canceled by clash");
+                Assert.That(duel.Enemy.Melee.Busy, Is.False, "enemy attack canceled by clash");
+                Assert.That(duel.Player.Health.Hp, Is.EqualTo(duel.Player.Health.MaxHp), "no damage traded");
+                Assert.That(duel.Enemy.Health.Hp, Is.EqualTo(duel.Enemy.Health.MaxHp), "no damage traded");
+            }
+            finally
+            {
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator HitchFrameSwingStillLandsItsHit()
+        {
+            var go = new GameObject("DuelTest");
+            var duel = go.AddComponent<DuelManager>();
+            duel.BrainsEnabled = false;
+            try
+            {
+                yield return null;
+                yield return null;
+
+                Teleport(duel.Enemy, duel.Player.Position + new Vector3(2f, 0f, 0f));
+
+                // Force frames longer than SwingActiveTime (0.18s): the swing
+                // must land before its timer expires into recovery.
+                Time.captureDeltaTime = 0.2f;
+                yield return null;
+
+                // Start on the domain state machine directly (avatar control
+                // locks like phantom landing recovery are out of scope here).
+                var hpBefore = duel.Enemy.Health.Hp;
+                Assert.That(duel.Player.Melee.TryStart(2f), Is.True);
+                Assert.That(duel.Player.Melee.Phase, Is.EqualTo(Domain.MeleePhase.Swing));
+
+                yield return null;
+                yield return null;
+
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore),
+                    "swing connects even when one frame consumes the whole active window");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        private static void Teleport(RoboAvatar avatar, Vector3 position)
+        {
+            var cc = avatar.GetComponent<CharacterController>();
+            cc.enabled = false;
+            avatar.transform.position = position;
+            cc.enabled = true;
+        }
+
+        [UnityTest]
         public IEnumerator EnduranceKnockdownRecoversThroughRebirth()
         {
             var go = new GameObject("DuelTest");

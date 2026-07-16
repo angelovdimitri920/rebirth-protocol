@@ -80,6 +80,7 @@ namespace RebirthProtocol.Battle
                 var blocked = false;
                 var nearest = float.MaxValue;
                 RoboAvatar struckAvatar = null;
+                CrateHealth struckCrate = null;
                 for (var h = 0; h < count; h++)
                 {
                     var hitAvatar = _hits[h].collider.GetComponent<RoboAvatar>();
@@ -90,12 +91,17 @@ namespace RebirthProtocol.Battle
 
                     nearest = _hits[h].distance;
                     struckAvatar = hitAvatar;
+                    struckCrate = hitAvatar == null ? _hits[h].collider.GetComponent<CrateHealth>() : null;
                     blocked = true;
                 }
 
                 if (struckAvatar != null)
                 {
                     struckAvatar.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
+                }
+                else if (struckCrate != null)
+                {
+                    struckCrate.Damage();
                 }
 
                 if (blocked)

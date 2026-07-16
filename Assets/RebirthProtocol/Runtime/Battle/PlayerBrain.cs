@@ -19,6 +19,7 @@ namespace RebirthProtocol.Battle
         private DuelCameraRig _camera;
         private BombSystem _bomb;
         private PodSystem _pod;
+        private float _lastThrustPress = -10f; // for double-tap-A air dash
 
         public void Init(RoboAvatar avatar, RoboAvatar enemy, DuelCameraRig cameraRig, BombSystem bomb, PodSystem pod)
         {
@@ -57,6 +58,19 @@ namespace RebirthProtocol.Battle
             var meleePressed = (keyboard?.kKey.wasPressedThisFrame ?? false) || (gamepad?.buttonNorth.wasPressedThisFrame ?? false);
             var leftArmHeld = (keyboard?.qKey.isPressed ?? false) || (gamepad?.rightTrigger.isPressed ?? false);
             var podPressed = (keyboard?.eKey.wasPressedThisFrame ?? false) || (gamepad?.leftTrigger.wasPressedThisFrame ?? false);
+            var podHeld = (keyboard?.eKey.isPressed ?? false) || (gamepad?.leftTrigger.isPressed ?? false);
+
+            // Double-tap A while airborne: alternate trigger for the SAME
+            // dash system X uses (prototype §11 — not a separate mechanic).
+            if (thrustPressed)
+            {
+                if (!_avatar.Grounded && Time.unscaledTime - _lastThrustPress < 0.3f)
+                {
+                    dashPressed = true;
+                }
+
+                _lastThrustPress = Time.unscaledTime;
+            }
 
             // Camera-relative world movement.
             var forward = _camera.FlatForward;
@@ -117,6 +131,22 @@ namespace RebirthProtocol.Battle
             if (podPressed)
             {
                 _pod.Toggle();
+            }
+
+            // Manual aim steering: holding the pod or bomb input redirects
+            // the stick to steer the launch direction / nudge the reticule.
+            if (podHeld)
+            {
+                _pod.SteerAim(worldMove, dt);
+            }
+            else
+            {
+                _pod.ClearAim();
+            }
+
+            if (_bomb.Aiming)
+            {
+                _bomb.SteerAim(worldMove, dt);
             }
 
             if (meleePressed && enemyAlive)

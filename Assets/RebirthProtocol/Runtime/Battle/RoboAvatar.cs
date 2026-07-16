@@ -1,3 +1,4 @@
+using RebirthProtocol.Battle.Audio;
 using RebirthProtocol.Domain;
 using UnityEngine;
 
@@ -48,6 +49,10 @@ namespace RebirthProtocol.Battle
         public RoboIntent Intent;
         public bool Grounded { get; private set; } = true;
 
+        /// Standing on an ice hazard (set by DuelManager per frame):
+        /// momentum carries and steering becomes a slow correction.
+        public bool OnIce;
+
         // Shield state (§3.2: engaged-only, regenerating, breaks into knockdown).
         public float ShieldHp { get; private set; }
         private float _shieldHitTimer = float.PositiveInfinity;
@@ -68,6 +73,10 @@ namespace RebirthProtocol.Battle
         private Transform _tiltRoot;
         private Renderer[] _renderers;
         private Transform _blade;
+        private Transform _shieldPlate;
+        private Vector3 _shieldRestPos;
+        private bool _wasThrusting;
+        private bool _wasOverheated;
 
         public Vector3 Position => transform.position;
         public Vector3 Center => transform.position + Vector3.up * CenterHeight;
@@ -148,7 +157,14 @@ namespace RebirthProtocol.Battle
 
                 if (chipResult is HitResult.Killed or HitResult.Knockdown)
                 {
-                    return chipResult == HitResult.Killed ? ReceiveResult.Killed : ReceiveResult.Knockdown;
+                    if (chipResult == HitResult.Killed)
+                    {
+                        GameAudio.Sfx?.Eliminate();
+                        return ReceiveResult.Killed;
+                    }
+
+                    GameAudio.Sfx?.Knockdown();
+                    return ReceiveResult.Knockdown;
                 }
 
                 ShieldHp -= scaledDamage * blockPercent;
@@ -158,9 +174,11 @@ namespace RebirthProtocol.Battle
                     // second free defense stacked on rebirth (§3.2).
                     ShieldHp = 0f;
                     Health.ForceKnockdown();
+                    GameAudio.Sfx?.GuardBreak();
                     return ReceiveResult.GuardBreak;
                 }
 
+                GameAudio.Sfx?.Shielded();
                 return ReceiveResult.Shielded;
             }
 
@@ -170,13 +188,20 @@ namespace RebirthProtocol.Battle
                 ApplyKnockback(fromDir, 2f);
             }
 
-            return result switch
+            switch (result)
             {
-                HitResult.Killed => ReceiveResult.Killed,
-                HitResult.Knockdown => ReceiveResult.Knockdown,
-                HitResult.Invulnerable => ReceiveResult.Invulnerable,
-                _ => ReceiveResult.Hit
-            };
+                case HitResult.Killed:
+                    GameAudio.Sfx?.Eliminate();
+                    return ReceiveResult.Killed;
+                case HitResult.Knockdown:
+                    GameAudio.Sfx?.Knockdown();
+                    return ReceiveResult.Knockdown;
+                case HitResult.Invulnerable:
+                    return ReceiveResult.Invulnerable;
+                default:
+                    GameAudio.Sfx?.Hit();
+                    return ReceiveResult.Hit;
+            }
         }
 
         public void ApplyKnockback(Vector3 dir, float speed)
@@ -205,6 +230,7 @@ namespace RebirthProtocol.Battle
                 return;
             }
 
+            GameAudio.Sfx?.Shot();
             var part = Loadout.Gun;
             var muzzle = Position + FacingDir * 0.8f + Vector3.up * CombatTuning.Gun.MuzzleHeight;
             var targetAlive = target != null && target.Health.State != HealthState.Dead;
@@ -288,6 +314,7 @@ namespace RebirthProtocol.Battle
                 case MeleeTickEvent.EnteredSwing:
                     _externalMove = null;
                     _actionLock = 10f; // held while swing+recovery run
+                    GameAudio.Sfx?.MeleeSwing();
                     TryApplyMeleeHit(target);
                     break;
                 case MeleeTickEvent.EnteredRecovery:
@@ -316,6 +343,11 @@ namespace RebirthProtocol.Battle
             {
                 _externalMove = null;
                 _actionLock = 10f;
+                // Already-in-range starts/chains enter Swing directly here —
+                // the EnteredSwing tick event (and its own cue) only fires
+                // for a lunge that closes the gap, so this is the only place
+                // a direct close-range swing plays its start-up sound.
+                GameAudio.Sfx?.MeleeSwing();
             }
         }
 
@@ -347,6 +379,7 @@ namespace RebirthProtocol.Battle
                 dir);
             if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
             {
+                GameAudio.Sfx?.MeleeHit();
                 target.ApplyKnockback(dir, Melee.Tuning.KnockbackSpeed * Melee.ComboKnockbackMult);
             }
 
@@ -355,7 +388,12 @@ namespace RebirthProtocol.Battle
             if (result is ReceiveResult.Shielded or ReceiveResult.GuardBreak
                 && target.Loadout.HasShield && target.Intent.ShieldHeld)
             {
+                var wasActive = Health.State == HealthState.Active;
                 Health.DrainEndurance(target.Loadout.Shield.MeleeParryEnduranceDamage);
+                if (wasActive && Health.State == HealthState.KnockedDown)
+                {
+                    GameAudio.Sfx?.Knockdown();
+                }
             }
         }
 
@@ -379,10 +417,23 @@ namespace RebirthProtocol.Battle
 
         public void TickMotor(float dt)
         {
+            var prevHealthState = Health.State;
             Health.Tick(dt);
             if (Intent.MashPressed)
             {
+                if (Health.State == HealthState.KnockedDown)
+                {
+                    GameAudio.Sfx?.MashTick();
+                }
+
                 Health.Mash();
+            }
+
+            // Knockdown/death cues fire at the hit site (ReceiveHit); the
+            // stand-up transition is the only one that happens inside Tick.
+            if (prevHealthState == HealthState.KnockedDown && Health.State == HealthState.Rebirth)
+            {
+                GameAudio.Sfx?.Rebirth();
             }
 
             var downed = Health.State is HealthState.KnockedDown or HealthState.Dead;
@@ -449,7 +500,14 @@ namespace RebirthProtocol.Battle
             else if (Grounded)
             {
                 var desired = Intent.MoveDir * Stats.RunSpeed;
-                if (Intent.FiringGun)
+                if (OnIce)
+                {
+                    // Ice: momentum carries; steering is a slow correction.
+                    var t = Mathf.Min(1f, 2.5f * dt);
+                    _velocity.x += (desired.x - _velocity.x) * t;
+                    _velocity.z += (desired.z - _velocity.z) * t;
+                }
+                else if (Intent.FiringGun)
                 {
                     // Firing on the ground: momentum carries, a "slide".
                     var t = Mathf.Min(1f, CombatTuning.Move.FireSlideCorrection * dt);
@@ -484,15 +542,33 @@ namespace RebirthProtocol.Battle
 
             if (canBoost && Intent.ThrustHeld && _dashTimer <= 0f)
             {
+                if (!_wasThrusting)
+                {
+                    GameAudio.Sfx?.Thrust();
+                }
+
+                _wasThrusting = true;
                 _velocity.y = Stats.JumpThrust;
                 Boost.SpendThrust(dt);
             }
+            else
+            {
+                _wasThrusting = false;
+            }
+
+            if (Boost.Overheated && !_wasOverheated)
+            {
+                GameAudio.Sfx?.Overheat();
+            }
+
+            _wasOverheated = Boost.Overheated;
 
             if (canBoost && Intent.DashRequested && _dashTimer <= 0f && !Intent.LeftArmActive
                 && Boost.TrySpendAirDash(_dashProfile.Cost, Stats.DashCount))
             {
                 _dashDir = Intent.MoveDir.sqrMagnitude > 0.01f ? Intent.MoveDir.normalized : FacingDir;
                 _dashTimer = _dashProfile.Duration;
+                GameAudio.Sfx?.Dash();
                 if (Grounded)
                 {
                     _velocity.y = CombatTuning.Dash.GroundDashHop; // ground dash lifts into a hop
@@ -521,8 +597,13 @@ namespace RebirthProtocol.Battle
             // --- Landing: recovery scales with spend, gauge refills ---
             if (!wasGrounded && Grounded)
             {
+                var spentFraction = 1f - Boost.Value / Boost.Max;
                 Boost.NotifyLanded(Stats.LandRecoveryMult);
                 _dashTimer = 0f;
+                if (spentFraction > 0.15f)
+                {
+                    GameAudio.Sfx?.Land(); // skip tiny hops, keep real landings audible
+                }
             }
 
             // --- Facing (frozen mid-swing/recovery: commitment is punishable) ---
@@ -549,29 +630,15 @@ namespace RebirthProtocol.Battle
             _tiltRoot.SetParent(_visualRoot, false);
             _tiltRoot.localPosition = new Vector3(0f, CenterHeight, 0f);
 
-            AddPart(PrimitiveType.Capsule, new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), hull);
-            AddPart(PrimitiveType.Cube, new Vector3(0f, 0.75f, 0.1f), new Vector3(0.5f, 0.35f, 0.5f), hull);
-            AddPart(PrimitiveType.Cube, new Vector3(0f, 0.78f, 0.32f), new Vector3(0.36f, 0.1f, 0.05f), accent); // visor
-            AddPart(PrimitiveType.Cube, new Vector3(-0.62f, 0.35f, 0f), new Vector3(0.3f, 0.45f, 0.35f), hull); // pauldrons
-            AddPart(PrimitiveType.Cube, new Vector3(0.62f, 0.35f, 0f), new Vector3(0.3f, 0.45f, 0.35f), hull);
-            AddPart(PrimitiveType.Cube, new Vector3(0f, 0.1f, 0.42f), new Vector3(0.4f, 0.5f, 0.12f), accent); // chest panel
-
-            _blade = AddPart(PrimitiveType.Cube, new Vector3(0f, 0.2f, 1.4f), new Vector3(0.15f, 0.5f, 2.2f), new Color(1f, 0.93f, 0.4f)).transform;
-            _blade.gameObject.SetActive(false);
+            var parts = RoboVisual.Build(_tiltRoot, Loadout, accent);
+            _blade = parts.Blade;
+            _shieldPlate = parts.ShieldPlate;
+            if (_shieldPlate != null)
+            {
+                _shieldRestPos = _shieldPlate.localPosition;
+            }
 
             _renderers = _visualRoot.GetComponentsInChildren<Renderer>(true);
-        }
-
-        private GameObject AddPart(PrimitiveType type, Vector3 localPos, Vector3 scale, Color color)
-        {
-            var part = GameObject.CreatePrimitive(type);
-            Destroy(part.GetComponent<Collider>()); // CharacterController is the only collider
-            part.transform.SetParent(_tiltRoot, false);
-            part.transform.localPosition = localPos;
-            part.transform.localScale = scale;
-            var renderer = part.GetComponent<Renderer>();
-            renderer.material = BattleMaterials.Lit(color);
-            return part;
         }
 
         private void SyncVisual(float dt)
@@ -602,6 +669,18 @@ namespace RebirthProtocol.Battle
             }
 
             _blade.gameObject.SetActive(Melee.Phase == MeleePhase.Swing);
+
+            // Shield raise: plate swings forward while held so the opponent
+            // can read the block state at a glance.
+            if (_shieldPlate != null)
+            {
+                var raised = Intent.ShieldHeld && Health.State == HealthState.Active;
+                var targetPos = raised ? new Vector3(0f, 0.1f, 0.75f) : _shieldRestPos;
+                var targetRot = raised ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.identity;
+                var t = Mathf.Min(1f, 14f * dt);
+                _shieldPlate.localPosition = Vector3.Lerp(_shieldPlate.localPosition, targetPos, t);
+                _shieldPlate.localRotation = Quaternion.Slerp(_shieldPlate.localRotation, targetRot, t);
+            }
 
             // Dead: sink and fade.
             if (Health.State == HealthState.Dead)

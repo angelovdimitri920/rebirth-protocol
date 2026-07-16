@@ -1,4 +1,5 @@
 using System;
+using RebirthProtocol.Battle.Audio;
 using RebirthProtocol.Domain;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -24,6 +25,8 @@ namespace RebirthProtocol.Battle
         private Action<Loadout> _onDeploy;
         private GameObject _canvasRoot;
         private float _repeatTimer;
+        private Transform _previewRoot;
+        private Transform _previewTilt;
 
         public void Init(Loadout initial, Action<Loadout> onDeploy)
         {
@@ -76,6 +79,15 @@ namespace RebirthProtocol.Battle
                 }
             };
 
+            // Live 3D preview on a dais at arena center: rebuilt on every
+            // part pick, slow turntable spin so all sides read.
+            _previewRoot = new GameObject("Hangar Preview").transform;
+            _previewRoot.SetParent(transform, false);
+            _previewRoot.position = new Vector3(0f, 0f, 0f);
+            _previewTilt = new GameObject("Preview Tilt").transform;
+            _previewTilt.SetParent(_previewRoot, false);
+            _previewTilt.localPosition = new Vector3(0f, 1f, 0f);
+
             BuildUi();
             Refresh();
         }
@@ -125,6 +137,7 @@ namespace RebirthProtocol.Battle
             if (vertical != 0)
             {
                 _selectedRow = (_selectedRow + vertical + _rows.Length) % _rows.Length;
+                GameAudio.Sfx?.UiClick();
                 Refresh();
             }
 
@@ -132,7 +145,14 @@ namespace RebirthProtocol.Battle
             {
                 var row = _rows[_selectedRow];
                 row.Index = (row.Index + horizontal + row.Count()) % row.Count();
+                GameAudio.Sfx?.UiClick();
                 Refresh();
+            }
+
+            // Turntable spin so the preview reads from all sides.
+            if (_previewTilt != null)
+            {
+                _previewTilt.Rotate(0f, 40f * Time.deltaTime, 0f, Space.World);
             }
 
             var deploy = (keyboard?.enterKey.wasPressedThisFrame ?? false)
@@ -141,6 +161,7 @@ namespace RebirthProtocol.Battle
                 || (gamepad?.startButton.wasPressedThisFrame ?? false);
             if (deploy)
             {
+                GameAudio.Sfx?.UiClick();
                 _onDeploy?.Invoke(BuildLoadout());
             }
         }
@@ -164,6 +185,17 @@ namespace RebirthProtocol.Battle
         public void Show(bool visible)
         {
             _canvasRoot.SetActive(visible);
+            _previewRoot.gameObject.SetActive(visible);
+        }
+
+        private void RebuildPreview()
+        {
+            for (var i = _previewTilt.childCount - 1; i >= 0; i--)
+            {
+                Destroy(_previewTilt.GetChild(i).gameObject);
+            }
+
+            RoboVisual.Build(_previewTilt, BuildLoadout(), new Color(0.2f, 0.55f, 1f));
         }
 
         private void BuildUi()
@@ -222,6 +254,8 @@ namespace RebirthProtocol.Battle
                 var color = i == _selectedRow ? "#ffd45f" : "#dde";
                 row.Text.text = $"<color={color}>{marker}{row.Label}   {row.Describe(row.Index)}</color>";
             }
+
+            RebuildPreview();
         }
     }
 }

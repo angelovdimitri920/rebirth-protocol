@@ -1,3 +1,4 @@
+using RebirthProtocol.Battle.Audio;
 using RebirthProtocol.Domain;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,6 +22,9 @@ namespace RebirthProtocol.Battle
         /// simulation is held until the player deploys.
         public bool InHangar { get; private set; } = true;
 
+        /// Fight paused (P / Start): simulation ticks are skipped entirely.
+        public bool Paused { get; private set; }
+
         /// Turn off both brains for a training-dummy duel (and for
         /// deterministic PlayMode tests): the simulation keeps running, but
         /// nobody feeds the avatars intent.
@@ -40,10 +44,20 @@ namespace RebirthProtocol.Battle
         private BombSystem _enemyBomb;
         private PodSystem _playerPod;
         private PodSystem _enemyPod;
+        private MusicSequencer _music;
+        private ArenaBuilder.Result _arena;
+        private Transform _lockReticle;
+        private Renderer _lockReticleRenderer;
 
         private void Awake()
         {
-            BuildArena();
+            var audioGo = new GameObject("Audio");
+            audioGo.transform.SetParent(transform, false);
+            GameAudio.Sfx = audioGo.AddComponent<SfxPlayer>();
+            _music = audioGo.AddComponent<MusicSequencer>();
+            _music.Play(MusicMode.Hangar);
+
+            _arena = ArenaBuilder.Build(transform, _enemyBuildIndex);
 
             _projectiles = new GameObject("Projectiles").AddComponent<ProjectileSystem>();
             _projectiles.transform.SetParent(transform, false);
@@ -83,6 +97,7 @@ namespace RebirthProtocol.Battle
         {
             InHangar = false;
             _hangar.Show(false);
+            _music.Play(MusicMode.Combat);
         }
 
         private void OnDeploy(Loadout playerLoadout)
@@ -144,6 +159,20 @@ namespace RebirthProtocol.Battle
             _hud.transform.SetParent(transform, false);
             _hud.Init(Player, Enemy, this, _playerBomb, _playerPod);
 
+            // Lock-on reticle: a diamond over the enemy, red while they can
+            // be damaged, grey while downed/rebirthing (invulnerable).
+            if (_lockReticle == null)
+            {
+                var reticle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Destroy(reticle.GetComponent<Collider>());
+                reticle.name = "Lock Reticle";
+                reticle.transform.SetParent(transform, false);
+                reticle.transform.localScale = new Vector3(0.35f, 0.35f, 0.05f);
+                _lockReticleRenderer = reticle.GetComponent<Renderer>();
+                _lockReticleRenderer.material = BattleMaterials.Unlit(new Color(1f, 0.25f, 0.2f));
+                _lockReticle = reticle.transform;
+            }
+
             IsOver = false;
             PlayerWon = false;
         }
@@ -174,16 +203,41 @@ namespace RebirthProtocol.Battle
 
         private void Update()
         {
-            var dt = Time.deltaTime;
-            if (dt <= 0f)
-            {
-                return;
-            }
-
             if (InHangar)
             {
                 _hangar.Tick();
-                _cameraRig.Tick(dt);
+
+                // Deploying mid-tick (via _hangar.Tick() -> OnDeploy) already
+                // re-initialized the camera rig into orthographic combat
+                // mode — don't clobber that by applying the hangar's
+                // perspective close-up afterward.
+                if (!InHangar)
+                {
+                    return;
+                }
+
+                // Hangar camera: fixed close-up on the preview robo dais.
+                _cameraRig.transform.position = new Vector3(0f, 2.4f, 5.2f);
+                _cameraRig.transform.rotation = Quaternion.LookRotation(new Vector3(0f, 1.3f, 0f) - _cameraRig.transform.position);
+                _cameraRig.GetComponent<Camera>().orthographic = false;
+                return;
+            }
+
+            if (!IsOver && PausePressed())
+            {
+                Paused = !Paused;
+                GameAudio.Sfx?.UiClick();
+            }
+
+            if (Paused)
+            {
+                _hud.Tick(); // banner shows PAUSED
+                return;
+            }
+
+            var dt = Time.deltaTime;
+            if (dt <= 0f)
+            {
                 return;
             }
 
@@ -204,6 +258,8 @@ namespace RebirthProtocol.Battle
             Player.TickMelee(dt, Enemy);
             Enemy.TickMelee(dt, Player);
 
+            ApplyIce(Player);
+            ApplyIce(Enemy);
             Player.TickMotor(dt);
             Enemy.TickMotor(dt);
 
@@ -214,6 +270,7 @@ namespace RebirthProtocol.Battle
             _enemyPod.Tick(dt, Player);
 
             _cameraRig.Tick(dt);
+            TickLockReticle(dt);
             _hud.Tick();
 
             if (!IsOver)
@@ -222,13 +279,48 @@ namespace RebirthProtocol.Battle
                 {
                     IsOver = true;
                     PlayerWon = true;
+                    GameAudio.Sfx?.Victory();
+                    _music.Play(MusicMode.Hangar);
                 }
                 else if (Player.Health.State == HealthState.Dead)
                 {
                     IsOver = true;
                     PlayerWon = false;
+                    GameAudio.Sfx?.Defeat();
+                    _music.Play(MusicMode.Hangar);
                 }
             }
+        }
+
+        private void ApplyIce(RoboAvatar avatar)
+        {
+            var onIce = false;
+            foreach (var region in _arena.IceRegions)
+            {
+                if (region.Contains(new Vector2(avatar.Position.x, avatar.Position.z)))
+                {
+                    onIce = true;
+                    break;
+                }
+            }
+
+            avatar.OnIce = onIce;
+        }
+
+        private void TickLockReticle(float dt)
+        {
+            _lockReticle.position = Enemy.Position + Vector3.up * 2.7f;
+            _lockReticle.rotation = Quaternion.LookRotation(_cameraRig.transform.forward) * Quaternion.Euler(0f, 0f, 45f);
+            var targetable = Enemy.Health.State == HealthState.Active;
+            _lockReticleRenderer.material.color = targetable
+                ? new Color(1f, 0.25f, 0.2f)
+                : new Color(0.5f, 0.5f, 0.5f, 0.6f);
+        }
+
+        private static bool PausePressed()
+        {
+            return (Keyboard.current?.pKey.wasPressedThisFrame ?? false)
+                || (Gamepad.current?.startButton.wasPressedThisFrame ?? false);
         }
 
         /// Melee clash (GAME_DESIGN §3.1): simultaneous melee attacks in
@@ -251,6 +343,7 @@ namespace RebirthProtocol.Battle
 
             Player.ClashCancel();
             Enemy.ClashCancel();
+            GameAudio.Sfx?.Clash();
 
             var apart = Enemy.Position - Player.Position;
             apart.y = 0f;
@@ -275,64 +368,5 @@ namespace RebirthProtocol.Battle
             return avatar;
         }
 
-        // Sealed Holosseum volume: floor, low visible walls, tall invisible
-        // boundary + ceiling (a maxed hover reaches ~29m), and cover crates.
-        private void BuildArena()
-        {
-            var size = CombatTuning.Arena.Size;
-            var half = size * 0.5f;
-
-            Block("Floor", new Vector3(0f, -0.5f, 0f), new Vector3(size, 1f, size), new Color(0.16f, 0.17f, 0.2f));
-
-            var wallColor = new Color(0.3f, 0.32f, 0.38f);
-            var visH = CombatTuning.Arena.VisibleWallHeight;
-            Block("Wall N", new Vector3(0f, visH * 0.5f, half + 0.5f), new Vector3(size + 2f, visH, 1f), wallColor);
-            Block("Wall S", new Vector3(0f, visH * 0.5f, -half - 0.5f), new Vector3(size + 2f, visH, 1f), wallColor);
-            Block("Wall E", new Vector3(half + 0.5f, visH * 0.5f, 0f), new Vector3(1f, visH, size + 2f), wallColor);
-            Block("Wall W", new Vector3(-half - 0.5f, visH * 0.5f, 0f), new Vector3(1f, visH, size + 2f), wallColor);
-
-            var wallH = CombatTuning.Arena.WallHeight;
-            InvisibleBlock("Bound N", new Vector3(0f, wallH * 0.5f, half + 0.5f), new Vector3(size + 2f, wallH, 1f));
-            InvisibleBlock("Bound S", new Vector3(0f, wallH * 0.5f, -half - 0.5f), new Vector3(size + 2f, wallH, 1f));
-            InvisibleBlock("Bound E", new Vector3(half + 0.5f, wallH * 0.5f, 0f), new Vector3(1f, wallH, size + 2f));
-            InvisibleBlock("Bound W", new Vector3(-half - 0.5f, wallH * 0.5f, 0f), new Vector3(1f, wallH, size + 2f));
-            InvisibleBlock("Ceiling", new Vector3(0f, wallH, 0f), new Vector3(size + 2f, 1f, size + 2f));
-
-            var crateColor = new Color(0.45f, 0.36f, 0.24f);
-            var crateSize = new Vector3(1.6f, 1.6f, 1.6f);
-            Vector3[] cratePositions =
-            {
-                new Vector3(5f, 0.8f, 5f),
-                new Vector3(-5f, 0.8f, -5f),
-                new Vector3(-7f, 0.8f, 6f),
-                new Vector3(7f, 0.8f, -5f),
-                new Vector3(0f, 0.8f, 10f),
-                new Vector3(-2f, 0.8f, -11f)
-            };
-            foreach (var pos in cratePositions)
-            {
-                Block("Crate", pos, crateSize, crateColor);
-            }
-        }
-
-        private void Block(string name, Vector3 pos, Vector3 scale, Color color)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = name;
-            go.transform.SetParent(transform, false);
-            go.transform.position = pos;
-            go.transform.localScale = scale;
-            go.GetComponent<Renderer>().material = BattleMaterials.Lit(color);
-        }
-
-        private void InvisibleBlock(string name, Vector3 pos, Vector3 scale)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = name;
-            go.transform.SetParent(transform, false);
-            go.transform.position = pos;
-            go.transform.localScale = scale;
-            Destroy(go.GetComponent<Renderer>());
-        }
     }
 }

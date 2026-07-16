@@ -336,7 +336,7 @@ namespace RebirthProtocol.Battle
         private void ApplyLava(RoboAvatar avatar, float dt)
         {
             avatar.LavaSoundCooldown -= dt;
-            if (!avatar.Grounded)
+            if (!avatar.Grounded || avatar.Health.State == HealthState.Dead)
             {
                 return;
             }

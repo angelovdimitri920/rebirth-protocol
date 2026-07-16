@@ -24,7 +24,14 @@ namespace RebirthProtocol.Battle.Audio
             _pool = new AudioSource[8];
             for (var i = 0; i < _pool.Length; i++)
             {
-                var src = gameObject.AddComponent<AudioSource>();
+                // Each pooled source gets its OWN child transform. Adding
+                // every AudioSource directly to this GameObject would mean
+                // they all share this component's single Transform, so
+                // repositioning one for a new sound would silently teleport
+                // every other currently-playing one-shot to the same spot.
+                var child = new GameObject($"SfxVoice{i}").transform;
+                child.SetParent(transform, false);
+                var src = child.gameObject.AddComponent<AudioSource>();
                 src.playOnAwake = false;
                 src.volume = 0.85f;
                 src.spatialBlend = 1f;

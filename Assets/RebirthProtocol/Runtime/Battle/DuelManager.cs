@@ -103,6 +103,8 @@ namespace RebirthProtocol.Battle
         /// call again from the hangar: previous instances are destroyed.
         private void SpawnCombatants(Loadout playerLoadout, Loadout enemyLoadout = null)
         {
+            _projectiles.Clear(); // no in-flight shots with stale owner/target refs
+
             if (Player != null)
             {
                 Destroy(Player.gameObject);

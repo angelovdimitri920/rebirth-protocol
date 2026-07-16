@@ -124,6 +124,16 @@ namespace RebirthProtocol.Battle
             return p.Target != null && p.Target.Health.State != HealthState.Dead;
         }
 
+        /// Remove every live shot — combatant respawns must not leave
+        /// projectiles in flight holding stale owner/target references.
+        public void Clear()
+        {
+            for (var i = _active.Count - 1; i >= 0; i--)
+            {
+                Despawn(i);
+            }
+        }
+
         private void Despawn(int index)
         {
             Destroy(_active[index].Tf.gameObject);

@@ -68,11 +68,19 @@ namespace RebirthProtocol.Battle
             toEnemy.y = 0f;
 
             // Left arm: shield is a plain hold; bomb is hold-to-aim,
-            // release-to-throw.
-            var shieldHeld = _avatar.Loadout.HasShield && leftArmHeld && _avatar.Health.State == HealthState.Active;
+            // release-to-throw. Both are suppressed while melee is busy
+            // (matching the prototype's !melee.busy gate) — no shielding or
+            // parrying mid-swing.
+            var meleeBusy = _avatar.Melee.Busy;
+            var shieldHeld = _avatar.Loadout.HasShield && leftArmHeld && !meleeBusy
+                && _avatar.Health.State == HealthState.Active;
             if (_avatar.Loadout.HasBomb)
             {
-                if (leftArmHeld && !_bomb.Aiming)
+                if (meleeBusy && _bomb.Aiming)
+                {
+                    _bomb.CancelAim(); // melee committed mid-aim: drop the reticule, no throw
+                }
+                else if (leftArmHeld && !_bomb.Aiming)
                 {
                     _bomb.StartAim(_enemy);
                 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RebirthProtocol.Battle.Audio;
 using RebirthProtocol.Domain;
 using UnityEngine;
 
@@ -34,6 +35,7 @@ namespace RebirthProtocol.Battle
 
         private RoboAvatar _owner;
         private Transform _reticule;
+        private Vector3 _manualOffset;
         private readonly List<LiveBomb> _live = new List<LiveBomb>();
         private readonly List<Blast> _blasts = new List<Blast>();
 
@@ -62,9 +64,22 @@ namespace RebirthProtocol.Battle
             }
 
             Aiming = true;
+            _manualOffset = Vector3.zero;
             UpdateAim(target);
             _reticule.gameObject.SetActive(true);
             return true;
+        }
+
+        /// Call each frame the bomb input is held with stick deflection, to
+        /// nudge the reticule away from its default aim point.
+        public void SteerAim(Vector3 dir, float dt)
+        {
+            if (!Aiming || dir.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+
+            _manualOffset += dir * (6f * dt); // aimSteer.bombOffsetSpeed
         }
 
         /// Call every frame the bomb input is held: the reticule tracks its
@@ -95,6 +110,17 @@ namespace RebirthProtocol.Battle
                 point = start + _owner.FacingDir * part.ReticuleRange;
             }
 
+            // Manual offset on top, then clamp the TOTAL distance from the
+            // robo to ReticuleRange — steering can't out-range the weapon.
+            point += _manualOffset;
+            var fromSelf = point - start;
+            fromSelf.y = 0f;
+            if (fromSelf.magnitude > part.ReticuleRange)
+            {
+                fromSelf = fromSelf.normalized * part.ReticuleRange;
+                point = start + fromSelf;
+            }
+
             point.y = 0.1f;
             _reticule.position = point;
         }
@@ -110,6 +136,7 @@ namespace RebirthProtocol.Battle
 
             Aiming = false;
             _reticule.gameObject.SetActive(false);
+            GameAudio.Sfx?.BombThrow();
             var part = _owner.Loadout.Bomb;
             CooldownRemaining = part.Cooldown;
 
@@ -197,6 +224,8 @@ namespace RebirthProtocol.Battle
             blast.GetComponent<Renderer>().material = BattleMaterials.Unlit(new Color(1f, 0.67f, 0.27f));
             _blasts.Add(new Blast { Tf = blast.transform, Timer = 0.35f });
 
+            GameAudio.Sfx?.Explosion();
+
             // AoE hits BOTH robos -- your own bomb can knock you down.
             foreach (var robo in new[] { player, enemy })
             {
@@ -208,6 +237,17 @@ namespace RebirthProtocol.Battle
                         part.Damage * _owner.Stats.AtkMult,
                         part.EnduranceDamage,
                         toRobo.sqrMagnitude > 0.0001f ? toRobo.normalized : Vector3.forward);
+                }
+            }
+
+            // Crates inside the blast are destroyed outright.
+            var overlaps = Physics.OverlapSphere(at, part.BlastRadius);
+            foreach (var overlap in overlaps)
+            {
+                var crate = overlap.GetComponent<CrateHealth>();
+                if (crate != null)
+                {
+                    crate.DestroyOutright();
                 }
             }
         }

@@ -74,6 +74,11 @@ namespace RebirthProtocol.Battle
             Label(canvasGo.transform, new Vector2(0f, 0f), new Vector2(24f, y + 26f), TextAnchor.LowerLeft, DescribeLoadout(player.Loadout));
             Label(canvasGo.transform, new Vector2(1f, 1f), new Vector2(-344f, -104f), TextAnchor.UpperLeft, DescribeLoadout(enemy.Loadout));
 
+            // Controller legend, bottom-right — shown while a gamepad is
+            // connected (keyboard bindings live in the hangar footer).
+            _padLegend = Label(canvasGo.transform, new Vector2(1f, 0f), new Vector2(-24f, 24f), TextAnchor.LowerRight,
+                "<size=14><color=#99a>A jump · B gun · X dash · Y melee · RT bomb/shield · LT pod · Start pause</color></size>");
+
             // Center banner.
             var bannerGo = new GameObject("Banner");
             bannerGo.transform.SetParent(canvasGo.transform, false);
@@ -96,7 +101,9 @@ namespace RebirthProtocol.Battle
             return $"<size=14><color=#99a>{l.Body.Name} · {rightArm} · {leftArm} · {l.Legs.Name} · {l.Pod.Name}</color></size>";
         }
 
-        private static void Label(Transform parent, Vector2 anchor, Vector2 offset, TextAnchor align, string content)
+        private Text _padLegend;
+
+        private static Text Label(Transform parent, Vector2 anchor, Vector2 offset, TextAnchor align, string content)
         {
             var go = new GameObject("Label");
             go.transform.SetParent(parent, false);
@@ -112,6 +119,7 @@ namespace RebirthProtocol.Battle
             rect.pivot = anchor;
             rect.anchoredPosition = offset;
             rect.sizeDelta = new Vector2(520f, 22f);
+            return text;
         }
 
         private static Transform Bar(Transform parent, Vector2 anchor, Vector2 offset, Vector2 size, Color color)
@@ -164,11 +172,17 @@ namespace RebirthProtocol.Battle
                 SetFill(_enemyShieldFill, _enemy.ShieldHp / _enemy.Loadout.Shield.ShieldHp);
             }
 
+            _padLegend.enabled = UnityEngine.InputSystem.Gamepad.current != null;
+
             if (_duel.IsOver)
             {
                 _banner.text = _duel.PlayerWon
                     ? "VICTORY\n<size=22>R / Start — rematch</size>"
                     : "DEFEAT\n<size=22>R / Start — rematch</size>";
+            }
+            else if (_duel.Paused)
+            {
+                _banner.text = "PAUSED\n<size=22>P / Start — resume</size>";
             }
             else if (_player.Health.State == HealthState.KnockedDown)
             {

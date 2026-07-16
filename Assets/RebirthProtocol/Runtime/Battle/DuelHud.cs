@@ -79,6 +79,10 @@ namespace RebirthProtocol.Battle
             _padLegend = Label(canvasGo.transform, new Vector2(1f, 0f), new Vector2(-24f, 24f), TextAnchor.LowerRight,
                 "<size=14><color=#99a>A jump · B gun · X dash · Y melee · RT bomb/shield · LT pod · Start pause</color></size>");
 
+            // Arena layout name, top-center.
+            Label(canvasGo.transform, new Vector2(0.5f, 1f), new Vector2(0f, -16f), TextAnchor.UpperCenter,
+                $"<size=14><color=#889>{duel.ArenaName}</color></size>");
+
             // Center banner.
             var bannerGo = new GameObject("Banner");
             bannerGo.transform.SetParent(canvasGo.transform, false);

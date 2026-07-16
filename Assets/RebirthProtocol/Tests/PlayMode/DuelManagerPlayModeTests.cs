@@ -178,6 +178,42 @@ namespace RebirthProtocol.Tests.PlayMode
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator LavaPoolDamagesGroundedRoboButNotOneOutside()
+        {
+            var go = new GameObject("DuelTest");
+            var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
+            duel.BrainsEnabled = false;
+            try
+            {
+                duel.ForceArenaLayout(3); // Cinderfield
+                yield return null;
+
+                // One of Cinderfield's pools is centered at (-8, 3) radius 3.
+                Teleport(duel.Player, new Vector3(-8f, duel.Player.Position.y, 3f));
+                Teleport(duel.Enemy, new Vector3(15f, duel.Enemy.Position.y, 15f)); // well clear of every pool
+                yield return null; // let CharacterController settle/ground
+
+                var playerHpBefore = duel.Player.Health.Hp;
+                var enemyHpBefore = duel.Enemy.Health.Hp;
+
+                for (var i = 0; i < 30; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Health.Hp, Is.LessThan(playerHpBefore), "grounded in the lava pool takes damage");
+                Assert.That(duel.Enemy.Health.Hp, Is.EqualTo(enemyHpBefore), "well outside every pool takes none");
+            }
+            finally
+            {
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
         private static void Teleport(RoboAvatar avatar, Vector3 position)
         {
             var cc = avatar.GetComponent<CharacterController>();

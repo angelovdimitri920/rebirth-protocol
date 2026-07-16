@@ -15,14 +15,14 @@ namespace RebirthProtocol.Battle
             HitsRemaining -= amount;
             if (HitsRemaining <= 0)
             {
-                GameAudio.Sfx?.CrateBreak();
+                GameAudio.Sfx?.CrateBreak(transform.position);
                 Destroy(gameObject);
             }
         }
 
         public void DestroyOutright()
         {
-            GameAudio.Sfx?.CrateBreak();
+            GameAudio.Sfx?.CrateBreak(transform.position);
             Destroy(gameObject);
         }
     }

@@ -53,6 +53,10 @@ namespace RebirthProtocol.Battle
         /// momentum carries and steering becomes a slow correction.
         public bool OnIce;
 
+        /// Cooldown for the lava hazard's sizzle cue (DuelManager-owned,
+        /// mirrors the prototype's per-robo WeakMap cooldown).
+        public float LavaSoundCooldown;
+
         // Shield state (§3.2: engaged-only, regenerating, breaks into knockdown).
         public float ShieldHp { get; private set; }
         private float _shieldHitTimer = float.PositiveInfinity;
@@ -159,11 +163,11 @@ namespace RebirthProtocol.Battle
                 {
                     if (chipResult == HitResult.Killed)
                     {
-                        GameAudio.Sfx?.Eliminate();
+                        GameAudio.Sfx?.Eliminate(Position);
                         return ReceiveResult.Killed;
                     }
 
-                    GameAudio.Sfx?.Knockdown();
+                    GameAudio.Sfx?.Knockdown(Position);
                     return ReceiveResult.Knockdown;
                 }
 
@@ -174,11 +178,11 @@ namespace RebirthProtocol.Battle
                     // second free defense stacked on rebirth (§3.2).
                     ShieldHp = 0f;
                     Health.ForceKnockdown();
-                    GameAudio.Sfx?.GuardBreak();
+                    GameAudio.Sfx?.GuardBreak(Position);
                     return ReceiveResult.GuardBreak;
                 }
 
-                GameAudio.Sfx?.Shielded();
+                GameAudio.Sfx?.Shielded(Position);
                 return ReceiveResult.Shielded;
             }
 
@@ -191,15 +195,15 @@ namespace RebirthProtocol.Battle
             switch (result)
             {
                 case HitResult.Killed:
-                    GameAudio.Sfx?.Eliminate();
+                    GameAudio.Sfx?.Eliminate(Position);
                     return ReceiveResult.Killed;
                 case HitResult.Knockdown:
-                    GameAudio.Sfx?.Knockdown();
+                    GameAudio.Sfx?.Knockdown(Position);
                     return ReceiveResult.Knockdown;
                 case HitResult.Invulnerable:
                     return ReceiveResult.Invulnerable;
                 default:
-                    GameAudio.Sfx?.Hit();
+                    GameAudio.Sfx?.Hit(Position);
                     return ReceiveResult.Hit;
             }
         }
@@ -230,7 +234,7 @@ namespace RebirthProtocol.Battle
                 return;
             }
 
-            GameAudio.Sfx?.Shot();
+            GameAudio.Sfx?.Shot(Position);
             var part = Loadout.Gun;
             var muzzle = Position + FacingDir * 0.8f + Vector3.up * CombatTuning.Gun.MuzzleHeight;
             var targetAlive = target != null && target.Health.State != HealthState.Dead;
@@ -314,7 +318,7 @@ namespace RebirthProtocol.Battle
                 case MeleeTickEvent.EnteredSwing:
                     _externalMove = null;
                     _actionLock = 10f; // held while swing+recovery run
-                    GameAudio.Sfx?.MeleeSwing();
+                    GameAudio.Sfx?.MeleeSwing(Position);
                     TryApplyMeleeHit(target);
                     break;
                 case MeleeTickEvent.EnteredRecovery:
@@ -347,7 +351,7 @@ namespace RebirthProtocol.Battle
                 // the EnteredSwing tick event (and its own cue) only fires
                 // for a lunge that closes the gap, so this is the only place
                 // a direct close-range swing plays its start-up sound.
-                GameAudio.Sfx?.MeleeSwing();
+                GameAudio.Sfx?.MeleeSwing(Position);
             }
         }
 
@@ -379,7 +383,7 @@ namespace RebirthProtocol.Battle
                 dir);
             if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
             {
-                GameAudio.Sfx?.MeleeHit();
+                GameAudio.Sfx?.MeleeHit(target.Position);
                 target.ApplyKnockback(dir, Melee.Tuning.KnockbackSpeed * Melee.ComboKnockbackMult);
             }
 
@@ -392,7 +396,7 @@ namespace RebirthProtocol.Battle
                 Health.DrainEndurance(target.Loadout.Shield.MeleeParryEnduranceDamage);
                 if (wasActive && Health.State == HealthState.KnockedDown)
                 {
-                    GameAudio.Sfx?.Knockdown();
+                    GameAudio.Sfx?.Knockdown(Position);
                 }
             }
         }
@@ -423,7 +427,7 @@ namespace RebirthProtocol.Battle
             {
                 if (Health.State == HealthState.KnockedDown)
                 {
-                    GameAudio.Sfx?.MashTick();
+                    GameAudio.Sfx?.MashTick(Position);
                 }
 
                 Health.Mash();
@@ -433,7 +437,7 @@ namespace RebirthProtocol.Battle
             // stand-up transition is the only one that happens inside Tick.
             if (prevHealthState == HealthState.KnockedDown && Health.State == HealthState.Rebirth)
             {
-                GameAudio.Sfx?.Rebirth();
+                GameAudio.Sfx?.Rebirth(Position);
             }
 
             var downed = Health.State is HealthState.KnockedDown or HealthState.Dead;
@@ -544,7 +548,7 @@ namespace RebirthProtocol.Battle
             {
                 if (!_wasThrusting)
                 {
-                    GameAudio.Sfx?.Thrust();
+                    GameAudio.Sfx?.Thrust(Position);
                 }
 
                 _wasThrusting = true;
@@ -558,7 +562,7 @@ namespace RebirthProtocol.Battle
 
             if (Boost.Overheated && !_wasOverheated)
             {
-                GameAudio.Sfx?.Overheat();
+                GameAudio.Sfx?.Overheat(Position);
             }
 
             _wasOverheated = Boost.Overheated;
@@ -568,7 +572,7 @@ namespace RebirthProtocol.Battle
             {
                 _dashDir = Intent.MoveDir.sqrMagnitude > 0.01f ? Intent.MoveDir.normalized : FacingDir;
                 _dashTimer = _dashProfile.Duration;
-                GameAudio.Sfx?.Dash();
+                GameAudio.Sfx?.Dash(Position);
                 if (Grounded)
                 {
                     _velocity.y = CombatTuning.Dash.GroundDashHop; // ground dash lifts into a hop
@@ -602,7 +606,7 @@ namespace RebirthProtocol.Battle
                 _dashTimer = 0f;
                 if (spentFraction > 0.15f)
                 {
-                    GameAudio.Sfx?.Land(); // skip tiny hops, keep real landings audible
+                    GameAudio.Sfx?.Land(Position); // skip tiny hops, keep real landings audible
                 }
             }
 

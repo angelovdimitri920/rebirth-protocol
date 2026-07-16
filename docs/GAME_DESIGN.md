@@ -413,3 +413,12 @@ Five-task pass closing most of the remaining prototype-parity gaps (the roguelit
 5. **Hangar 3D preview**: live robo on a turntable dais at arena center, rebuilt on every part pick, framed by a perspective close-up camera while the hangar is open.
 
 Still open after this pass: rigged mech models + animation (Cobalt Knight et al.), the roguelite run layer (§18 note stands), lava-style damaging hazards, positional audio, and the three unbuilt chassis archetypes.
+
+## 20. Damaging Hazard Arena + Positional Audio (2026-07-16)
+
+Two small, low-risk items closed from §19's remaining list (deliberately chosen over starting the bigger rigged-mech-integration work, which stays open pending a dedicated pass):
+
+- **Cinderfield** (`ArenaBuilder`, 4th rotating layout): three lava pools at the prototype's exact positions/radii (`Arena.ts`'s `poolDefs`), dealing continuous DoT (24 HP/s, 14 endurance/s) to anyone grounded inside — ported straight from `applyHazards`, including that it bypasses shields entirely by hitting `CombatantHealth.TakeHit` directly instead of routing through `RoboAvatar.ReceiveHit` (environmental damage, not directional). Sizzle SFX gated by the same 0.4s per-robo cooldown as the source. `DuelManager.ForceArenaLayout(int)` exists so PlayMode tests aren't at the mercy of the static per-launch layout rotation.
+- **Positional audio**: every combat/environmental sound in `SfxPlayer` now takes a world position and plays through a 3D-spatialized `AudioSource` pool (linear rolloff, 4–40m range matching the arena's scale); UI/run cues (menu clicks, victory/defeat stingers) stay on a separate flat 2D source since they're player feedback, not something happening in the world.
+
+Still open: rigged mech models + animation, the roguelite run layer, the three unbuilt chassis archetypes.

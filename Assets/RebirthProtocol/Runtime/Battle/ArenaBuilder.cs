@@ -10,10 +10,26 @@ namespace RebirthProtocol.Battle
     // build so every fight reads a little differently.
     public static class ArenaBuilder
     {
+        public readonly struct LavaPool
+        {
+            public LavaPool(Vector2 center, float radius)
+            {
+                Center = center;
+                Radius = radius;
+            }
+
+            public Vector2 Center { get; }
+            public float Radius { get; }
+        }
+
         public sealed class Result
         {
             /// XZ rectangles where grounded movement is icy.
             public readonly List<Rect> IceRegions = new List<Rect>();
+
+            /// Circular pools (XZ center + radius) that deal continuous
+            /// environmental damage to anyone grounded inside them.
+            public readonly List<LavaPool> LavaPools = new List<LavaPool>();
             public string Name;
         }
 
@@ -39,7 +55,7 @@ namespace RebirthProtocol.Battle
             Invisible(parent, "Bound W", new Vector3(-half - 0.5f, wallH * 0.5f, 0f), new Vector3(1f, wallH, size + 2f));
             Invisible(parent, "Ceiling", new Vector3(0f, wallH, 0f), new Vector3(size + 2f, 1f, size + 2f));
 
-            switch (layoutIndex % 3)
+            switch (layoutIndex % 4)
             {
                 case 1: // Colonnade: tall unbreakable pillars, sparse crates
                     result.Name = "Colonnade";
@@ -62,6 +78,24 @@ namespace RebirthProtocol.Battle
                     Crate(parent, new Vector3(-10f, 0.8f, -10f));
                     Crate(parent, new Vector3(-10f, 0.8f, 10f));
                     Crate(parent, new Vector3(10f, 0.8f, -10f));
+                    break;
+
+                case 3: // Cinderfield: lava pools deal continuous DoT (24 hp/s, 14 endurance/s, bypasses shields)
+                    result.Name = "Cinderfield";
+                    foreach (var (x, z, r) in new[] { (-8f, 3f, 3f), (8f, -3f, 3f), (0f, 10f, 2.4f) })
+                    {
+                        result.LavaPools.Add(new LavaPool(new Vector2(x, z), r));
+                        var pool = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        pool.name = "Lava Pool";
+                        pool.transform.SetParent(parent, false);
+                        pool.transform.position = new Vector3(x, 0.02f, z);
+                        pool.transform.localScale = new Vector3(r * 2f, 0.02f, r * 2f);
+                        Object.Destroy(pool.GetComponent<Collider>()); // visual only; the hazard is a damage rule
+                        pool.GetComponent<Renderer>().material = BattleMaterials.Unlit(new Color(1f, 0.27f, 0f));
+                    }
+
+                    Crate(parent, new Vector3(-4f, 0.8f, -8f));
+                    Crate(parent, new Vector3(6f, 0.8f, 6f));
                     break;
 
                 default: // Depot: the classic crate field

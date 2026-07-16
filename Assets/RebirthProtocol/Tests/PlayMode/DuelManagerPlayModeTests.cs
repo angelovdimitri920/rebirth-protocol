@@ -178,6 +178,61 @@ namespace RebirthProtocol.Tests.PlayMode
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator LavaPoolDamagesGroundedRoboButNotOneOutside()
+        {
+            var go = new GameObject("DuelTest");
+            var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
+            duel.BrainsEnabled = false;
+            try
+            {
+                duel.ForceArenaLayout(3); // Cinderfield
+                yield return null;
+
+                // One of Cinderfield's pools is centered at (-8, 3) radius 3.
+                // Reposition by setting the transform directly rather than
+                // the shared Teleport helper's disable/re-enable dance:
+                // toggling CharacterController.enabled here left isGrounded
+                // stuck false for many frames in practice (a real Unity
+                // quirk, not a gameplay bug — normal play never
+                // disables/re-enables the controller mid-fight).
+                duel.Player.transform.position = new Vector3(-8f, duel.Player.Position.y, 3f);
+                duel.Enemy.transform.position = new Vector3(15f, duel.Enemy.Position.y, 15f); // well clear of every pool
+
+                var elapsed = 0f;
+                while (!duel.Player.Grounded && elapsed < 2f)
+                {
+                    yield return null;
+                    elapsed += Time.deltaTime;
+                }
+
+                Assert.That(duel.Player.Grounded, Is.True, "settled and grounded before the timed window starts");
+
+                var playerHpBefore = duel.Player.Health.Hp;
+                var enemyHpBefore = duel.Enemy.Health.Hp;
+
+                for (var i = 0; i < 30; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Health.Hp, Is.LessThan(playerHpBefore), "grounded in the lava pool takes damage");
+                // A real lava tick over 30 frames would be several HP at
+                // minimum (24 hp/s); a tolerance this tight still catches
+                // that while not flaking on incidental float noise from
+                // ~30 frames of unrelated simulation (knockback decay,
+                // shield regen, etc. all run every frame regardless).
+                Assert.That(duel.Enemy.Health.Hp, Is.EqualTo(enemyHpBefore).Within(0.5f), "well outside every pool takes none");
+            }
+            finally
+            {
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
         private static void Teleport(RoboAvatar avatar, Vector3 position)
         {
             var cc = avatar.GetComponent<CharacterController>();

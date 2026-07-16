@@ -57,15 +57,15 @@ namespace RebirthProtocol.Battle
             if (Deployed)
             {
                 Deployed = false;
+                GameAudio.Sfx?.PodToggle(false, _body.position);
                 _body.gameObject.SetActive(false);
-                GameAudio.Sfx?.PodToggle(false);
                 return;
             }
 
             Deployed = true;
             _body.gameObject.SetActive(true);
             _body.position = _owner.Position + Vector3.up * CombatTuning.Pod.HoverHeight;
-            GameAudio.Sfx?.PodToggle(true);
+            GameAudio.Sfx?.PodToggle(true, _body.position);
         }
 
         /// Call each frame the pod input is held with stick deflection, to
@@ -133,7 +133,7 @@ namespace RebirthProtocol.Battle
             {
                 _fireCooldown = part.FireInterval;
                 Energy -= part.EnergyPerShot;
-                GameAudio.Sfx?.PodShot();
+                GameAudio.Sfx?.PodShot(_body.position);
                 var aim = _aimDir.HasValue
                     ? _body.position + _aimDir.Value * 15f
                     : target.Position + Vector3.up * 1.0f;

@@ -46,8 +46,13 @@ namespace RebirthProtocol.Battle
         private PodSystem _enemyPod;
         private MusicSequencer _music;
         private ArenaBuilder.Result _arena;
+        private Transform _arenaRoot;
         private Transform _lockReticle;
         private Renderer _lockReticleRenderer;
+
+        /// Name of the currently active Holosseum layout (Depot/Colonnade/
+        /// Frostfield/Cinderfield) — exposed for the HUD and tests.
+        public string ArenaName => _arena.Name;
 
         private void Awake()
         {
@@ -57,7 +62,9 @@ namespace RebirthProtocol.Battle
             _music = audioGo.AddComponent<MusicSequencer>();
             _music.Play(MusicMode.Hangar);
 
-            _arena = ArenaBuilder.Build(transform, _enemyBuildIndex);
+            _arenaRoot = new GameObject("Arena").transform;
+            _arenaRoot.SetParent(transform, false);
+            _arena = ArenaBuilder.Build(_arenaRoot, _enemyBuildIndex);
 
             _projectiles = new GameObject("Projectiles").AddComponent<ProjectileSystem>();
             _projectiles.transform.SetParent(transform, false);
@@ -112,6 +119,19 @@ namespace RebirthProtocol.Battle
         public void RespawnWithLoadouts(Loadout playerLoadout, Loadout enemyLoadout)
         {
             SpawnCombatants(playerLoadout, enemyLoadout);
+        }
+
+        /// Rebuild the arena with a specific layout index — used by
+        /// PlayMode tests so hazard behavior isn't at the mercy of the
+        /// static per-launch rotation. Not used by real gameplay.
+        public void ForceArenaLayout(int layoutIndex)
+        {
+            for (var i = _arenaRoot.childCount - 1; i >= 0; i--)
+            {
+                Destroy(_arenaRoot.GetChild(i).gameObject);
+            }
+
+            _arena = ArenaBuilder.Build(_arenaRoot, layoutIndex);
         }
 
         /// (Re)spawn both robos and everything attached to them. Safe to
@@ -260,6 +280,8 @@ namespace RebirthProtocol.Battle
 
             ApplyIce(Player);
             ApplyIce(Enemy);
+            ApplyLava(Player, dt);
+            ApplyLava(Enemy, dt);
             Player.TickMotor(dt);
             Enemy.TickMotor(dt);
 
@@ -307,6 +329,35 @@ namespace RebirthProtocol.Battle
             avatar.OnIce = onIce;
         }
 
+        /// Lava pools (Cinderfield): continuous DoT while grounded inside
+        /// one, ported straight from Arena.ts's applyHazards — bypasses the
+        /// shield entirely (environmental, not directional) by hitting
+        /// CombatantHealth directly instead of routing through ReceiveHit.
+        private void ApplyLava(RoboAvatar avatar, float dt)
+        {
+            avatar.LavaSoundCooldown -= dt;
+            if (!avatar.Grounded || avatar.Health.State == HealthState.Dead)
+            {
+                return;
+            }
+
+            var pos = new Vector2(avatar.Position.x, avatar.Position.z);
+            foreach (var pool in _arena.LavaPools)
+            {
+                if (Vector2.Distance(pos, pool.Center) > pool.Radius)
+                {
+                    continue;
+                }
+
+                avatar.Health.TakeHit(24f * dt, 14f * dt);
+                if (avatar.LavaSoundCooldown <= 0f)
+                {
+                    GameAudio.Sfx?.HazardSizzle(avatar.Position);
+                    avatar.LavaSoundCooldown = 0.4f;
+                }
+            }
+        }
+
         private void TickLockReticle(float dt)
         {
             _lockReticle.position = Enemy.Position + Vector3.up * 2.7f;
@@ -343,7 +394,7 @@ namespace RebirthProtocol.Battle
 
             Player.ClashCancel();
             Enemy.ClashCancel();
-            GameAudio.Sfx?.Clash();
+            GameAudio.Sfx?.Clash(Vector3.Lerp(Player.Position, Enemy.Position, 0.5f));
 
             var apart = Enemy.Position - Player.Position;
             apart.y = 0f;

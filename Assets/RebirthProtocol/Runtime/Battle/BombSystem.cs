@@ -136,7 +136,7 @@ namespace RebirthProtocol.Battle
 
             Aiming = false;
             _reticule.gameObject.SetActive(false);
-            GameAudio.Sfx?.BombThrow();
+            GameAudio.Sfx?.BombThrow(_owner.Position);
             var part = _owner.Loadout.Bomb;
             CooldownRemaining = part.Cooldown;
 
@@ -224,7 +224,7 @@ namespace RebirthProtocol.Battle
             blast.GetComponent<Renderer>().material = BattleMaterials.Unlit(new Color(1f, 0.67f, 0.27f));
             _blasts.Add(new Blast { Tf = blast.transform, Timer = 0.35f });
 
-            GameAudio.Sfx?.Explosion();
+            GameAudio.Sfx?.Explosion(at);
 
             // AoE hits BOTH robos -- your own bomb can knock you down.
             foreach (var robo in new[] { player, enemy })

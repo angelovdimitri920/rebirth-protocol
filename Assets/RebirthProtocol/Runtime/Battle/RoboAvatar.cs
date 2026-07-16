@@ -157,7 +157,14 @@ namespace RebirthProtocol.Battle
 
                 if (chipResult is HitResult.Killed or HitResult.Knockdown)
                 {
-                    return chipResult == HitResult.Killed ? ReceiveResult.Killed : ReceiveResult.Knockdown;
+                    if (chipResult == HitResult.Killed)
+                    {
+                        GameAudio.Sfx?.Eliminate();
+                        return ReceiveResult.Killed;
+                    }
+
+                    GameAudio.Sfx?.Knockdown();
+                    return ReceiveResult.Knockdown;
                 }
 
                 ShieldHp -= scaledDamage * blockPercent;
@@ -336,6 +343,11 @@ namespace RebirthProtocol.Battle
             {
                 _externalMove = null;
                 _actionLock = 10f;
+                // Already-in-range starts/chains enter Swing directly here —
+                // the EnteredSwing tick event (and its own cue) only fires
+                // for a lunge that closes the gap, so this is the only place
+                // a direct close-range swing plays its start-up sound.
+                GameAudio.Sfx?.MeleeSwing();
             }
         }
 
@@ -376,7 +388,12 @@ namespace RebirthProtocol.Battle
             if (result is ReceiveResult.Shielded or ReceiveResult.GuardBreak
                 && target.Loadout.HasShield && target.Intent.ShieldHeld)
             {
+                var wasActive = Health.State == HealthState.Active;
                 Health.DrainEndurance(target.Loadout.Shield.MeleeParryEnduranceDamage);
+                if (wasActive && Health.State == HealthState.KnockedDown)
+                {
+                    GameAudio.Sfx?.Knockdown();
+                }
             }
         }
 

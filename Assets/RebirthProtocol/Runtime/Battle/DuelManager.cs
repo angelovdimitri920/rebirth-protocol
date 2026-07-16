@@ -206,6 +206,16 @@ namespace RebirthProtocol.Battle
             if (InHangar)
             {
                 _hangar.Tick();
+
+                // Deploying mid-tick (via _hangar.Tick() -> OnDeploy) already
+                // re-initialized the camera rig into orthographic combat
+                // mode — don't clobber that by applying the hangar's
+                // perspective close-up afterward.
+                if (!InHangar)
+                {
+                    return;
+                }
+
                 // Hangar camera: fixed close-up on the preview robo dais.
                 _cameraRig.transform.position = new Vector3(0f, 2.4f, 5.2f);
                 _cameraRig.transform.rotation = Quaternion.LookRotation(new Vector3(0f, 1.3f, 0f) - _cameraRig.transform.position);

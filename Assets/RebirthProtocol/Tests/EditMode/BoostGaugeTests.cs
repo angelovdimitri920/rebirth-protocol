@@ -25,10 +25,10 @@ namespace RebirthProtocol.Tests.EditMode
         {
             var boost = new BoostGauge();
 
-            Assert.That(boost.TrySpendAirDash(), Is.True);
+            Assert.That(boost.TrySpendAirDash(28f, 2), Is.True);
             Assert.That(boost.Value, Is.EqualTo(72f));
-            Assert.That(boost.TrySpendAirDash(), Is.True);
-            Assert.That(boost.TrySpendAirDash(), Is.False, "third dash blocked by MaxAirDashes");
+            Assert.That(boost.TrySpendAirDash(28f, 2), Is.True);
+            Assert.That(boost.TrySpendAirDash(28f, 2), Is.False, "third dash blocked by MaxAirDashes");
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace RebirthProtocol.Tests.EditMode
             var boost = new BoostGauge();
             boost.SpendThrust(1.7f); // 76.5 spent, 23.5 left < 28 cost
 
-            Assert.That(boost.TrySpendAirDash(), Is.False);
+            Assert.That(boost.TrySpendAirDash(28f, 2), Is.False);
             Assert.That(boost.AirDashesUsed, Is.Zero);
         }
 

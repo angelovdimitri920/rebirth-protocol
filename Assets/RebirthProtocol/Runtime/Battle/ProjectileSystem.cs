@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace RebirthProtocol.Battle
 {
-    // Homing gun projectiles: kinematic spheres stepped by DuelManager.
-    // Obstacles block shots (raycast per step); hits land on proximity to
-    // the target's capsule center.
+    // Homing projectiles (guns and pods): kinematic spheres stepped by
+    // DuelManager. Obstacles block shots (raycast per step); hits land on
+    // raycast intercept or proximity to the target's capsule center.
     public sealed class ProjectileSystem : MonoBehaviour
     {
         private sealed class Projectile
@@ -16,12 +16,16 @@ namespace RebirthProtocol.Battle
             public float Life;
             public RoboAvatar Owner;
             public RoboAvatar Target;
+            public float Damage;
+            public float EnduranceDamage;
+            public float HomingTurnRate;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
         private readonly RaycastHit[] _hits = new RaycastHit[8];
 
-        public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint)
+        public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
+            float damage, float enduranceDamage, float speed, float homingTurnRate)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             Destroy(go.GetComponent<Collider>());
@@ -35,10 +39,13 @@ namespace RebirthProtocol.Battle
             _active.Add(new Projectile
             {
                 Tf = go.transform,
-                Velocity = (aimPoint - muzzle).normalized * CombatTuning.Gun.ProjectileSpeed,
+                Velocity = (aimPoint - muzzle).normalized * speed,
                 Life = CombatTuning.Gun.ProjectileLifetime,
                 Owner = owner,
-                Target = target
+                Target = target,
+                Damage = damage,
+                EnduranceDamage = enduranceDamage,
+                HomingTurnRate = homingTurnRate
             });
         }
 
@@ -55,10 +62,10 @@ namespace RebirthProtocol.Battle
                 }
 
                 // Homing: curve toward the locked target's center.
-                if (p.Target != null && p.Target.Health.State != HealthState.Dead)
+                if (p.HomingTurnRate > 0f && TargetAlive(p))
                 {
                     var toTarget = (p.Target.Center - p.Tf.position).normalized;
-                    var maxRadians = CombatTuning.Gun.HomingTurnRate * dt;
+                    var maxRadians = p.HomingTurnRate * dt;
                     p.Velocity = Vector3.RotateTowards(p.Velocity, toTarget * p.Velocity.magnitude, maxRadians, 0f);
                 }
 
@@ -68,6 +75,7 @@ namespace RebirthProtocol.Battle
 
                 // Obstacle / robo intercept along this step. RaycastNonAlloc
                 // results are unsorted, so take the nearest non-owner hit.
+                // Vanish-dashing robos are intangible: shots pass through.
                 var count = Physics.RaycastNonAlloc(from, step / stepLen, _hits, stepLen);
                 var blocked = false;
                 var nearest = float.MaxValue;
@@ -75,9 +83,9 @@ namespace RebirthProtocol.Battle
                 for (var h = 0; h < count; h++)
                 {
                     var hitAvatar = _hits[h].collider.GetComponent<RoboAvatar>();
-                    if (hitAvatar == p.Owner || _hits[h].distance >= nearest)
+                    if (hitAvatar == p.Owner || (hitAvatar != null && hitAvatar.Intangible) || _hits[h].distance >= nearest)
                     {
-                        continue; // never hit your own shot
+                        continue;
                     }
 
                     nearest = _hits[h].distance;
@@ -87,7 +95,7 @@ namespace RebirthProtocol.Battle
 
                 if (struckAvatar != null)
                 {
-                    struckAvatar.ReceiveHit(CombatTuning.Gun.Damage, CombatTuning.Gun.EnduranceDamage, p.Velocity.normalized);
+                    struckAvatar.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
                 }
 
                 if (blocked)
@@ -99,15 +107,30 @@ namespace RebirthProtocol.Battle
                 p.Tf.position = from + step;
 
                 // Proximity hit: homing shots that drift past the raycast line.
-                if (p.Target != null && p.Target.Health.State != HealthState.Dead)
+                if (TargetAlive(p) && !p.Target.Intangible)
                 {
                     var toCenter = p.Target.Center - p.Tf.position;
                     if (toCenter.sqrMagnitude < 0.7f * 0.7f)
                     {
-                        p.Target.ReceiveHit(CombatTuning.Gun.Damage, CombatTuning.Gun.EnduranceDamage, p.Velocity.normalized);
+                        p.Target.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
                         Despawn(i);
                     }
                 }
+            }
+        }
+
+        private static bool TargetAlive(Projectile p)
+        {
+            return p.Target != null && p.Target.Health.State != HealthState.Dead;
+        }
+
+        /// Remove every live shot — combatant respawns must not leave
+        /// projectiles in flight holding stale owner/target references.
+        public void Clear()
+        {
+            for (var i = _active.Count - 1; i >= 0; i--)
+            {
+                Despawn(i);
             }
         }
 

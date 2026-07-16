@@ -30,15 +30,15 @@ namespace RebirthProtocol.Domain
             Spend(CombatTuning.Boost.ThrustDrainPerSec * dt);
         }
 
-        public bool TrySpendAirDash()
+        public bool TrySpendAirDash(float cost, int maxDashes)
         {
-            if (Value < CombatTuning.Dash.Cost || AirDashesUsed >= CombatTuning.Dash.MaxAirDashes)
+            if (Value < cost || AirDashesUsed >= maxDashes)
             {
                 return false;
             }
 
             AirDashesUsed += 1;
-            Spend(CombatTuning.Dash.Cost);
+            Spend(cost);
             return true;
         }
 

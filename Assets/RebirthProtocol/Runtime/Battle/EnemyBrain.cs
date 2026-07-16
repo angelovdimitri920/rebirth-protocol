@@ -3,15 +3,18 @@ using UnityEngine;
 
 namespace RebirthProtocol.Battle
 {
-    // Port of the prototype's DummyAI (Stage 1 slice: gun + melee only, no
-    // bomb/pod/shield yet). Basic pressure-test opponent: orbits at mid
-    // range, strafes, occasionally jumps or dashes, fires in bursts, and
-    // goes for melee when the player is close or landing-recovery
-    // vulnerable. Deterministic: all randomness from one seeded Random.
+    // Port of the prototype's DummyAI: orbits at mid range, strafes, jumps
+    // and dashes occasionally, fires in bursts, lobs its bomb off cooldown
+    // (or raises its shield periodically at close range if that's its left
+    // arm instead), keeps its pod deployed, and goes for melee when the
+    // player is close or landing-recovery vulnerable. Deterministic: all
+    // randomness from one seeded Random.
     public sealed class EnemyBrain : MonoBehaviour
     {
         private RoboAvatar _avatar;
         private RoboAvatar _player;
+        private BombSystem _bomb;
+        private PodSystem _pod;
         private System.Random _rng;
 
         private float _strafeSign = 1f;
@@ -20,11 +23,18 @@ namespace RebirthProtocol.Battle
         private float _fireTimer;
         private float _meleeTimer = 2f;
         private bool _thrustHeld;
+        private float _bombTimer = 3f; // don't open with a bomb
+        private bool _bombAiming;
+        private float _bombAimTimer;
+        private float _shieldTimer = 1f;
+        private bool _shieldEngaged;
 
-        public void Init(RoboAvatar avatar, RoboAvatar player, int seed)
+        public void Init(RoboAvatar avatar, RoboAvatar player, BombSystem bomb, PodSystem pod, int seed)
         {
             _avatar = avatar;
             _player = player;
+            _bomb = bomb;
+            _pod = pod;
             _rng = new System.Random(seed);
         }
 
@@ -69,22 +79,9 @@ namespace RebirthProtocol.Battle
 
             var playerAlive = _player.Health.State != HealthState.Dead;
 
-            _avatar.Intent = new RoboIntent
-            {
-                MoveDir = move,
-                ThrustHeld = _thrustHeld,
-                DashRequested = NextFloat() < CombatTuning.Ai.DashChancePerSec * dt,
-                MashPressed = NextFloat() < 8f * dt, // ~8 mash/s
-                FiringGun = false, // set below once the burst gate resolves
-                HasFaceYaw = true,
-                FaceYaw = Mathf.Atan2(dirToPlayer.x, dirToPlayer.z),
-                HasDashHoming = playerAlive,
-                DashHomingPoint = _player.Position
-            };
-
             // Melee: punish a close player, especially during landing recovery.
             _meleeTimer -= dt;
-            if (playerAlive && !_avatar.Melee.Busy && _meleeTimer <= 0f && dist < 10f
+            if (_avatar.Loadout.HasMelee && playerAlive && !_avatar.Melee.Busy && _meleeTimer <= 0f && dist < 10f
                 && (_player.Boost.LandingRecovery > 0f || NextFloat() < 0.5f))
             {
                 _avatar.TryMelee(_player);
@@ -105,9 +102,76 @@ namespace RebirthProtocol.Battle
                 _fireTimer = _firing ? CombatTuning.Ai.BurstDuration : CombatTuning.Ai.FireInterval;
             }
 
-            var gunFiring = _firing && playerAlive && !_avatar.Melee.Busy;
-            _avatar.Intent.FiringGun = gunFiring;
+            var gunFiring = _avatar.Loadout.HasGun && _firing && playerAlive && !_avatar.Melee.Busy;
+
+            // Left arm: bomb OR shield, whichever this build actually has.
+            var shieldHeld = false;
+            if (_avatar.Loadout.HasShield)
+            {
+                _shieldTimer -= dt;
+                if (_shieldTimer <= 0f)
+                {
+                    _shieldEngaged = !_shieldEngaged;
+                    _shieldTimer = _shieldEngaged
+                        ? 1.0f + NextFloat() // hold it up for a beat
+                        : 0.6f + NextFloat() * 0.8f; // then rest -- rooted isn't free
+                }
+
+                shieldHeld = _shieldEngaged && dist < 10f && !_avatar.Melee.Busy
+                    && _avatar.Health.State == HealthState.Active;
+            }
+            else if (_avatar.Loadout.HasBomb)
+            {
+                _bombTimer -= dt;
+                if (!_bombAiming && _bombTimer <= 0f && playerAlive && _bomb.Ready && dist < 18f)
+                {
+                    if (_bomb.StartAim(_player))
+                    {
+                        _bombAiming = true;
+                        _bombAimTimer = 0.25f + NextFloat() * 0.3f; // hold, then release
+                    }
+                }
+
+                if (_bombAiming)
+                {
+                    _bomb.UpdateAim(_player);
+                    _bombAimTimer -= dt;
+                    if (_bombAimTimer <= 0f || !playerAlive)
+                    {
+                        _bomb.Release();
+                        _bombAiming = false;
+                        _bombTimer = 2f + NextFloat() * 3f;
+                    }
+                }
+
+                if (_bombAiming && !_bomb.Aiming)
+                {
+                    _bombAiming = false; // knocked down mid-aim: bomb canceled itself
+                }
+            }
+
+            _avatar.Intent = new RoboIntent
+            {
+                MoveDir = move,
+                ThrustHeld = _thrustHeld,
+                DashRequested = NextFloat() < CombatTuning.Ai.DashChancePerSec * dt,
+                MashPressed = NextFloat() < 8f * dt, // ~8 mash/s
+                FiringGun = gunFiring,
+                ShieldHeld = shieldHeld,
+                LeftArmActive = shieldHeld || _bombAiming,
+                HasFaceYaw = true,
+                FaceYaw = Mathf.Atan2(dirToPlayer.x, dirToPlayer.z),
+                HasDashHoming = playerAlive,
+                DashHomingPoint = _player.Position
+            };
+
             _avatar.TickGun(dt, gunFiring, playerAlive ? _player : null);
+
+            // Keep the pod out.
+            if (!_pod.Deployed && _avatar.Health.State == HealthState.Active)
+            {
+                _pod.Toggle();
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ namespace RebirthProtocol.Tests.PlayMode
         {
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
 
             // ~2 simulated seconds: AI orbits, fires, possibly melees.
             for (var i = 0; i < 120; i++)
@@ -36,6 +37,7 @@ namespace RebirthProtocol.Tests.PlayMode
         {
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
             yield return null;
 
             duel.Enemy.ReceiveHit(duel.Enemy.Health.MaxHp + 1f, 0f, Vector3.forward);
@@ -55,6 +57,7 @@ namespace RebirthProtocol.Tests.PlayMode
         {
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
             duel.BrainsEnabled = false; // deterministic: nobody moves or fires
             try
             {
@@ -92,6 +95,7 @@ namespace RebirthProtocol.Tests.PlayMode
         {
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
             duel.BrainsEnabled = false;
             try
             {
@@ -126,6 +130,54 @@ namespace RebirthProtocol.Tests.PlayMode
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator ShieldBlocksFrontHitsAndGuardBreaksIntoKnockdown()
+        {
+            var go = new GameObject("DuelTest");
+            var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
+            duel.BrainsEnabled = false;
+            try
+            {
+                var shieldLoadout = new Loadout
+                {
+                    Body = PartsCatalog.Bodies[0], // defMult 1.0 keeps numbers plain
+                    Gun = PartsCatalog.Guns[0],
+                    Shield = PartsCatalog.Shields[0], // Aegis: 180 hp, 75% front block
+                    Legs = PartsCatalog.Legs[0],
+                    Pod = PartsCatalog.Pods[0]
+                };
+                duel.RespawnWithLoadouts(shieldLoadout, PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                var player = duel.Player;
+                player.Intent = new RoboIntent { ShieldHeld = true, LeftArmActive = true };
+
+                // Player spawns facing +x toward the enemy; an attack
+                // traveling -x hits the front arc.
+                var result = player.ReceiveHit(100f, 40f, new Vector3(-1f, 0f, 0f));
+
+                Assert.That(result, Is.EqualTo(ReceiveResult.Shielded));
+                Assert.That(player.Health.Hp, Is.EqualTo(player.Health.MaxHp - 25f), "25% chips through");
+                Assert.That(player.Health.Endurance, Is.EqualTo(player.Health.MaxEndurance - 10f));
+                Assert.That(player.ShieldHp, Is.EqualTo(105f), "blocked 75 drains the shield pool");
+
+                // Blocked portion exceeding remaining shield hp: guard break
+                // feeds the SAME knockdown state — no second defense layer.
+                result = player.ReceiveHit(200f, 0f, new Vector3(-1f, 0f, 0f));
+
+                Assert.That(result, Is.EqualTo(ReceiveResult.GuardBreak));
+                Assert.That(player.ShieldHp, Is.Zero);
+                Assert.That(player.Health.State, Is.EqualTo(HealthState.KnockedDown));
+            }
+            finally
+            {
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
         private static void Teleport(RoboAvatar avatar, Vector3 position)
         {
             var cc = avatar.GetComponent<CharacterController>();
@@ -139,6 +191,7 @@ namespace RebirthProtocol.Tests.PlayMode
         {
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
             yield return null;
 
             duel.Player.ReceiveHit(10f, duel.Player.Health.MaxEndurance + 1f, Vector3.forward);

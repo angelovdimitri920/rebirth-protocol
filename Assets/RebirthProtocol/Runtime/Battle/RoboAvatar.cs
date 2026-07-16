@@ -10,20 +10,37 @@ namespace RebirthProtocol.Battle
         public bool DashRequested;
         public bool MashPressed;
         public bool FiringGun;
+        public bool ShieldHeld; // only meaningful with a shield left arm
+
+        /// Shield held or a bomb being aimed: hard-halts all horizontal
+        /// momentum (even mid-air) and blocks dashing entirely.
+        public bool LeftArmActive;
         public bool HasFaceYaw;
         public float FaceYaw;
         public bool HasDashHoming;
         public Vector3 DashHomingPoint;
     }
 
-    // One robo: CharacterController motor + boost economy + health + weapons.
-    // Port of the prototype's Robo.ts movement rules (Stage 1 slice: no
-    // shield/bomb/pod/ice paths yet). Driven manually by DuelManager.Tick so
-    // update order stays deterministic — no Unity Update() here.
+    public enum ReceiveResult
+    {
+        Hit,
+        Knockdown,
+        Killed,
+        Invulnerable,
+        Evaded,
+        Shielded,
+        GuardBreak
+    }
+
+    // One robo: CharacterController motor + boost economy + health + the
+    // five-slot loadout's weapons. Port of the prototype's Robo.ts. Driven
+    // manually by DuelManager.Tick so update order stays deterministic.
     public sealed class RoboAvatar : MonoBehaviour
     {
         private const float CenterHeight = 1f;
 
+        public Loadout Loadout { get; private set; }
+        public RoboStats Stats { get; private set; }
         public CombatantHealth Health { get; private set; }
         public BoostGauge Boost { get; private set; }
         public GunCycle Gun { get; private set; }
@@ -31,8 +48,13 @@ namespace RebirthProtocol.Battle
         public RoboIntent Intent;
         public bool Grounded { get; private set; } = true;
 
+        // Shield state (§3.2: engaged-only, regenerating, breaks into knockdown).
+        public float ShieldHp { get; private set; }
+        private float _shieldHitTimer = float.PositiveInfinity;
+
         private CharacterController _cc;
         private ProjectileSystem _projectiles;
+        private DashProfile _dashProfile;
         private Vector3 _velocity;
         private Vector3 _dashDir = Vector3.forward;
         private float _dashTimer;
@@ -59,14 +81,21 @@ namespace RebirthProtocol.Battle
             || Health.State == HealthState.Dead
             || _externalMove.HasValue;
 
-        public void Init(Color hull, Color accent, ProjectileSystem projectiles, float spawnFacing)
+        /// Vanish-dash i-frames: attacks pass straight through.
+        public bool Intangible => Stats.DashType == DashType.Vanish && _dashTimer > 0f;
+
+        public void Init(Loadout loadout, Color hull, Color accent, ProjectileSystem projectiles, float spawnFacing)
         {
+            Loadout = loadout;
+            Stats = PartsCatalog.ComputeStats(loadout);
+            _dashProfile = DashProfile.For(Stats.DashType);
             _projectiles = projectiles;
             _facing = spawnFacing;
-            Health = new CombatantHealth();
+            Health = new CombatantHealth(new HealthTuning { MaxHp = Stats.MaxHp });
             Boost = new BoostGauge();
-            Gun = new GunCycle();
-            Melee = new MeleeAction();
+            Gun = new GunCycle(loadout.HasGun ? loadout.Gun.FireInterval : 0.38f);
+            Melee = new MeleeAction(loadout.HasMelee ? loadout.Melee.ToTuning() : null);
+            ShieldHp = loadout.HasShield ? loadout.Shield.ShieldHp : 0f;
 
             _cc = gameObject.AddComponent<CharacterController>();
             _cc.height = 2f;
@@ -85,17 +114,69 @@ namespace RebirthProtocol.Battle
             return to.magnitude;
         }
 
-        /// All incoming damage routes through here (defMult is 1 for the
-        /// slice's baseline body; shields arrive in a later stage).
-        public HitResult ReceiveHit(float damage, float enduranceDamage, Vector3 fromDir)
+        /// All incoming damage routes through here so the shield can
+        /// intercept. fromDir: attack's direction of travel (attacker ->
+        /// victim). Port of Robo.ts::receiveHit.
+        public ReceiveResult ReceiveHit(float damage, float enduranceDamage, Vector3 fromDir)
         {
-            var result = Health.TakeHit(damage, enduranceDamage);
+            if (Intangible)
+            {
+                return ReceiveResult.Evaded;
+            }
+
+            if (Health.State != HealthState.Active)
+            {
+                return ReceiveResult.Invulnerable;
+            }
+
+            var scaledDamage = damage * Stats.DefMult;
+
+            // Shield (§3.2): must be actively engaged to block at all. Even
+            // engaged, block is never 100% (chip always lands), and a hit
+            // from behind blocks far less than one from the front.
+            if (Loadout.HasShield && Intent.ShieldHeld && ShieldHp > 0f)
+            {
+                var shield = Loadout.Shield;
+                var incoming = -new Vector3(fromDir.x, 0f, fromDir.z).normalized;
+                var isFront = Vector3.Angle(FacingDir, incoming) <= 90f;
+                var blockPercent = isFront ? shield.FrontBlockPercent : shield.BackBlockPercent;
+
+                var chipResult = Health.TakeHit(
+                    scaledDamage * (1f - blockPercent),
+                    enduranceDamage * (1f - blockPercent));
+                _shieldHitTimer = 0f;
+
+                if (chipResult is HitResult.Killed or HitResult.Knockdown)
+                {
+                    return chipResult == HitResult.Killed ? ReceiveResult.Killed : ReceiveResult.Knockdown;
+                }
+
+                ShieldHp -= scaledDamage * blockPercent;
+                if (ShieldHp <= 0f)
+                {
+                    // Guard break feeds the existing knockdown state -- no
+                    // second free defense stacked on rebirth (§3.2).
+                    ShieldHp = 0f;
+                    Health.ForceKnockdown();
+                    return ReceiveResult.GuardBreak;
+                }
+
+                return ReceiveResult.Shielded;
+            }
+
+            var result = Health.TakeHit(scaledDamage, enduranceDamage);
             if (result != HitResult.Invulnerable)
             {
                 ApplyKnockback(fromDir, 2f);
             }
 
-            return result;
+            return result switch
+            {
+                HitResult.Killed => ReceiveResult.Killed,
+                HitResult.Knockdown => ReceiveResult.Knockdown,
+                HitResult.Invulnerable => ReceiveResult.Invulnerable,
+                _ => ReceiveResult.Hit
+            };
         }
 
         public void ApplyKnockback(Vector3 dir, float speed)
@@ -114,7 +195,7 @@ namespace RebirthProtocol.Battle
         public void TickGun(float dt, bool firing, RoboAvatar target)
         {
             Gun.Tick(dt);
-            if (!firing || Melee.Busy || ControlLocked)
+            if (!Loadout.HasGun || !firing || Melee.Busy || ControlLocked)
             {
                 return;
             }
@@ -124,19 +205,22 @@ namespace RebirthProtocol.Battle
                 return;
             }
 
+            var part = Loadout.Gun;
             var muzzle = Position + FacingDir * 0.8f + Vector3.up * CombatTuning.Gun.MuzzleHeight;
             var targetAlive = target != null && target.Health.State != HealthState.Dead;
             var aim = targetAlive
                 ? target.Position + Vector3.up * 1.0f
                 : Position + FacingDir * 10f + Vector3.up * CombatTuning.Gun.MuzzleHeight;
-            _projectiles.Spawn(this, targetAlive ? target : null, muzzle, aim);
+            _projectiles.Spawn(this, targetAlive ? target : null, muzzle, aim,
+                part.Damage * Stats.AtkMult, part.EnduranceDamage, part.ProjectileSpeed,
+                targetAlive ? part.HomingTurnRate : 0f);
         }
 
         // --- Melee ---
 
         public void TryMelee(RoboAvatar target)
         {
-            if (ControlLocked || Melee.Busy)
+            if (!Loadout.HasMelee || ControlLocked || Melee.Busy)
             {
                 return;
             }
@@ -152,6 +236,11 @@ namespace RebirthProtocol.Battle
         /// only permits chaining after a connected swing.
         public void TryMeleeChain(RoboAvatar target)
         {
+            if (!Loadout.HasMelee)
+            {
+                return;
+            }
+
             if (Melee.TryChain(FlatDistanceTo(target)))
             {
                 OnMeleePhaseEntered(target);
@@ -253,12 +342,20 @@ namespace RebirthProtocol.Battle
 
             var dir = to.normalized;
             var result = target.ReceiveHit(
-                Melee.Tuning.Damage * Melee.ComboDamageMult,
+                Melee.Tuning.Damage * Melee.ComboDamageMult * Stats.AtkMult,
                 Melee.Tuning.EnduranceDamage * Melee.ComboEnduranceMult,
                 dir);
-            if (result != HitResult.Invulnerable)
+            if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
             {
                 target.ApplyKnockback(dir, Melee.Tuning.KnockbackSpeed * Melee.ComboKnockbackMult);
+            }
+
+            // Shield parry (§3.2): a melee hit blocked by an ENGAGED shield
+            // drains the attacker's own endurance.
+            if (result is ReceiveResult.Shielded or ReceiveResult.GuardBreak
+                && target.Loadout.HasShield && target.Intent.ShieldHeld)
+            {
+                Health.DrainEndurance(target.Loadout.Shield.MeleeParryEnduranceDamage);
             }
         }
 
@@ -289,6 +386,17 @@ namespace RebirthProtocol.Battle
             }
 
             var downed = Health.State is HealthState.KnockedDown or HealthState.Dead;
+
+            // Shield regen: stops while recently hit, never mid-knockdown.
+            _shieldHitTimer += dt;
+            if (Loadout.HasShield)
+            {
+                var shield = Loadout.Shield;
+                if (Health.State == HealthState.Active && _shieldHitTimer > shield.RegenDelay && ShieldHp < shield.ShieldHp)
+                {
+                    ShieldHp = Mathf.Min(shield.ShieldHp, ShieldHp + shield.RegenPerSec * dt);
+                }
+            }
 
             Boost.Tick(dt);
             if (_actionLock > 0f)
@@ -325,14 +433,22 @@ namespace RebirthProtocol.Battle
                     }
                 }
 
-                horiz = _dashDir * CombatTuning.Dash.Speed;
+                horiz = _dashDir * _dashProfile.Speed;
                 _velocity.y = 0f; // dashes are horizontal; gravity suspended
                 _velocity.x = horiz.x;
                 _velocity.z = horiz.z;
             }
+            else if (Intent.LeftArmActive)
+            {
+                // Bomb aiming / shield engaged: instantly halts all
+                // horizontal momentum, even mid-air. Rooted and vulnerable.
+                _velocity.x = 0f;
+                _velocity.z = 0f;
+                horiz = Vector3.zero;
+            }
             else if (Grounded)
             {
-                var desired = Intent.MoveDir * CombatTuning.Move.RunSpeed;
+                var desired = Intent.MoveDir * Stats.RunSpeed;
                 if (Intent.FiringGun)
                 {
                     // Firing on the ground: momentum carries, a "slide".
@@ -368,14 +484,15 @@ namespace RebirthProtocol.Battle
 
             if (canBoost && Intent.ThrustHeld && _dashTimer <= 0f)
             {
-                _velocity.y = CombatTuning.Move.JumpThrust;
+                _velocity.y = Stats.JumpThrust;
                 Boost.SpendThrust(dt);
             }
 
-            if (canBoost && Intent.DashRequested && _dashTimer <= 0f && Boost.TrySpendAirDash())
+            if (canBoost && Intent.DashRequested && _dashTimer <= 0f && !Intent.LeftArmActive
+                && Boost.TrySpendAirDash(_dashProfile.Cost, Stats.DashCount))
             {
                 _dashDir = Intent.MoveDir.sqrMagnitude > 0.01f ? Intent.MoveDir.normalized : FacingDir;
-                _dashTimer = CombatTuning.Dash.Duration;
+                _dashTimer = _dashProfile.Duration;
                 if (Grounded)
                 {
                     _velocity.y = CombatTuning.Dash.GroundDashHop; // ground dash lifts into a hop
@@ -404,7 +521,7 @@ namespace RebirthProtocol.Battle
             // --- Landing: recovery scales with spend, gauge refills ---
             if (!wasGrounded && Grounded)
             {
-                Boost.NotifyLanded();
+                Boost.NotifyLanded(Stats.LandRecoveryMult);
                 _dashTimer = 0f;
             }
 
@@ -472,9 +589,9 @@ namespace RebirthProtocol.Battle
             _tiltRoot.localRotation = Quaternion.Euler(
                 current + (targetTilt - current) * Mathf.Min(1f, 10f * dt), 0f, 0f);
 
-            // Rebirth / knockdown: blink.
+            // Rebirth / knockdown / vanish-dash: blink.
             _flashTime += dt;
-            var flashing = Health.State is HealthState.Rebirth or HealthState.KnockedDown;
+            var flashing = Health.State is HealthState.Rebirth or HealthState.KnockedDown || Intangible;
             var visible = !flashing || Mathf.Sin(_flashTime * 25f) > 0f;
             foreach (var r in _renderers)
             {

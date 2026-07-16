@@ -3,7 +3,13 @@ namespace RebirthProtocol.Domain
     // Fire-cadence gate for a held-trigger gun.
     public sealed class GunCycle
     {
+        private readonly float _fireInterval;
         private float _cooldown;
+
+        public GunCycle(float fireInterval = 0.38f)
+        {
+            _fireInterval = fireInterval;
+        }
 
         public void Tick(float dt)
         {
@@ -17,7 +23,7 @@ namespace RebirthProtocol.Domain
                 return false;
             }
 
-            _cooldown = CombatTuning.Gun.FireInterval;
+            _cooldown = _fireInterval;
             return true;
         }
     }

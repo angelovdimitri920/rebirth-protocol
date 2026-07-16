@@ -37,27 +37,35 @@ namespace RebirthProtocol.Domain
             public const float OverheatExtraRecovery = 0.5f;
         }
 
-        // "normal" dash profile + vanguard dash count.
+        // Shared dash mechanics; per-archetype speed/duration/cost live in
+        // DashProfile.For(DashType).
         public static class Dash
         {
-            public const float Speed = 24f;
-            public const float Duration = 0.22f;
-            public const float Cost = 28f;
-            public const int MaxAirDashes = 2;
             public const float HomingTurnRate = 3.5f;
             public const float GroundDashHop = 3f;
         }
 
-        // Longbow (prototype id "blaster").
+        // Shared gun mechanics; per-part damage/cadence/speed/homing live on
+        // each GunPart in PartsCatalog.
         public static class Gun
         {
-            public const float Damage = 35f;
-            public const float EnduranceDamage = 16f;
-            public const float FireInterval = 0.38f;
-            public const float ProjectileSpeed = 32f;
-            public const float HomingTurnRate = 2.2f;
             public const float ProjectileLifetime = 2.0f;
             public const float MuzzleHeight = 1.2f;
+        }
+
+        // Shared bomb/pod mechanics (per-part numbers in PartsCatalog).
+        public static class Bomb
+        {
+            public const float LobSpeed = 18f; // flightTime = dist / LobSpeed
+            public const float MinFlightTime = 0.5f;
+        }
+
+        public static class Pod
+        {
+            public const float HoverHeight = 2.4f;
+            public const float FireRange = 22f;
+            public const float ProjectileSpeed = 26f;
+            public const float HomingTurnRate = 1.6f;
         }
 
         public static class Ai

@@ -1,17 +1,26 @@
+using RebirthProtocol.Battle.Audio;
 using RebirthProtocol.Domain;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace RebirthProtocol.Battle
 {
-    // Reads keyboard + gamepad and drives the player avatar's intent.
-    // Mapping per the settled prototype scheme (DESIGN_HANDOFF §5):
-    //   A/Space = jump-hover (and mash while down), B/J = gun (hold),
-    //   X/Shift = dash, Y/K = melee, RT/Q = left arm (bomb aim / shield
-    //   hold), LT/E = pod toggle, R/Start = rematch.
-    // Movement is derived from the live camera orientation every frame —
-    // never a hardcoded world axis (the prototype's inverted-controls
-    // lesson). Lock-on is automatic: one enemy, always locked.
+    // Controller-first input, on the settled Three.js control scheme
+    // (DESIGN_HANDOFF §5, prototype §12):
+    //   Left stick  = move
+    //   A           = jump/hover (double-tap airborne = air-dash), mash while down
+    //   X           = dash
+    //   B           = RIGHT ARM: gun (held to fire) OR melee (pressed) — one
+    //                 physical button, whichever the loadout equips
+    //   Y           = lock-on / switch targets
+    //   LT          = pod (toggle; hold to steer its launch heading)
+    //   RT          = LEFT ARM: bomb (hold-to-aim / release-to-throw) OR shield (held)
+    //   Start       = pause / rematch (handled in DuelManager)
+    // Keyboard is kept as a 1:1 mirror so the game is playable and testable
+    // without a pad (WASD move, Space/LShift/J/L/E/Q), but the controller
+    // layout above is the canonical scheme.
+    // Movement derives from the live camera orientation every frame — never
+    // a hardcoded world axis (the prototype's inverted-controls lesson).
     public sealed class PlayerBrain : MonoBehaviour
     {
         private RoboAvatar _avatar;
@@ -51,12 +60,19 @@ namespace RebirthProtocol.Battle
 
             move = Vector2.ClampMagnitude(move, 1f);
 
+            // A = jump/hover/mash.
             var thrustHeld = (keyboard?.spaceKey.isPressed ?? false) || (gamepad?.buttonSouth.isPressed ?? false);
             var thrustPressed = (keyboard?.spaceKey.wasPressedThisFrame ?? false) || (gamepad?.buttonSouth.wasPressedThisFrame ?? false);
+            // X = dash.
             var dashPressed = (keyboard?.leftShiftKey.wasPressedThisFrame ?? false) || (gamepad?.buttonWest.wasPressedThisFrame ?? false);
-            var firingHeld = (keyboard?.jKey.isPressed ?? false) || (gamepad?.buttonEast.isPressed ?? false);
-            var meleePressed = (keyboard?.kKey.wasPressedThisFrame ?? false) || (gamepad?.buttonNorth.wasPressedThisFrame ?? false);
+            // B = right arm: held drives gun fire, pressed edge-triggers melee.
+            var rightArmHeld = (keyboard?.jKey.isPressed ?? false) || (gamepad?.buttonEast.isPressed ?? false);
+            var rightArmPressed = (keyboard?.jKey.wasPressedThisFrame ?? false) || (gamepad?.buttonEast.wasPressedThisFrame ?? false);
+            // Y = lock-on / switch targets.
+            var lockPressed = (keyboard?.lKey.wasPressedThisFrame ?? false) || (gamepad?.buttonNorth.wasPressedThisFrame ?? false);
+            // RT = left arm: bomb aim / shield hold.
             var leftArmHeld = (keyboard?.qKey.isPressed ?? false) || (gamepad?.rightTrigger.isPressed ?? false);
+            // LT = pod: toggle on press, steer while held.
             var podPressed = (keyboard?.eKey.wasPressedThisFrame ?? false) || (gamepad?.leftTrigger.wasPressedThisFrame ?? false);
             var podHeld = (keyboard?.eKey.isPressed ?? false) || (gamepad?.leftTrigger.isPressed ?? false);
 
@@ -81,7 +97,15 @@ namespace RebirthProtocol.Battle
             var toEnemy = _enemy.Position - _avatar.Position;
             toEnemy.y = 0f;
 
-            // Left arm: shield is a plain hold; bomb is hold-to-aim,
+            // Y: lock-on / switch. With a single opponent there is nobody to
+            // switch to, so this just re-affirms the (always-on) lock with an
+            // audible tick — kept for layout fidelity, invents no mechanic.
+            if (lockPressed)
+            {
+                GameAudio.Sfx?.UiClick();
+            }
+
+            // Left arm (RT): shield is a plain hold; bomb is hold-to-aim,
             // release-to-throw. Both are suppressed while melee is busy
             // (matching the prototype's !melee.busy gate) — no shielding or
             // parrying mid-swing.
@@ -108,7 +132,8 @@ namespace RebirthProtocol.Battle
                 }
             }
 
-            var firing = firingHeld && _avatar.Loadout.HasGun && !_avatar.Melee.Busy;
+            // Right arm (B): gun fires while held; melee is edge-triggered.
+            var firing = rightArmHeld && _avatar.Loadout.HasGun && !meleeBusy;
 
             _avatar.Intent = new RoboIntent
             {
@@ -120,7 +145,7 @@ namespace RebirthProtocol.Battle
                 ShieldHeld = shieldHeld,
                 LeftArmActive = shieldHeld || _bomb.Aiming,
                 // Free facing: face movement normally, square up while attacking.
-                HasFaceYaw = (firing || _avatar.Melee.Busy || shieldHeld || _bomb.Aiming) && enemyAlive && toEnemy.sqrMagnitude > 0.0001f,
+                HasFaceYaw = (firing || meleeBusy || shieldHeld || _bomb.Aiming) && enemyAlive && toEnemy.sqrMagnitude > 0.0001f,
                 FaceYaw = Mathf.Atan2(toEnemy.x, toEnemy.z),
                 HasDashHoming = enemyAlive,
                 DashHomingPoint = _enemy.Position
@@ -149,7 +174,9 @@ namespace RebirthProtocol.Battle
                 _bomb.SteerAim(worldMove, dt);
             }
 
-            if (meleePressed && enemyAlive)
+            // Melee on the same B button (edge-triggered): swing, or chain
+            // the string if already mid-melee.
+            if (rightArmPressed && _avatar.Loadout.HasMelee && enemyAlive)
             {
                 if (_avatar.Melee.Busy)
                 {

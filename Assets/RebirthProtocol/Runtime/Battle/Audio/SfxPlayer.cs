@@ -47,6 +47,17 @@ namespace RebirthProtocol.Battle.Audio
             _uiSource.spatialBlend = 0f;
         }
 
+        private void OnDestroy()
+        {
+            // Null the static on teardown so `?.` stays a real guard (it only
+            // catches C# null, not a Unity-destroyed object). ReferenceEquals
+            // so a newer instance already in the slot isn't cleared.
+            if (ReferenceEquals(GameAudio.Sfx, this))
+            {
+                GameAudio.Sfx = null;
+            }
+        }
+
         /// Play at a world position (combat/environmental sounds).
         private void PlayAt(AudioClip clip, Vector3 position)
         {
@@ -64,12 +75,22 @@ namespace RebirthProtocol.Battle.Audio
 
         public void Shot(Vector3 pos) => PlayAt(Bake("shot", Tone(920, 240, 0.09f, Wave.Square, 0.14f)), pos);
         public void PodShot(Vector3 pos) => PlayAt(Bake("podShot", Tone(1400, 700, 0.05f, Wave.Square, 0.07f)), pos);
-        public void Hit(Vector3 pos) => PlayAt(Bake("hit", Noise(0.08f, 0.2f, 2400), Tone(300, 90, 0.08f, Wave.Triangle, 0.16f)), pos);
+        // Metallic clang layered onto the impact thud, so damage to a robot
+        // chassis reads harder than the old soft tick.
+        public void Hit(Vector3 pos) => PlayAt(Bake("hit", Noise(0.08f, 0.2f, 2400), Tone(300, 90, 0.08f, Wave.Triangle, 0.16f), Tone(680, 520, 0.05f, Wave.Square, 0.07f)), pos);
+        // Short bright tick for projectiles spraying off walls/crates.
+        public void SparkTick(Vector3 pos) => PlayAt(Bake("sparkTick", Tone(2300, 1300, 0.03f, Wave.Square, 0.05f), Noise(0.04f, 0.06f, 6000)), pos);
         public void Shielded(Vector3 pos) => PlayAt(Bake("shielded", Tone(520, 480, 0.1f, Wave.Sine, 0.18f)), pos);
         public void MeleeSwing(Vector3 pos) => PlayAt(Bake("meleeSwing", Noise(0.12f, 0.12f, 1200)), pos);
         public void MeleeHit(Vector3 pos) => PlayAt(Bake("meleeHit", Noise(0.1f, 0.25f, 3000), Tone(180, 60, 0.14f, Wave.Sawtooth, 0.2f)), pos);
         public void Clash(Vector3 pos) => PlayAt(Bake("clash", Tone(1800, 1200, 0.12f, Wave.Square, 0.16f), Noise(0.15f, 0.18f, 5000)), pos);
-        public void Explosion(Vector3 pos) => PlayAt(Bake("explosion", Noise(0.5f, 0.32f, 900), Tone(120, 35, 0.45f, Wave.Sine, 0.3f)), pos);
+        // Layered blast: sub-bass boom, body crackle, bright debris crack,
+        // and a short buzzy tail — bigger and grittier than the old sine+noise.
+        public void Explosion(Vector3 pos) => PlayAt(Bake("explosion",
+            Tone(90, 26, 0.6f, Wave.Sine, 0.34f),
+            Noise(0.55f, 0.34f, 1100),
+            Noise(0.26f, 0.22f, 4400),
+            Tone(220, 42, 0.32f, Wave.Sawtooth, 0.14f)), pos);
         public void BombThrow(Vector3 pos) => PlayAt(Bake("bombThrow", Tone(300, 700, 0.22f, Wave.Sine, 0.09f)), pos);
         public void Dash(Vector3 pos) => PlayAt(Bake("dash", Noise(0.14f, 0.1f, 1800), Tone(200, 600, 0.12f, Wave.Sine, 0.08f)), pos);
         public void Thrust(Vector3 pos) => PlayAt(Bake("thrust", Tone(140, 320, 0.22f, Wave.Sine, 0.08f), Noise(0.18f, 0.06f, 900)), pos);
@@ -103,7 +124,8 @@ namespace RebirthProtocol.Battle.Audio
     }
 
     /// Static access point so combat code can fire sounds without threading
-    /// a reference through every class. Null-safe: silent when unset.
+    /// a reference through every class. Genuinely null-safe: SfxPlayer.OnDestroy
+    /// clears this on teardown, so `?.` never dispatches to a destroyed object.
     public static class GameAudio
     {
         public static SfxPlayer Sfx;

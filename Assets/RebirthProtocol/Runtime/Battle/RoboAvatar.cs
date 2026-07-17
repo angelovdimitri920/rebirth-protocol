@@ -1,4 +1,5 @@
 using RebirthProtocol.Battle.Audio;
+using RebirthProtocol.Battle.Effects;
 using RebirthProtocol.Domain;
 using UnityEngine;
 
@@ -164,10 +165,12 @@ namespace RebirthProtocol.Battle
                     if (chipResult == HitResult.Killed)
                     {
                         GameAudio.Sfx?.Eliminate(Position);
+                        GameEffects.Fx?.Explosion(Center, 2.4f);
                         return ReceiveResult.Killed;
                     }
 
                     GameAudio.Sfx?.Knockdown(Position);
+                    GameEffects.Fx?.ImpactSpark(Center, incoming, new Color(1f, 0.7f, 0.3f), 0.28f);
                     return ReceiveResult.Knockdown;
                 }
 
@@ -179,10 +182,12 @@ namespace RebirthProtocol.Battle
                     ShieldHp = 0f;
                     Health.ForceKnockdown();
                     GameAudio.Sfx?.GuardBreak(Position);
+                    GameEffects.Fx?.ImpactSpark(Center + FacingDir, incoming, new Color(1f, 0.85f, 0.4f), 0.3f);
                     return ReceiveResult.GuardBreak;
                 }
 
                 GameAudio.Sfx?.Shielded(Position);
+                GameEffects.Fx?.ImpactSpark(Center + FacingDir * 0.7f + Vector3.up * 0.1f, incoming, new Color(0.6f, 0.9f, 1f));
                 return ReceiveResult.Shielded;
             }
 
@@ -192,18 +197,22 @@ namespace RebirthProtocol.Battle
                 ApplyKnockback(fromDir, 2f);
             }
 
+            var back = -new Vector3(fromDir.x, 0f, fromDir.z).normalized;
             switch (result)
             {
                 case HitResult.Killed:
                     GameAudio.Sfx?.Eliminate(Position);
+                    GameEffects.Fx?.Explosion(Center, 2.4f); // death blast
                     return ReceiveResult.Killed;
                 case HitResult.Knockdown:
                     GameAudio.Sfx?.Knockdown(Position);
+                    GameEffects.Fx?.ImpactSpark(Center, back, new Color(1f, 0.7f, 0.3f), 0.3f);
                     return ReceiveResult.Knockdown;
                 case HitResult.Invulnerable:
                     return ReceiveResult.Invulnerable;
                 default:
                     GameAudio.Sfx?.Hit(Position);
+                    GameEffects.Fx?.ImpactSpark(Center, back, new Color(1f, 0.82f, 0.45f), 0.05f);
                     return ReceiveResult.Hit;
             }
         }
@@ -237,6 +246,8 @@ namespace RebirthProtocol.Battle
             GameAudio.Sfx?.Shot(Position);
             var part = Loadout.Gun;
             var muzzle = Position + FacingDir * 0.8f + Vector3.up * CombatTuning.Gun.MuzzleHeight;
+            GameEffects.Fx?.MuzzleFlash(muzzle, FacingDir,
+                CompareTag("Player") ? new Color(0.55f, 0.85f, 1f) : new Color(1f, 0.6f, 0.35f));
             var targetAlive = target != null && target.Health.State != HealthState.Dead;
             var aim = targetAlive
                 ? target.Position + Vector3.up * 1.0f

@@ -23,6 +23,9 @@ namespace RebirthProtocol.Battle
     {
         private const string ResourcePath = "Mechs/CobaltKnightBody";
 
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
+
         // Root sits ~2cm above true ground (Socket_Root world Y = 0.02) —
         // close enough to treat as ground level.
         private static readonly Vector3 SocketGun = new Vector3(-0.86f, 1.08f, -0.35f);
@@ -65,11 +68,34 @@ namespace RebirthProtocol.Battle
             }
 
             // Light team tint on top of the model's own baked cobalt/ivory/
-            // aurum materials (renderer.material instantiates a per-object
-            // copy, so this never touches the shared asset).
+            // aurum materials, via a MaterialPropertyBlock rather than
+            // renderer.material — accessing .material does instantiate a
+            // per-object copy as expected, but in the Editor/PlayMode-test
+            // context that instantiation was observed leaving the SHARED
+            // source .mat assets reserialized (dirtied) in git afterward.
+            // A property block never touches the material asset at all.
             foreach (var renderer in body.GetComponentsInChildren<Renderer>())
             {
-                renderer.material.color = Color.Lerp(renderer.material.color, teamColor, 0.15f);
+                var shared = renderer.sharedMaterial;
+                if (shared == null)
+                {
+                    continue;
+                }
+
+                var block = new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(block);
+
+                if (shared.HasProperty(BaseColorId))
+                {
+                    block.SetColor(BaseColorId, Color.Lerp(shared.GetColor(BaseColorId), teamColor, 0.15f));
+                }
+
+                if (shared.HasProperty(ColorId))
+                {
+                    block.SetColor(ColorId, Color.Lerp(shared.GetColor(ColorId), teamColor, 0.15f));
+                }
+
+                renderer.SetPropertyBlock(block);
             }
 
             BuildRightArm(knightRoot, loadout, teamColor);

@@ -15,6 +15,7 @@ namespace RebirthProtocol.Tests.PlayMode
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
             duel.CloseHangar();
+            duel.ForceArenaLayout(0); // pin Depot: no hazards to complicate this smoke test
 
             // ~2 simulated seconds: AI orbits, fires, possibly melees.
             for (var i = 0; i < 120; i++)
@@ -38,6 +39,7 @@ namespace RebirthProtocol.Tests.PlayMode
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
             duel.CloseHangar();
+            duel.ForceArenaLayout(0); // pin Depot: not testing hazards here
             yield return null;
 
             duel.Enemy.ReceiveHit(duel.Enemy.Health.MaxHp + 1f, 0f, Vector3.forward);
@@ -61,6 +63,21 @@ namespace RebirthProtocol.Tests.PlayMode
             duel.BrainsEnabled = false; // deterministic: nobody moves or fires
             try
             {
+                // Pin both sides to a known loadout AND a known arena layout
+                // instead of whatever the shared _enemyBuildIndex counter's
+                // rotation happens to land on (it drives both the enemy's
+                // build and the arena layout — advances once per test that
+                // creates a DuelManager, so what any given test gets
+                // depends on how many other tests already ran). This test
+                // asserts HP == MaxHp with zero tolerance: with Cinderfield
+                // active, the default player spawn (-8,0,0) sits exactly on
+                // pool 1's boundary (center (-8,3), radius 3) and takes a
+                // sliver of real lava damage before the assertion even
+                // runs — a real latent bug in the coincidence of those two
+                // constants, not a flake, so pin Depot to sidestep it.
+                var loadout = PartsCatalog.DefaultLoadout();
+                duel.RespawnWithLoadouts(loadout, loadout);
+                duel.ForceArenaLayout(0);
                 yield return null;
 
                 // Both in melee hit range: without clash resolution these
@@ -96,6 +113,7 @@ namespace RebirthProtocol.Tests.PlayMode
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
             duel.CloseHangar();
+            duel.ForceArenaLayout(0); // pin Depot: not testing hazards here
             duel.BrainsEnabled = false;
             try
             {
@@ -148,6 +166,7 @@ namespace RebirthProtocol.Tests.PlayMode
                     Pod = PartsCatalog.Pods[0]
                 };
                 duel.RespawnWithLoadouts(shieldLoadout, PartsCatalog.DefaultLoadout());
+                duel.ForceArenaLayout(0); // pin Depot: the exact-equality HP assertions below can't afford stray lava chip
                 yield return null;
 
                 var player = duel.Player;
@@ -233,6 +252,46 @@ namespace RebirthProtocol.Tests.PlayMode
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator BulwarkChassisUsesTheRiggedCobaltKnightAssetAndSimulatesCleanly()
+        {
+            var bulwarkLoadout = new Loadout
+            {
+                Body = PartsCatalog.Bodies[3], // bulwark -- the one chassis with a real rigged asset
+                Gun = PartsCatalog.Guns[0],
+                Shield = PartsCatalog.Shields[0],
+                Legs = PartsCatalog.Legs[0],
+                Pod = PartsCatalog.Pods[0]
+            };
+
+            var go = new GameObject("DuelTest");
+            var duel = go.AddComponent<DuelManager>();
+            duel.CloseHangar();
+            duel.RespawnWithLoadouts(bulwarkLoadout, bulwarkLoadout);
+            duel.ForceArenaLayout(0); // pin Depot: this test is about the visual, not hazards
+            duel.BrainsEnabled = false;
+            try
+            {
+                Assert.That(duel.Player.transform.Find("Visual/Tilt/CobaltKnight"), Is.Not.Null,
+                    "Bulwark should build the real Cobalt Knight visual, not the primitive chassis");
+
+                // A handful of frames to confirm nothing in the real-mesh
+                // path throws once combat starts simulating around it.
+                for (var i = 0; i < 20; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Health.State, Is.Not.EqualTo(HealthState.Dead));
+            }
+            finally
+            {
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
         private static void Teleport(RoboAvatar avatar, Vector3 position)
         {
             var cc = avatar.GetComponent<CharacterController>();
@@ -247,6 +306,7 @@ namespace RebirthProtocol.Tests.PlayMode
             var go = new GameObject("DuelTest");
             var duel = go.AddComponent<DuelManager>();
             duel.CloseHangar();
+            duel.ForceArenaLayout(0); // pin Depot: not testing hazards here
             yield return null;
 
             duel.Player.ReceiveHit(10f, duel.Player.Health.MaxEndurance + 1f, Vector3.forward);

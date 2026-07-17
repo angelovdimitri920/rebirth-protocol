@@ -47,6 +47,17 @@ namespace RebirthProtocol.Battle.Audio
             _uiSource.spatialBlend = 0f;
         }
 
+        private void OnDestroy()
+        {
+            // Null the static on teardown so `?.` stays a real guard (it only
+            // catches C# null, not a Unity-destroyed object). ReferenceEquals
+            // so a newer instance already in the slot isn't cleared.
+            if (ReferenceEquals(GameAudio.Sfx, this))
+            {
+                GameAudio.Sfx = null;
+            }
+        }
+
         /// Play at a world position (combat/environmental sounds).
         private void PlayAt(AudioClip clip, Vector3 position)
         {
@@ -113,7 +124,8 @@ namespace RebirthProtocol.Battle.Audio
     }
 
     /// Static access point so combat code can fire sounds without threading
-    /// a reference through every class. Null-safe: silent when unset.
+    /// a reference through every class. Genuinely null-safe: SfxPlayer.OnDestroy
+    /// clears this on teardown, so `?.` never dispatches to a destroyed object.
     public static class GameAudio
     {
         public static SfxPlayer Sfx;

@@ -38,6 +38,19 @@ namespace RebirthProtocol.Battle.Effects
             _screen = screen;
         }
 
+        private void OnDestroy()
+        {
+            // Clear the static so it becomes genuine C# null after teardown —
+            // otherwise it points at a Unity-destroyed object and `?.` (which
+            // only checks C# null) would let a stray VFX call through to a
+            // dead MonoBehaviour. ReferenceEquals so a newer instance that
+            // already took the slot isn't clobbered.
+            if (ReferenceEquals(GameEffects.Fx, this))
+            {
+                GameEffects.Fx = null;
+            }
+        }
+
         private void Update()
         {
             var dt = Time.deltaTime;
@@ -183,7 +196,9 @@ namespace RebirthProtocol.Battle.Effects
     }
 
     /// Static access so combat code can fire VFX without threading a
-    /// reference everywhere. Null-safe: silent when unset.
+    /// reference everywhere. Genuinely null-safe: EffectsSystem.OnDestroy
+    /// clears this on teardown, so `?.` never dispatches to a destroyed
+    /// object (Unity's fake-null wouldn't be caught by `?.` otherwise).
     public static class GameEffects
     {
         public static EffectsSystem Fx;

@@ -17,9 +17,18 @@ namespace RebirthProtocol.Battle
         private float _yaw;
         private Vector3 _position;
         private float _orthoSize;
+        private float _shake;
+        private float _shakeTime;
 
         /// Flattened view direction, for camera-relative movement input.
         public Vector3 FlatForward => new Vector3(Mathf.Sin(_yaw), 0f, Mathf.Cos(_yaw));
+
+        /// Kick the camera; the offset decays over ~0.4s. Explosions and
+        /// heavy hits call this. Multiple kicks take the strongest.
+        public void AddShake(float amount)
+        {
+            _shake = Mathf.Max(_shake, amount);
+        }
 
         public void Init(Camera cam, RoboAvatar player, RoboAvatar enemy)
         {
@@ -46,6 +55,9 @@ namespace RebirthProtocol.Battle
             var zoomT = Mathf.Clamp01((separation - CombatTuning.Camera.ZoomStartDistance) / CombatTuning.Camera.ZoomRange);
             var targetSize = CombatTuning.Camera.FrustumSize * 0.5f * (1f + CombatTuning.Camera.ZoomMax * zoomT);
             _orthoSize = Mathf.Lerp(_orthoSize, targetSize, followT);
+
+            _shake = Mathf.Max(0f, _shake - dt * 2.5f);
+            _shakeTime += dt;
 
             Apply();
         }
@@ -85,7 +97,21 @@ namespace RebirthProtocol.Battle
 
         private void Apply()
         {
-            _camera.transform.position = _position;
+            // Trauma-style shake: two out-of-phase sines per axis so it reads
+            // as a jolt, not a wobble; amplitude fades with _shake.
+            var offset = Vector3.zero;
+            if (_shake > 0f)
+            {
+                var t = _shakeTime * 38f;
+                offset = new Vector3(
+                    Mathf.Sin(t) * 0.6f + Mathf.Sin(t * 1.7f) * 0.4f,
+                    Mathf.Sin(t * 1.3f + 2f) * 0.6f + Mathf.Sin(t * 2.1f) * 0.4f,
+                    0f) * _shake;
+                // Shake in screen space (camera-local), not world.
+                offset = _camera.transform.right * offset.x + _camera.transform.up * offset.y;
+            }
+
+            _camera.transform.position = _position + offset;
             _camera.transform.rotation = Quaternion.LookRotation(LookAtPoint() - _position);
             _camera.orthographicSize = _orthoSize;
         }

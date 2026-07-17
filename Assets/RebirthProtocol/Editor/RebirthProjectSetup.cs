@@ -18,6 +18,14 @@ namespace RebirthProtocol.Editor
             PlayerSettings.companyName = "Rebirth Protocol";
             PlayerSettings.productName = "Rebirth Protocol";
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Standalone, "com.rebirthprotocol.game");
+
+            // Launch fullscreen at the display's native resolution. A boot
+            // still honours -screen-fullscreen 0 on the command line (used by
+            // the screenshot smoke tests), so this only sets the default.
+            PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;
+            PlayerSettings.defaultIsNativeResolution = true;
+            PlayerSettings.runInBackground = true;
+
             SetActiveInputHandling();
             EnsureBootstrapScene();
             DuelSceneBuilder.CreateDuelScene();

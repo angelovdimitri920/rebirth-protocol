@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RebirthProtocol.Battle.Audio;
+using RebirthProtocol.Battle.Effects;
 using RebirthProtocol.Domain;
 using UnityEngine;
 
@@ -21,12 +22,6 @@ namespace RebirthProtocol.Battle
             public float ArcHeight;
         }
 
-        private sealed class Blast
-        {
-            public Transform Tf;
-            public float Timer;
-        }
-
         public float CooldownRemaining { get; private set; }
 
         /// True while the reticule is open (button held): rooted and
@@ -37,7 +32,6 @@ namespace RebirthProtocol.Battle
         private Transform _reticule;
         private Vector3 _manualOffset;
         private readonly List<LiveBomb> _live = new List<LiveBomb>();
-        private readonly List<Blast> _blasts = new List<Blast>();
 
         public bool Ready => CooldownRemaining <= 0f;
 
@@ -196,34 +190,13 @@ namespace RebirthProtocol.Battle
                 pos.y += Mathf.Sin(b.T * Mathf.PI) * b.ArcHeight;
                 b.Tf.position = pos;
             }
-
-            // Blast visuals expand then vanish.
-            for (var i = _blasts.Count - 1; i >= 0; i--)
-            {
-                var blast = _blasts[i];
-                blast.Timer -= dt;
-                blast.Tf.localScale *= 1f + 4f * dt;
-                if (blast.Timer <= 0f)
-                {
-                    Destroy(blast.Tf.gameObject);
-                    _blasts.RemoveAt(i);
-                }
-            }
         }
 
         private void Detonate(Vector3 at, RoboAvatar player, RoboAvatar enemy)
         {
             var part = _owner.Loadout.Bomb;
 
-            var blast = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Destroy(blast.GetComponent<Collider>());
-            blast.name = "Blast";
-            blast.transform.SetParent(transform, false);
-            blast.transform.position = at;
-            blast.transform.localScale = Vector3.one * part.BlastRadius;
-            blast.GetComponent<Renderer>().material = BattleMaterials.Unlit(new Color(1f, 0.67f, 0.27f));
-            _blasts.Add(new Blast { Tf = blast.transform, Timer = 0.35f });
-
+            GameEffects.Fx?.Explosion(at, part.BlastRadius);
             GameAudio.Sfx?.Explosion(at);
 
             // AoE hits BOTH robos -- your own bomb can knock you down.

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RebirthProtocol.Battle.Effects;
 using RebirthProtocol.Domain;
 using UnityEngine;
 
@@ -81,6 +82,8 @@ namespace RebirthProtocol.Battle
                 var nearest = float.MaxValue;
                 RoboAvatar struckAvatar = null;
                 CrateHealth struckCrate = null;
+                var hitPoint = Vector3.zero;
+                var hitNormal = Vector3.up;
                 for (var h = 0; h < count; h++)
                 {
                     var hitAvatar = _hits[h].collider.GetComponent<RoboAvatar>();
@@ -92,6 +95,8 @@ namespace RebirthProtocol.Battle
                     nearest = _hits[h].distance;
                     struckAvatar = hitAvatar;
                     struckCrate = hitAvatar == null ? _hits[h].collider.GetComponent<CrateHealth>() : null;
+                    hitPoint = _hits[h].point;
+                    hitNormal = _hits[h].normal;
                     blocked = true;
                 }
 
@@ -102,6 +107,14 @@ namespace RebirthProtocol.Battle
                 else if (struckCrate != null)
                 {
                     struckCrate.Damage();
+                    GameEffects.Fx?.ImpactSpark(hitPoint, hitNormal, new Color(1f, 0.75f, 0.4f));
+                    Audio.GameAudio.Sfx?.SparkTick(hitPoint);
+                }
+                else if (blocked)
+                {
+                    // Spray off a wall / pillar / arena geometry.
+                    GameEffects.Fx?.ImpactSpark(hitPoint, hitNormal, new Color(1f, 0.85f, 0.55f));
+                    Audio.GameAudio.Sfx?.SparkTick(hitPoint);
                 }
 
                 if (blocked)

@@ -1,4 +1,5 @@
 using RebirthProtocol.Battle.Audio;
+using RebirthProtocol.Battle.Effects;
 using RebirthProtocol.Domain;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -56,6 +57,19 @@ namespace RebirthProtocol.Battle
 
         private void Awake()
         {
+            // Force borderless fullscreen at native resolution. The player
+            // setting already defaults to this, but a standalone player
+            // PERSISTS the last window mode to the registry — so once anyone
+            // (or a -screen-fullscreen 0 test run) launches windowed, later
+            // launches stay windowed until overridden here. Skip the force
+            // when -screen-fullscreen is on the command line so the
+            // screenshot smoke tests can still run windowed.
+            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-screen-fullscreen") < 0)
+            {
+                var res = Screen.currentResolution;
+                Screen.SetResolution(res.width, res.height, FullScreenMode.FullScreenWindow);
+            }
+
             var audioGo = new GameObject("Audio");
             audioGo.transform.SetParent(transform, false);
             GameAudio.Sfx = audioGo.AddComponent<SfxPlayer>();
@@ -84,6 +98,15 @@ namespace RebirthProtocol.Battle
             light.type = LightType.Directional;
             light.intensity = 1.25f;
             lightGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+
+            // VFX: world-space effects (muzzle/impact/explosion + camera
+            // shake) and screen-space post (flash / grain / vignette).
+            var fxGo = new GameObject("Effects");
+            fxGo.transform.SetParent(transform, false);
+            var screenFx = fxGo.AddComponent<ScreenFx>();
+            screenFx.Init();
+            GameEffects.Fx = fxGo.AddComponent<EffectsSystem>();
+            GameEffects.Fx.Init(_cameraRig, screenFx);
 
             SpawnCombatants(LoadoutStore.Load());
 

@@ -223,7 +223,7 @@ namespace RebirthProtocol.Battle
                 _rows[i].Text = MakeText("", 22, new Vector2(0.5f, 1f), new Vector2(0f, -150f - i * 92f), TextAnchor.UpperCenter);
             }
 
-            MakeText("W/S — slot   A/D — part   ENTER / A — deploy", 18, new Vector2(0.5f, 0f), new Vector2(0f, 46f), TextAnchor.MiddleCenter);
+            MakeText("Stick / D-pad — up·down slot, left·right part      A / Enter — deploy", 18, new Vector2(0.5f, 0f), new Vector2(0f, 46f), TextAnchor.MiddleCenter);
         }
 
         private Text MakeText(string content, int size, Vector2 anchor, Vector2 offset, TextAnchor align)

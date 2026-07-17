@@ -29,6 +29,22 @@ namespace RebirthProtocol.Battle
 
         public static Parts Build(Transform tiltRoot, Loadout loadout, Color teamColor)
         {
+            // Bulwark is the one chassis with a real rigged asset (Cobalt
+            // Knight) available; the other three stay primitive until their
+            // own models land. No animation yet either way — this is a
+            // static-mesh visual upgrade, not a rigging pass.
+            if (loadout.Body.Id == "bulwark")
+            {
+                var knightParts = CobaltKnight.Build(tiltRoot, loadout, teamColor);
+                if (knightParts.HasValue)
+                {
+                    return knightParts.Value;
+                }
+                // Resources copy missing (e.g. the linker step was never
+                // run) — fall through to the primitive chassis so the game
+                // still renders something instead of nothing.
+            }
+
             var (hullBase, jointBase) = Palette(loadout.Body.Id);
             var hull = Color.Lerp(hullBase, teamColor, 0.22f);
             var joint = Color.Lerp(jointBase, teamColor, 0.15f);

@@ -55,8 +55,49 @@ Closest tonal reference points — not sources to copy, just calibration:
 - **Mad Max** — the foundational `Standard Post-Apocalyptic Setting` visual language for scavenged, welded-together hardware.
 - **Armored Core** — mercenary pilot culture and a modular-parts economy where beating a rival can mean absorbing their gear, already the direct precedent for the Spoils of War idea above.
 
+## Lexicon (canon terms, 2026-07-18)
+
+- **Harness** — a war-mech (a knight's full plate was literally called "a harness"). 10–14 m tall; the pilot rides in the chest, the head is a sensor-helm (`ART_DIRECTION.md` §1).
+- **Armiger** — a knighted pilot, one entitled to bear ancestral arms.
+- **The Lists** — the consecrated dueling grounds ([`ARENA_ROSTER.md`](ARENA_ROSTER.md)).
+- **A Passage of Arms** — a roguelite run: the medieval term for holding ground against all comers. The circuit of sanctioned Passages is **the Grand Passage**.
+- **Laurels** — victory honors (the future scoring layer: gold/silver/bronze by speed and remaining vigor, from the source's trophy system).
+- **Relic-pattern / Hushforged / Scrapwright** — the three part tiers ([`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) §1.1): maintained ancestral parts; parts corrupted by whatever caused the Long Hush (banned, coveted); and new-made human work (honest, hopeless).
+- **Spoils of War** — the victor's claim on the loser's arms (built: the run's spoils draft).
+
+## The Grand Passage — tournament culture
+
+The Orders keep the peace the only way a mech-feudal world can: **ritualized single combat**. The Grand Passage is the sanctioned circuit of Passages of Arms; win one and you have an Order's attention, win several and you have its fear. The current 5-fight run is one Passage. The source material's tournament variety maps onto future **run modes**, kept here as the backlog:
+
+| Mode | Source basis | Shape |
+|---|---|---|
+| **Laurels** | Task scores / bronze-silver-gold trophies | Score runs by speed + remaining vigor; three laurel thresholds per Passage |
+| **Vow of Temperance** | Single-use-parts tournaments | Each part may be equipped for only one fight per run — forces breadth across the armory |
+| **Shieldbrother Passage** | 2-on-2 partner battles | An AI ally with their own harness; ally bombs/pods still friendly-fire, per the source's rule |
+| **Trial by Ordeal** | Handicap battles | 1v2 fights at reduced enemy skill; mercy rule lowers enemy vigor after repeated defeats |
+| **Twin Harness** | Tag battles | Bring two loadouts, switch mid-fight on the lock-on button; each harness's remaining vigor scores |
+
+## Characters
+
+### The five rivals of the standard Passage (draft canon, deepened 2026-07-18)
+
+Built in `RunOpponents.cs`; same escalating loadouts, now with doctrine and character. Each carries their signature spoil.
+
+1. **Bannerlord Cassian** — *The Aureate Legion.* The Legion's examiner: every sanctioned Passage opens against a bannerlord, and Cassian measures challengers by the book — courteous, incorruptible, and open about exactly what he will do, because the book is that good. Doctrine: line discipline (Bannerman, Arbalest + Censer). Spoil: **Arbalest**.
+2. **Skald Maren** — *Order of the Winter Wing.* The Wing's skalds sing their dead into memory, and Maren duels to earn verses — hers and yours. Talks in meter mid-fight; strikes and is gone. Doctrine: harrying flight (Vesper, Litany + Censer, Courser Greaves). Spoil: **Litany**.
+3. **Vesk the Unseen** — *The Umbral Concordat.* Nobody has seen Vesk's harness unpainted, and nobody has heard Vesk waste a word. The Concordat sells certainty; Vesk fights to collect yours — every duel is reconnaissance for something unstated. Doctrine: veiled blade (Duskmantle, Misericorde + Ward Veil). Spoil: **Misericorde**.
+4. **Warden Aldric** — *The Rust Cross Commandery.* A gate-warden who has never lost ground he was set to hold. Kind off the field; on it, a wall with a Bombard behind it (Cobalt Knight, Bombard + Pavise). Spoil: **Pavise**.
+5. **Grandmaster Otho** — *The Rust Cross Commandery.* The old master who knighted half the circuit, fighting with everything at once — and faster than a Cobalt Knight has any right to be (Dolorous Maul + Pavise, Courser Greaves). Otho believes the Grand Passage exists to find someone worthy of what's coming. He does not say what's coming. Spoil: **Dolorous Maul**.
+
+### Supporting figures (future content)
+
+- **The Herald of the Lists** — the voice of every Passage: announces fights, proclaims laurels, remembers every armiger who ever fought. The natural diegetic wrapper for run UI/narration.
+- **Wrightmother Sella** — the finest living scrapwright; builds parts that almost work and repairs relics she'll never be allowed to own. Future shop/upgrade vendor, and the voice of the setting's central wound: humanity fights with what it can no longer make.
+- **The Riderless** — a harness that fights with no pilot in it. The Orders deny it exists; armigers who saw it stopped competing. Hushforged, violet-black against everyone else's godlight, waiting in the Cradle (`ARENA_ROSTER.md` §19). The intended future final boss and the setting's standing question made flesh: *if nobody alive understands these machines, who says they're empty?*
+
 ## What this changes for the Unity rebuild
 
 - The already-built **Cobalt Knight** asset (`docs/KNIGHT_ROBOT_ASSET.md`) needs no rework — its heavy silhouette, chest-cross emblem, and cobalt/ivory/aurum "ancestral relic" material language already read as an elite Order's pristine ancestral-tech chassis under this theme. Only its in-fiction framing changes (Crusader Knight → **The Rust Cross Commandery**).
 - Anything built from here on should default toward the Order names/table above rather than the old 1:1 historical-culture labels, and should distinguish Order-tier mechs (coherent, well-kept) from everyone-else-tier mechs (visibly patchwork/salvaged) as a deliberate visual language, not just incidental variety.
 - `docs/GAME_DESIGN.md` §16 logs this pivot; `prompts/MASTER_BUILD_PROMPT_UNITY.md`'s required reading has been updated to point here.
+- **2026-07-18 theming pass**: the catalog display names now follow this setting ([`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) — the canonical parts/naming roster), arenas have a themed roster ([`ARENA_ROSTER.md`](ARENA_ROSTER.md)), and art/audio/VFX direction is canonized in [`ART_DIRECTION.md`](ART_DIRECTION.md). The faction table above remains the standing Order canon; the mecha-knight focus (Knights in Powered Armor — Escaflowne, Imperial Knights, Knight's & Magic, Break Blade) is now an explicit design pillar via `ART_DIRECTION.md`, extending the Touchstones list.

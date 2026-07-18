@@ -10,10 +10,10 @@ namespace RebirthProtocol.Tests.EditMode
         {
             var loadout = new Loadout
             {
-                Body = PartsCatalog.Bodies[3], // Crusader Knight: 1.45 hp, 0.8 speed, 1 dash
+                Body = PartsCatalog.Bodies[3], // Cobalt Knight: 1.45 hp, 0.8 speed, 1 dash
                 Gun = PartsCatalog.Guns[0],
                 Bomb = PartsCatalog.Bombs[0],
-                Legs = PartsCatalog.Legs[1], // Numidian Boots: 1.3 speed, 0.85 jump, 1.1 recovery
+                Legs = PartsCatalog.Legs[1], // Courser Greaves: 1.3 speed, 0.85 jump, 1.1 recovery
                 Pod = PartsCatalog.Pods[0]
             };
 
@@ -32,16 +32,16 @@ namespace RebirthProtocol.Tests.EditMode
         {
             var loadout = new Loadout
             {
-                Body = PartsCatalog.Bodies[2], // Shinobi: 3 vanish dashes
+                Body = PartsCatalog.Bodies[2], // Duskmantle: 2 vanish dashes (bodies cap at 2, ARMORY_REFERENCE §2.2)
                 Melee = PartsCatalog.MeleeWeapons[2],
                 Shield = PartsCatalog.Shields[0],
-                Legs = PartsCatalog.Legs[2], // Winged Sandals: +1 dash
+                Legs = PartsCatalog.Legs[2], // Gryphon Greaves: +1 dash
                 Pod = PartsCatalog.Pods[1]
             };
 
             var stats = PartsCatalog.ComputeStats(loadout);
 
-            Assert.That(stats.DashCount, Is.EqualTo(4));
+            Assert.That(stats.DashCount, Is.EqualTo(3));
             Assert.That(stats.DashType, Is.EqualTo(DashType.Vanish));
             Assert.That(loadout.HasMelee, Is.True);
             Assert.That(loadout.HasShield, Is.True);

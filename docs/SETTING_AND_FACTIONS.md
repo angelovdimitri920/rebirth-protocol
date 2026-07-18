@@ -58,6 +58,10 @@ Closest tonal reference points — not sources to copy, just calibration:
 - **Fist of the North Star** — the archetypal wasteland `Used Future`: warlords and martial orders fighting over the scraps of a dead civilization.
 - **Mad Max** — the foundational `Standard Post-Apocalyptic Setting` visual language for scavenged, welded-together hardware.
 - **Armored Core** — mercenary pilot culture and a modular-parts economy where beating a rival can mean absorbing their gear, already the direct precedent for the Spoils of War idea above.
+- **The Five Star Stories** — knight-mecha as centuries-old heirloom art passed bearer to bearer; the purest statement of our relic-maintenance culture, and the precedent for **named individual harnesses with recorded lineages**.
+- **Code Geass** — the knightly institution (round tables, personal champion titles) layered onto mecha; precedent for surfacing armiger Class ranks as spoken titles.
+- **Panzer World Galient / Aura Battler Dunbine** — the 1980s roots of medieval-world mecha: machines excavated from beneath a feudal world; machines that feel summoned and *wrong* (our Hushforged register).
+- **Warmachine / Iron Kingdoms** — steam-and-rivets war machines in a feudal world; the scrapwright tier's genre backbone.
 
 ## Lexicon (canon terms, 2026-07-18)
 

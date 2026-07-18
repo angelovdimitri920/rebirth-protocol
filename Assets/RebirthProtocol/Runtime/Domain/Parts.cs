@@ -176,11 +176,13 @@ namespace RebirthProtocol.Domain
 
     public static class PartsCatalog
     {
-        public static RoboStats ComputeStats(Loadout l) => new RoboStats
+        /// powerMult: the run's flat per-fight enemy escalation — scales HP
+        /// and outgoing damage together (RunState.EnemyPowerMult).
+        public static RoboStats ComputeStats(Loadout l, float powerMult = 1f) => new RoboStats
         {
-            MaxHp = MathF.Round(1000f * l.Body.HpMult),
+            MaxHp = MathF.Round(1000f * l.Body.HpMult * powerMult),
             DefMult = l.Body.DefMult,
-            AtkMult = l.Body.AtkMult,
+            AtkMult = l.Body.AtkMult * powerMult,
             RunSpeed = CombatTuning.Move.RunSpeed * l.Body.SpeedMult * l.Legs.SpeedMult,
             JumpThrust = CombatTuning.Move.JumpThrust * l.Legs.JumpMult,
             DashType = l.Body.DashType,

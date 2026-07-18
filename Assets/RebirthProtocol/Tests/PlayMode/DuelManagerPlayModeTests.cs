@@ -161,7 +161,7 @@ namespace RebirthProtocol.Tests.PlayMode
                 {
                     Body = PartsCatalog.Bodies[0], // defMult 1.0 keeps numbers plain
                     Gun = PartsCatalog.Guns[0],
-                    Shield = PartsCatalog.Shields[0], // Aegis: 180 hp, 75% front block
+                    Shield = PartsCatalog.Shields[0], // Ward Veil (id "aegis"): 180 hp, 75% front block
                     Legs = PartsCatalog.Legs[0],
                     Pod = PartsCatalog.Pods[0]
                 };

@@ -21,7 +21,7 @@ namespace RebirthProtocol.Domain
         Ended
     }
 
-    // Saber (prototype id "saber") + the shared gap-closer mechanics.
+    // Oathblade (prototype id "saber") + the shared gap-closer mechanics.
     public sealed class MeleeTuning
     {
         public float CloseRange = 4f;

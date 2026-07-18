@@ -3,7 +3,7 @@ namespace RebirthProtocol.Domain
     // Every gameplay-feel number lives here, mirroring the Three.js
     // prototype's src/core/tuning.ts. These are playtest-validated starting
     // values, not gospel. Stage 1 slice hardcodes the baseline loadout
-    // (vanguard body / striders legs / Longbow gun / Saber melee); the
+    // (vanguard body / striders legs / Arbalest gun / Oathblade melee); the
     // five-slot loadout system replaces these constants in a later stage.
     public static class CombatTuning
     {

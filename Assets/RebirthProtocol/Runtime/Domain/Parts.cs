@@ -190,58 +190,62 @@ namespace RebirthProtocol.Domain
             LandRecoveryMult = l.Legs.LandRecoveryMult
         };
 
+        // Display names follow docs/ARMORY_REFERENCE.md (neo-feudal canon,
+        // 2026-07-18); .id fields stay frozen for save compatibility.
+        // Standing rule (ARMORY_REFERENCE §2.2): no body grants more than
+        // 2 air dashes -- extra dashes come only from legs.
         public static readonly BodyPart[] Bodies =
         {
-            new BodyPart { Id = "vanguard", Name = "Legionnaire", Blurb = "Balanced all-rounder. Two air-dashes, no weaknesses, no edges.", HpMult = 1.0f, DefMult = 1.0f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 2, SpeedMult = 1.0f },
-            new BodyPart { Id = "skylance", Name = "Valkyrie", Blurb = "Glass-cannon flier. One long dash, hits hard, folds fast.", HpMult = 0.8f, DefMult = 1.2f, AtkMult = 1.25f, DashType = DashType.Long, DashCount = 1, SpeedMult = 1.05f },
-            new BodyPart { Id = "wraith", Name = "Shinobi", Blurb = "Evader. Three short vanish-dashes that phase through shots.", HpMult = 0.9f, DefMult = 1.1f, AtkMult = 0.9f, DashType = DashType.Vanish, DashCount = 3, SpeedMult = 1.0f },
-            new BodyPart { Id = "bulwark", Name = "Crusader Knight", Blurb = "Slow tank. One dash, huge health pool, shrugs off hits.", HpMult = 1.45f, DefMult = 0.75f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 1, SpeedMult = 0.8f }
+            new BodyPart { Id = "vanguard", Name = "Bannerman", Blurb = "The Aureate Legion's standard-bearer pattern. Two air-dashes, no weaknesses, no edges.", HpMult = 1.0f, DefMult = 1.0f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 2, SpeedMult = 1.0f },
+            new BodyPart { Id = "skylance", Name = "Vesper", Blurb = "The Winter Wing's evening star: one long dash, hits hard, folds fast.", HpMult = 0.8f, DefMult = 1.2f, AtkMult = 1.25f, DashType = DashType.Long, DashCount = 1, SpeedMult = 1.05f },
+            new BodyPart { Id = "wraith", Name = "Duskmantle", Blurb = "The Umbral Concordat's cowled evader. Two short vanish-dashes that phase through shots.", HpMult = 0.9f, DefMult = 1.1f, AtkMult = 0.9f, DashType = DashType.Vanish, DashCount = 2, SpeedMult = 1.0f },
+            new BodyPart { Id = "bulwark", Name = "Cobalt Knight", Blurb = "The Rust Cross's ancestral wall. One dash, huge health pool, shrugs off hits.", HpMult = 1.45f, DefMult = 0.75f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 1, SpeedMult = 0.8f }
         };
 
         public static readonly GunPart[] Guns =
         {
-            new GunPart { Id = "blaster", Name = "Longbow", Blurb = "The baseline. Honest damage, honest tracking.", Damage = 35f, EnduranceDamage = 16f, FireInterval = 0.38f, ProjectileSpeed = 32f, HomingTurnRate = 2.2f },
-            new GunPart { Id = "needler", Name = "Chu-Ko-Nu", Blurb = "Rapid stream of weak, hard-curving darts. Death by pressure.", Damage = 14f, EnduranceDamage = 7f, FireInterval = 0.13f, ProjectileSpeed = 36f, HomingTurnRate = 3.4f },
-            new GunPart { Id = "ram-cannon", Name = "Ballista", Blurb = "Slow, straight, brutal. One hit shreds endurance.", Damage = 90f, EnduranceDamage = 48f, FireInterval = 1.15f, ProjectileSpeed = 26f, HomingTurnRate = 0.6f }
+            new GunPart { Id = "blaster", Name = "Arbalest", Blurb = "The armory's workhorse. Honest damage, honest tracking.", Damage = 35f, EnduranceDamage = 16f, FireInterval = 0.38f, ProjectileSpeed = 32f, HomingTurnRate = 2.2f },
+            new GunPart { Id = "needler", Name = "Litany", Blurb = "A recited pressure of weak, hard-curving darts. Death by repetition.", Damage = 14f, EnduranceDamage = 7f, FireInterval = 0.13f, ProjectileSpeed = 36f, HomingTurnRate = 3.4f },
+            new GunPart { Id = "ram-cannon", Name = "Bombard", Blurb = "Siege-shot: slow, straight, brutal. One hit shreds endurance.", Damage = 90f, EnduranceDamage = 48f, FireInterval = 1.15f, ProjectileSpeed = 26f, HomingTurnRate = 0.6f }
         };
 
         public static readonly MeleeWeaponPart[] MeleeWeapons =
         {
-            new MeleeWeaponPart { Id = "saber", Name = "Saber", Blurb = "Balanced blade. No glaring weakness, no standout edge.", Damage = 130f, EnduranceDamage = 55f, HitRange = 3.0f, HitArcDegrees = 70f, SwingActiveTime = 0.18f, HitRecovery = 0.45f, WhiffRecovery = 0.95f, KnockbackSpeed = 10f },
-            new MeleeWeaponPart { Id = "warhammer", Name = "Warhammer", Blurb = "Massive damage and knockback, but whiff this and you're standing there a long time.", Damage = 210f, EnduranceDamage = 90f, HitRange = 3.4f, HitArcDegrees = 80f, SwingActiveTime = 0.3f, HitRecovery = 0.75f, WhiffRecovery = 1.4f, KnockbackSpeed = 16f },
-            new MeleeWeaponPart { Id = "twin-fang", Name = "Khopesh", Blurb = "Fast, light, low-commitment. Weaker per hit, but barely punishable.", Damage = 85f, EnduranceDamage = 35f, HitRange = 2.6f, HitArcDegrees = 70f, SwingActiveTime = 0.12f, HitRecovery = 0.28f, WhiffRecovery = 0.6f, KnockbackSpeed = 7f }
+            new MeleeWeaponPart { Id = "saber", Name = "Oathblade", Blurb = "The knight's standard. Balanced in every line.", Damage = 130f, EnduranceDamage = 55f, HitRange = 3.0f, HitArcDegrees = 70f, SwingActiveTime = 0.18f, HitRecovery = 0.45f, WhiffRecovery = 0.95f, KnockbackSpeed = 10f },
+            new MeleeWeaponPart { Id = "warhammer", Name = "Dolorous Maul", Blurb = "The dolorous stroke: massive damage and knockback, ruinous to whiff.", Damage = 210f, EnduranceDamage = 90f, HitRange = 3.4f, HitArcDegrees = 80f, SwingActiveTime = 0.3f, HitRecovery = 0.75f, WhiffRecovery = 1.4f, KnockbackSpeed = 16f },
+            new MeleeWeaponPart { Id = "twin-fang", Name = "Misericorde", Blurb = "The mercy-dagger: fast, light, barely punishable. Finishes what poise-loss starts.", Damage = 85f, EnduranceDamage = 35f, HitRange = 2.6f, HitArcDegrees = 70f, SwingActiveTime = 0.12f, HitRecovery = 0.28f, WhiffRecovery = 0.6f, KnockbackSpeed = 7f }
         };
 
         public static readonly BombPart[] Bombs =
         {
-            new BombPart { Id = "impact", Name = "Greek Fire Pot", Blurb = "Standard lobbed shell. Reticule tracks the enemy -- hold to aim, release to throw.", Damage = 80f, EnduranceDamage = 35f, Cooldown = 5f, BlastRadius = 3.2f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 20f },
-            new BombPart { Id = "quake", Name = "Zhen Tian Lei", Blurb = "Huge blast, heavy endurance crush, long rearm. Reticule fixed just ahead of you -- close-range, high commitment.", Damage = 120f, EnduranceDamage = 70f, Cooldown = 9f, BlastRadius = 4.5f, ArcHeight = 6.5f, ReticuleAnchor = ReticuleAnchor.Self, ReticuleRange = 4f }
+            new BombPart { Id = "impact", Name = "Censer", Blurb = "The swung vessel of fire. Reticule tracks the enemy -- hold to aim, release to throw.", Damage = 80f, EnduranceDamage = 35f, Cooldown = 5f, BlastRadius = 3.2f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 20f },
+            new BombPart { Id = "quake", Name = "Anathema Charge", Blurb = "The great condemnation: huge blast, heavy endurance crush, long rearm. Fixed just ahead of you -- close-range, high commitment.", Damage = 120f, EnduranceDamage = 70f, Cooldown = 9f, BlastRadius = 4.5f, ArcHeight = 6.5f, ReticuleAnchor = ReticuleAnchor.Self, ReticuleRange = 4f }
         };
 
         public static readonly ShieldPart[] Shields =
         {
-            new ShieldPart { Id = "aegis", Name = "Aegis Barrier", Blurb = "Energy shield: fast regen, blocks ~75% up front, ~25% behind. Hold to raise -- rooted while up.", ShieldHp = 180f, RegenPerSec = 25f, RegenDelay = 2.0f, FrontBlockPercent = 0.75f, BackBlockPercent = 0.25f, MeleeParryEnduranceDamage = 20f },
-            new ShieldPart { Id = "bastion", Name = "Bastion Plate", Blurb = "Physical plate: bigger buffer, blocks ~92% up front, recharges slowly. Hold to raise -- rooted while up.", ShieldHp = 260f, RegenPerSec = 6f, RegenDelay = 3.5f, FrontBlockPercent = 0.92f, BackBlockPercent = 0.4f, MeleeParryEnduranceDamage = 32f }
+            new ShieldPart { Id = "aegis", Name = "Ward Veil", Blurb = "Light energy veil: fast regen, blocks ~75% up front, ~25% behind. Hold to raise -- rooted while up.", ShieldHp = 180f, RegenPerSec = 25f, RegenDelay = 2.0f, FrontBlockPercent = 0.75f, BackBlockPercent = 0.25f, MeleeParryEnduranceDamage = 20f },
+            new ShieldPart { Id = "bastion", Name = "Pavise", Blurb = "The great standing wall-shield: bigger buffer, blocks ~92% up front, recharges slowly. Hold to raise -- rooted while up.", ShieldHp = 260f, RegenPerSec = 6f, RegenDelay = 3.5f, FrontBlockPercent = 0.92f, BackBlockPercent = 0.4f, MeleeParryEnduranceDamage = 32f }
         };
 
         public static readonly PodPart[] Pods =
         {
-            new PodPart { Id = "sentry", Name = "Terracotta Sentinel", Blurb = "Steady chip fire. Keeps them honest while you reposition.", Damage = 8f, EnduranceDamage = 5f, FireInterval = 0.8f, EnergyMax = 100f, EnergyPerShot = 12f, EnergyRegenPerSec = 9f },
-            new PodPart { Id = "hornet", Name = "War Kite", Blurb = "Fast bursts that drain its cell quickly. Feast then famine.", Damage = 6f, EnduranceDamage = 8f, FireInterval = 0.35f, EnergyMax = 80f, EnergyPerShot = 16f, EnergyRegenPerSec = 7f }
+            new PodPart { Id = "sentry", Name = "Iron Squire", Blurb = "The loyal retainer: steady chip fire while you reposition.", Damage = 8f, EnduranceDamage = 5f, FireInterval = 0.8f, EnergyMax = 100f, EnergyPerShot = 12f, EnergyRegenPerSec = 9f },
+            new PodPart { Id = "hornet", Name = "Kestrel", Blurb = "The cast hawk: fast stooping bursts, then an empty glove.", Damage = 6f, EnduranceDamage = 8f, FireInterval = 0.35f, EnergyMax = 80f, EnergyPerShot = 16f, EnergyRegenPerSec = 7f }
         };
 
         public static readonly LegsPart[] Legs =
         {
-            new LegsPart { Id = "strider", Name = "Traveler's Boots", Blurb = "Neutral gait. Nothing gained, nothing owed.", SpeedMult = 1.0f, JumpMult = 1.0f, ExtraDashes = 0, LandRecoveryMult = 1.0f },
-            new LegsPart { Id = "cheetah", Name = "Numidian Boots", Blurb = "Fast and low. Ground speed up, jump suffers.", SpeedMult = 1.3f, JumpMult = 0.85f, ExtraDashes = 0, LandRecoveryMult = 1.1f },
-            new LegsPart { Id = "cricket", Name = "Winged Sandals", Blurb = "Sky rig: extra dash and clean landings, sluggish on foot.", SpeedMult = 0.85f, JumpMult = 1.15f, ExtraDashes = 1, LandRecoveryMult = 0.7f }
+            new LegsPart { Id = "strider", Name = "Wayfarer Greaves", Blurb = "Neutral gait. Nothing gained, nothing owed.", SpeedMult = 1.0f, JumpMult = 1.0f, ExtraDashes = 0, LandRecoveryMult = 1.0f },
+            new LegsPart { Id = "cheetah", Name = "Courser Greaves", Blurb = "The running horse: fast and low. Ground speed up, jump suffers.", SpeedMult = 1.3f, JumpMult = 0.85f, ExtraDashes = 0, LandRecoveryMult = 1.1f },
+            new LegsPart { Id = "cricket", Name = "Gryphon Greaves", Blurb = "The sky rig: extra dash and clean landings, sluggish on foot.", SpeedMult = 0.85f, JumpMult = 1.15f, ExtraDashes = 1, LandRecoveryMult = 0.7f }
         };
 
         public static Loadout DefaultLoadout() => new Loadout
         {
             Body = Bodies[0],
             Gun = Guns[0],
-            Bomb = Bombs[0], // prototype default: Longbow + Greek Fire Pot
+            Bomb = Bombs[0], // prototype default: Arbalest + Censer
             Legs = Legs[0],
             Pod = Pods[0]
         };

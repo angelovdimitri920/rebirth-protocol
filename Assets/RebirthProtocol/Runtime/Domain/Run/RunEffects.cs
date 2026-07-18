@@ -118,6 +118,18 @@ namespace RebirthProtocol.Domain
             return 1f - 1f / (1f + a * stacks);
         }
 
+        /// Deterministic random float in [min, max), drawn from the same
+        /// seeded RNG as every other run roll. The Battle layer uses this
+        /// for boon-driven spawn offsets (Splinter Rounds dart jitter,
+        /// Cluster Shell blast scatter) so RunSeedOverride pins those
+        /// outcomes too, not just chance procs — Domain stays engine-
+        /// agnostic (no Vector3/UnityEngine here), Battle builds its own
+        /// offsets from the floats.
+        public float NextFloat(float min, float max)
+        {
+            return (float)(min + _rng.NextDouble() * (max - min));
+        }
+
         // --- Stat queries used by combat systems ---
 
         public float GunDamageMult(float boostValue)

@@ -163,7 +163,12 @@ namespace RebirthProtocol.Battle
             {
                 // Splinter Rounds: two weak darts spawn near the hit point
                 // and curve back in. Source None so darts can't chain darts.
-                var jitter = new Vector3(Random.Range(-1.5f, 1.5f), 1f + Random.value, Random.Range(-1.5f, 1.5f));
+                // Jitter is drawn from the run's seeded RNG (not
+                // UnityEngine.Random) so RunSeedOverride pins it too.
+                var jitter = new Vector3(
+                    effects.NextFloat(-1.5f, 1.5f),
+                    1f + effects.NextFloat(0f, 1f),
+                    effects.NextFloat(-1.5f, 1.5f));
                 Spawn(p.Owner, victim, victim.Center + jitter, victim.Center,
                     RunEffects.SplinterDamage + effects.FlatDamageBonus(),
                     RunEffects.SplinterEnduranceDamage, 22f, 4f);

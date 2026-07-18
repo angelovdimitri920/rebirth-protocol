@@ -260,14 +260,16 @@ namespace RebirthProtocol.Battle
             }
 
             // Cluster Shell boon: follow-up mini-blasts scatter around the
-            // main detonation (never off a mini-blast itself).
+            // main detonation (never off a mini-blast itself). Scatter is
+            // drawn from the run's seeded RNG (not UnityEngine.Random) so
+            // RunSeedOverride pins it too.
             if (!isCluster && effects != null)
             {
                 for (var i = 0; i < effects.ClusterBlasts; i++)
                 {
                     _pendingClusters.Add(new PendingCluster
                     {
-                        At = at + new Vector3(Random.Range(-2.5f, 2.5f), 0f, Random.Range(-2.5f, 2.5f)),
+                        At = at + new Vector3(effects.NextFloat(-2.5f, 2.5f), 0f, effects.NextFloat(-2.5f, 2.5f)),
                         Timer = 0.3f
                     });
                 }

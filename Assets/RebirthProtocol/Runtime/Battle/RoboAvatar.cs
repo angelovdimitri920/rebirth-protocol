@@ -50,6 +50,14 @@ namespace RebirthProtocol.Battle
         public RoboIntent Intent;
         public bool Grounded { get; private set; } = true;
 
+        /// The player's run boons/items; null for the enemy (boons apply to
+        /// the player only, GAME_DESIGN §4 Stage 3).
+        public RunEffects Effects;
+
+        /// Afterimage boon hook: the run flow points this at the
+        /// AfterimageSystem so a dash can drop one at the launch position.
+        public System.Action<Vector3> OnAfterimageSpawn;
+
         /// Standing on an ice hazard (set by DuelManager per frame):
         /// momentum carries and steering becomes a slow correction.
         public bool OnIce;
@@ -98,10 +106,11 @@ namespace RebirthProtocol.Battle
         /// Vanish-dash i-frames: attacks pass straight through.
         public bool Intangible => Stats.DashType == DashType.Vanish && _dashTimer > 0f;
 
-        public void Init(Loadout loadout, Color hull, Color accent, ProjectileSystem projectiles, float spawnFacing)
+        public void Init(Loadout loadout, Color hull, Color accent, ProjectileSystem projectiles, float spawnFacing,
+            float powerMult = 1f)
         {
             Loadout = loadout;
-            Stats = PartsCatalog.ComputeStats(loadout);
+            Stats = PartsCatalog.ComputeStats(loadout, powerMult);
             _dashProfile = DashProfile.For(Stats.DashType);
             _projectiles = projectiles;
             _facing = spawnFacing;
@@ -131,7 +140,8 @@ namespace RebirthProtocol.Battle
         /// All incoming damage routes through here so the shield can
         /// intercept. fromDir: attack's direction of travel (attacker ->
         /// victim). Port of Robo.ts::receiveHit.
-        public ReceiveResult ReceiveHit(float damage, float enduranceDamage, Vector3 fromDir)
+        public ReceiveResult ReceiveHit(float damage, float enduranceDamage, Vector3 fromDir,
+            float shieldDamageMult = 1f)
         {
             if (Intangible)
             {
@@ -174,7 +184,9 @@ namespace RebirthProtocol.Battle
                     return ReceiveResult.Knockdown;
                 }
 
-                ShieldHp -= scaledDamage * blockPercent;
+                // Guard Crusher boon: multiplies only how fast the shield's
+                // own pool drains, never the chip that gets through.
+                ShieldHp -= scaledDamage * blockPercent * shieldDamageMult;
                 if (ShieldHp <= 0f)
                 {
                     // Guard break feeds the existing knockdown state -- no
@@ -252,9 +264,11 @@ namespace RebirthProtocol.Battle
             var aim = targetAlive
                 ? target.Position + Vector3.up * 1.0f
                 : Position + FacingDir * 10f + Vector3.up * CombatTuning.Gun.MuzzleHeight;
+            var damage = (part.Damage * Stats.AtkMult + (Effects?.FlatDamageBonus() ?? 0f))
+                * (Effects?.GunDamageMult(Boost.Value) ?? 1f);
             _projectiles.Spawn(this, targetAlive ? target : null, muzzle, aim,
-                part.Damage * Stats.AtkMult, part.EnduranceDamage, part.ProjectileSpeed,
-                targetAlive ? part.HomingTurnRate : 0f);
+                damage, part.EnduranceDamage, part.ProjectileSpeed,
+                targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun);
         }
 
         // --- Melee ---
@@ -388,14 +402,26 @@ namespace RebirthProtocol.Battle
             }
 
             var dir = to.normalized;
+            var damage = (Melee.Tuning.Damage * Melee.ComboDamageMult * Stats.AtkMult
+                    + (Effects?.FlatDamageBonus() ?? 0f))
+                * (Effects?.MeleeDamageMult() ?? 1f);
             var result = target.ReceiveHit(
-                Melee.Tuning.Damage * Melee.ComboDamageMult * Stats.AtkMult,
+                damage,
                 Melee.Tuning.EnduranceDamage * Melee.ComboEnduranceMult,
-                dir);
+                dir,
+                Effects?.MeleeShieldMult() ?? 1f);
             if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
             {
                 GameAudio.Sfx?.MeleeHit(target.Position);
                 target.ApplyKnockback(dir, Melee.Tuning.KnockbackSpeed * Melee.ComboKnockbackMult);
+                if (Effects != null)
+                {
+                    Effects.OnHit(HitSource.Melee);
+                    if (result is ReceiveResult.Knockdown or ReceiveResult.GuardBreak)
+                    {
+                        Effects.OnKnockdown();
+                    }
+                }
             }
 
             // Shield parry (§3.2): a melee hit blocked by an ENGAGED shield
@@ -579,7 +605,7 @@ namespace RebirthProtocol.Battle
             _wasOverheated = Boost.Overheated;
 
             if (canBoost && Intent.DashRequested && _dashTimer <= 0f && !Intent.LeftArmActive
-                && Boost.TrySpendAirDash(_dashProfile.Cost, Stats.DashCount))
+                && Boost.TrySpendAirDash(_dashProfile.Cost * (Effects?.DashCostMult() ?? 1f), Stats.DashCount))
             {
                 _dashDir = Intent.MoveDir.sqrMagnitude > 0.01f ? Intent.MoveDir.normalized : FacingDir;
                 _dashTimer = _dashProfile.Duration;
@@ -587,6 +613,11 @@ namespace RebirthProtocol.Battle
                 if (Grounded)
                 {
                     _velocity.y = CombatTuning.Dash.GroundDashHop; // ground dash lifts into a hop
+                }
+
+                if (Effects != null && Effects.OnDash().SpawnAfterimage)
+                {
+                    OnAfterimageSpawn?.Invoke(Center);
                 }
             }
 

@@ -105,7 +105,9 @@ namespace RebirthProtocol.Battle
             var part = _owner.Loadout.Pod;
 
             // Energy regenerates whether deployed or not (its own pool).
-            Energy = Mathf.Min(part.EnergyMax, Energy + part.EnergyRegenPerSec * dt);
+            // Overclocked Cell boon speeds the recharge.
+            Energy = Mathf.Min(part.EnergyMax,
+                Energy + part.EnergyRegenPerSec * (_owner.Effects?.PodRegenMult() ?? 1f) * dt);
 
             if (!Deployed)
             {
@@ -131,7 +133,7 @@ namespace RebirthProtocol.Battle
 
             if (targetAlive && inRange && _fireCooldown <= 0f && Energy >= part.EnergyPerShot)
             {
-                _fireCooldown = part.FireInterval;
+                _fireCooldown = part.FireInterval * (_owner.Effects?.PodFireIntervalMult() ?? 1f);
                 Energy -= part.EnergyPerShot;
                 GameAudio.Sfx?.PodShot(_body.position);
                 var aim = _aimDir.HasValue
@@ -139,7 +141,7 @@ namespace RebirthProtocol.Battle
                     : target.Position + Vector3.up * 1.0f;
                 _projectiles.Spawn(_owner, target, _body.position, aim,
                     part.Damage * _owner.Stats.AtkMult, part.EnduranceDamage,
-                    CombatTuning.Pod.ProjectileSpeed, CombatTuning.Pod.HomingTurnRate);
+                    CombatTuning.Pod.ProjectileSpeed, CombatTuning.Pod.HomingTurnRate, HitSource.Pod);
             }
         }
     }

@@ -28,12 +28,25 @@ namespace RebirthProtocol.Battle
         /// vulnerable while aiming.
         public bool Aiming { get; private set; }
 
+        private sealed class PendingCluster
+        {
+            public Vector3 At;
+            public float Timer;
+        }
+
         private RoboAvatar _owner;
         private Transform _reticule;
         private Vector3 _manualOffset;
         private readonly List<LiveBomb> _live = new List<LiveBomb>();
+        private readonly List<PendingCluster> _pendingClusters = new List<PendingCluster>();
 
         public bool Ready => CooldownRemaining <= 0f;
+
+        /// Rearm Protocol boon: a knockdown wipes the remaining cooldown.
+        public void ResetCooldown()
+        {
+            CooldownRemaining = 0f;
+        }
 
         public void Init(RoboAvatar owner)
         {
@@ -173,6 +186,17 @@ namespace RebirthProtocol.Battle
                 CancelAim();
             }
 
+            // Cluster Shell follow-ups land a beat after the main blast.
+            for (var i = _pendingClusters.Count - 1; i >= 0; i--)
+            {
+                _pendingClusters[i].Timer -= dt;
+                if (_pendingClusters[i].Timer <= 0f)
+                {
+                    Detonate(_pendingClusters[i].At, player, enemy, isCluster: true);
+                    _pendingClusters.RemoveAt(i);
+                }
+            }
+
             for (var i = _live.Count - 1; i >= 0; i--)
             {
                 var b = _live[i];
@@ -192,35 +216,60 @@ namespace RebirthProtocol.Battle
             }
         }
 
-        private void Detonate(Vector3 at, RoboAvatar player, RoboAvatar enemy)
+        private void Detonate(Vector3 at, RoboAvatar player, RoboAvatar enemy, bool isCluster = false)
         {
             var part = _owner.Loadout.Bomb;
+            var effects = _owner.Effects;
+            var scale = isCluster ? 0.6f : 1f; // mini-blasts are weaker and smaller
 
-            GameEffects.Fx?.Explosion(at, part.BlastRadius);
+            GameEffects.Fx?.Explosion(at, part.BlastRadius * scale);
             GameAudio.Sfx?.Explosion(at);
 
             // AoE hits BOTH robos -- your own bomb can knock you down.
             foreach (var robo in new[] { player, enemy })
             {
                 var toRobo = robo.Position - at;
-                if (toRobo.magnitude <= part.BlastRadius + 0.5f)
+                if (toRobo.magnitude <= part.BlastRadius * scale + 0.5f)
                 {
                     toRobo.y = 0f;
-                    robo.ReceiveHit(
-                        part.Damage * _owner.Stats.AtkMult,
-                        part.EnduranceDamage,
+                    var result = robo.ReceiveHit(
+                        (part.Damage * _owner.Stats.AtkMult + (effects?.FlatDamageBonus() ?? 0f)) * scale,
+                        part.EnduranceDamage * scale,
                         toRobo.sqrMagnitude > 0.0001f ? toRobo.normalized : Vector3.forward);
+                    if (effects != null && robo != _owner
+                        && result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
+                    {
+                        effects.OnHit(HitSource.Bomb);
+                        if (result is ReceiveResult.Knockdown or ReceiveResult.GuardBreak)
+                        {
+                            effects.OnKnockdown();
+                        }
+                    }
                 }
             }
 
             // Crates inside the blast are destroyed outright.
-            var overlaps = Physics.OverlapSphere(at, part.BlastRadius);
+            var overlaps = Physics.OverlapSphere(at, part.BlastRadius * scale);
             foreach (var overlap in overlaps)
             {
                 var crate = overlap.GetComponent<CrateHealth>();
                 if (crate != null)
                 {
                     crate.DestroyOutright();
+                }
+            }
+
+            // Cluster Shell boon: follow-up mini-blasts scatter around the
+            // main detonation (never off a mini-blast itself).
+            if (!isCluster && effects != null)
+            {
+                for (var i = 0; i < effects.ClusterBlasts; i++)
+                {
+                    _pendingClusters.Add(new PendingCluster
+                    {
+                        At = at + new Vector3(Random.Range(-2.5f, 2.5f), 0f, Random.Range(-2.5f, 2.5f)),
+                        Timer = 0.3f
+                    });
                 }
             }
         }

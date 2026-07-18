@@ -20,13 +20,15 @@ namespace RebirthProtocol.Battle
             public float Damage;
             public float EnduranceDamage;
             public float HomingTurnRate;
+            public HitSource Source;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
         private readonly RaycastHit[] _hits = new RaycastHit[8];
 
         public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
-            float damage, float enduranceDamage, float speed, float homingTurnRate)
+            float damage, float enduranceDamage, float speed, float homingTurnRate,
+            HitSource source = HitSource.None)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             Destroy(go.GetComponent<Collider>());
@@ -46,7 +48,8 @@ namespace RebirthProtocol.Battle
                 Target = target,
                 Damage = damage,
                 EnduranceDamage = enduranceDamage,
-                HomingTurnRate = homingTurnRate
+                HomingTurnRate = homingTurnRate,
+                Source = source
             });
         }
 
@@ -102,7 +105,7 @@ namespace RebirthProtocol.Battle
 
                 if (struckAvatar != null)
                 {
-                    struckAvatar.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
+                    ApplyAvatarHit(p, struckAvatar);
                 }
                 else if (struckCrate != null)
                 {
@@ -131,7 +134,7 @@ namespace RebirthProtocol.Battle
                     var toCenter = p.Target.Center - p.Tf.position;
                     if (toCenter.sqrMagnitude < 0.7f * 0.7f)
                     {
-                        p.Target.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
+                        ApplyAvatarHit(p, p.Target);
                         Despawn(i);
                     }
                 }
@@ -141,6 +144,35 @@ namespace RebirthProtocol.Battle
         private static bool TargetAlive(Projectile p)
         {
             return p.Target != null && p.Target.Health.State != HealthState.Dead;
+        }
+
+        /// Land the hit and fire the owner's run-effect trigger verbs
+        /// (splinter darts, trigger-coil reloads, vampiric pod feeds).
+        private void ApplyAvatarHit(Projectile p, RoboAvatar victim)
+        {
+            var result = victim.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
+            var effects = p.Owner != null ? p.Owner.Effects : null;
+            if (effects == null || p.Source == HitSource.None
+                || result is ReceiveResult.Invulnerable or ReceiveResult.Evaded)
+            {
+                return;
+            }
+
+            var outcome = effects.OnHit(p.Source);
+            for (var d = 0; d < outcome.SplinterDarts; d++)
+            {
+                // Splinter Rounds: two weak darts spawn near the hit point
+                // and curve back in. Source None so darts can't chain darts.
+                var jitter = new Vector3(Random.Range(-1.5f, 1.5f), 1f + Random.value, Random.Range(-1.5f, 1.5f));
+                Spawn(p.Owner, victim, victim.Center + jitter, victim.Center,
+                    RunEffects.SplinterDamage + effects.FlatDamageBonus(),
+                    RunEffects.SplinterEnduranceDamage, 22f, 4f);
+            }
+
+            if (result is ReceiveResult.Knockdown or ReceiveResult.GuardBreak)
+            {
+                effects.OnKnockdown();
+            }
         }
 
         /// Remove every live shot — combatant respawns must not leave

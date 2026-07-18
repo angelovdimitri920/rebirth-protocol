@@ -79,9 +79,17 @@ namespace RebirthProtocol.Battle
             _padLegend = Label(canvasGo.transform, new Vector2(1f, 0f), new Vector2(-24f, 24f), TextAnchor.LowerRight,
                 "<size=14><color=#99a>A jump · X dash · B gun/melee · Y lock-on · RT bomb/shield · LT pod · Start pause</color></size>");
 
-            // Arena layout name, top-center.
+            // Arena layout name + run progress, top-center.
             Label(canvasGo.transform, new Vector2(0.5f, 1f), new Vector2(0f, -16f), TextAnchor.UpperCenter,
                 $"<size=14><color=#889>{duel.ArenaName}</color></size>");
+            Label(canvasGo.transform, new Vector2(0.5f, 1f), new Vector2(0f, -36f), TextAnchor.UpperCenter,
+                $"<size=15><color=#cbd>FIGHT {duel.FightNumber}/{RunState.FightsPerRun} — {duel.RivalTitle.ToUpperInvariant()}</color></size>");
+
+            // Run build strip (boons + item stacks), above the player panel.
+            _buildStrip = Label(canvasGo.transform, new Vector2(0f, 0f), new Vector2(24f, y + 48f), TextAnchor.LowerLeft, "");
+
+            // Item pickup toast, lower-center.
+            _toast = Label(canvasGo.transform, new Vector2(0.5f, 0f), new Vector2(0f, 130f), TextAnchor.MiddleCenter, "");
 
             // Center banner.
             var bannerGo = new GameObject("Banner");
@@ -106,6 +114,16 @@ namespace RebirthProtocol.Battle
         }
 
         private Text _padLegend;
+        private Text _buildStrip;
+        private Text _toast;
+        private float _toastTimer;
+
+        /// Transient pickup notice ("+ Scrap Plating"), fades after 2s.
+        public void Toast(string message)
+        {
+            _toast.text = $"<size=18><color=#5fe8c8>{message}</color></size>";
+            _toastTimer = 2f;
+        }
 
         private static Text Label(Transform parent, Vector2 anchor, Vector2 offset, TextAnchor align, string content)
         {
@@ -178,11 +196,48 @@ namespace RebirthProtocol.Battle
 
             _padLegend.enabled = UnityEngine.InputSystem.Gamepad.current != null;
 
-            if (_duel.IsOver)
+            // Run build strip: boons by name, items by name × stack.
+            var effects = _duel.Effects;
+            if (effects != null)
             {
-                _banner.text = _duel.PlayerWon
-                    ? "VICTORY\n<size=22>R / Start — rematch</size>"
-                    : "DEFEAT\n<size=22>R / Start — rematch</size>";
+                var parts = new System.Collections.Generic.List<string>();
+                foreach (var boon in effects.BoonList)
+                {
+                    parts.Add(boon.Name);
+                }
+
+                foreach (var stack in effects.ItemStacks)
+                {
+                    parts.Add($"{stack.Key} ×{stack.Value}");
+                }
+
+                _buildStrip.text = parts.Count > 0
+                    ? $"<size=13><color=#7fd>{string.Join(" · ", parts)}</color></size>"
+                    : "";
+            }
+
+            if (_toastTimer > 0f)
+            {
+                _toastTimer -= Time.deltaTime;
+                if (_toastTimer <= 0f)
+                {
+                    _toast.text = "";
+                }
+            }
+
+            if (_duel.RunOver)
+            {
+                _banner.text = _duel.RunWon
+                    ? $"PROTOCOL COMPLETE\n<size=22>fights cleared {RunState.FightsPerRun}/{RunState.FightsPerRun} — R / Start: return to hangar</size>"
+                    : $"RUN TERMINATED\n<size=22>fights cleared {_duel.FightNumber - 1}/{RunState.FightsPerRun} — R / Start: return to hangar</size>";
+            }
+            else if (_duel.IsOver && _duel.PlayerWon)
+            {
+                _banner.text = "RIVAL FELLED";
+            }
+            else if (_duel.IsOver)
+            {
+                _banner.text = "DEFEAT";
             }
             else if (_duel.Paused)
             {

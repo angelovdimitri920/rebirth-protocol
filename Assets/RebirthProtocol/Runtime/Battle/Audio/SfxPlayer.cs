@@ -109,6 +109,8 @@ namespace RebirthProtocol.Battle.Audio
 
         // --- UI / run: flat, always clearly audible regardless of camera ---
         public void UiClick() => PlayFlat(Bake("uiClick", Tone(700, 500, 0.05f, Wave.Square, 0.08f)));
+        public void Pickup(Vector3 pos) => PlayAt(Bake("pickup", Tone(600, 1200, 0.1f, Wave.Sine, 0.12f), Tone(900, 1800, 0.09f, Wave.Sine, 0.07f, 0.05f)), pos);
+        public void DraftPick() => PlayFlat(Bake("draftPick", Tone(520, 1040, 0.12f, Wave.Sine, 0.12f), Tone(780, 1560, 0.1f, Wave.Sine, 0.08f, 0.06f)));
 
         public void Victory() => PlayFlat(Bake("victory",
             Tone(523, 523, 0.22f, Wave.Triangle, 0.16f, 0f),

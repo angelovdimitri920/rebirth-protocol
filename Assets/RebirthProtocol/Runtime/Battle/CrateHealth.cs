@@ -10,19 +10,29 @@ namespace RebirthProtocol.Battle
     {
         public int HitsRemaining = 3;
 
+        /// Run-layer hook (set by DuelManager): destroyed crates may drop
+        /// an item pickup at their position.
+        public System.Action<Vector3> OnDestroyed;
+
         public void Damage(int amount = 1)
         {
             HitsRemaining -= amount;
             if (HitsRemaining <= 0)
             {
-                GameAudio.Sfx?.CrateBreak(transform.position);
-                Destroy(gameObject);
+                Break();
             }
         }
 
         public void DestroyOutright()
         {
+            Break();
+        }
+
+        private void Break()
+        {
             GameAudio.Sfx?.CrateBreak(transform.position);
+            OnDestroyed?.Invoke(transform.position);
+            OnDestroyed = null; // a crate breaks once; bomb + shots the same frame must not double-roll
             Destroy(gameObject);
         }
     }

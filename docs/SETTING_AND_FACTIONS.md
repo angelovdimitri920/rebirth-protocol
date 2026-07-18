@@ -65,6 +65,7 @@ Closest tonal reference points — not sources to copy, just calibration:
 - **Armiger** — a knighted pilot, one entitled to bear ancestral arms.
 - **The Lists** — the consecrated dueling grounds ([`ARENA_ROSTER.md`](ARENA_ROSTER.md)).
 - **A Passage of Arms** — a roguelite run: the medieval term for holding ground against all comers. The circuit of sanctioned Passages is **the Grand Passage**.
+- **Lasthold** — the hub city, seat of the Grand Passage: the Herald's hall, the hangar and test-yard, the Wrightsguild works, and the stewardship shops. The walkable shell of the JRPG-structured game (`GAME_DESIGN.md` §26).
 - **Laurels** — victory honors (the future scoring layer: gold/silver/bronze by speed and remaining vigor, from the source's trophy system).
 - **Relic-pattern / Hushforged / Scrapwright** — the three part tiers ([`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) §1): maintained ancestral parts; parts corrupted by whatever caused the Long Hush (banned, coveted); and new-made human work — **not a joke tier**: scrapwright work is the boring, dependable floor of the armory — tough, cheap to repair, easy to fit, incapable of brilliance.
 - **Spoils of War** — the victor's claim on the loser's arms (built: the run's spoils draft).

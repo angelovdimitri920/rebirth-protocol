@@ -100,4 +100,81 @@ AI must visibly **use** doctrine (circle-strafe, slide-shot, corner-herd, temper
 
 ## 10. What this doc feeds
 
-Near-term implementation order (slots into `ARMORY_REFERENCE.md` §12's passes): overload rule → charge attacks (garniture data exists) → the Casting opening → mercy rule + laurels with the run layer → team modes last (they need AI archetypes 1–7 first).
+Near-term implementation order (slots into `ARMORY_REFERENCE.md` §12's passes): overload rule → charge attacks (garniture data exists) → the Casting opening → mercy rule + laurels with the run layer → team modes last (they need the AI framework of §12 first).
+
+## 11. Controls — implemented mapping and source-verb coverage
+
+The canonical controller layout **[built]** (keyboard is a 1:1 mirror; controller feel still needs a physical-pad playtest, per the standing environment constraint):
+
+| Input | Action | Keyboard |
+|---|---|---|
+| Left stick | Move / steer aim while holding pod or bomb | WASD |
+| A | Jump/hover · mash to recover · **double-tap airborne = air dash** · (planned) mash to unfurl at the Casting | Space |
+| X | Dash · **(directive) grounded X with lock = the garniture's charge attack** | Shift |
+| B | Right arm: gun (held) / melee (pressed) | LMB / RMB |
+| RT | Left arm: bomb (hold to aim, release to throw) / shield (held) | Q |
+| LT | Pod: deploy/recall; hold + stick steers launch heading | E |
+| Y | Lock-on / switch targets (real in Ordeal/Melee/Shieldbrother modes) | Tab |
+| Start | Pause | P |
+
+**Source-verb coverage audit** — every control concept in the source FAQs, and where it lives here: joystick move ✓ · jump & air-dash ✓ (A, double-tap) · fire gun / use melee ✓ (B, one button per the arm mutex) · fire bomb / use shield ✓ (RT) · fire pod ✓ (LT, no-vulnerability rule kept) · switch targets ✓ (Y — a duel no-op until multi-foe modes) · **collision/charge** — the one unbound source verb; **directive: grounded X while locked performs the charge** (charges are ground-only in the source, so air X stays dash; implement with the charge pass) · aimed bomb (hold + stick, sitting-duck rule) ✓ · slide shot ✓ (fire-while-moving momentum) · short-jump fire ✓ (tap-A + B — needs a tuning check when arcing weapons land) · jump height by hold ✓ · mash to rise ✓ · Casting mash [planned] · pause/help/rules screens [hub UI, planned with the shell].
+
+## 12. Designing opponent AI — the layered framework
+
+Three layers compose every opponent: **Doctrine** (an archetype from §9 — what it tries to do), **Class** (C/B/A/S — how well it executes), **Personality** (a rival's signature quirks). This is the build spec for all AI work.
+
+### 12.1 The parameter set
+Every archetype is expressed through the same tunable parameters, so Class scaling is uniform:
+
+| Parameter | Meaning |
+|---|---|
+| Reaction delay | Time from a player action to the AI's answer |
+| Aim lead error | Deliberate error in predicting movement |
+| Band discipline | How strictly it keeps its weapons' preferred range band |
+| Dodge-check rate | How often it rolls to answer incoming fire (late-jump vs. circle chosen by projectile type — §5) |
+| Combo rate | Chance a displacement (temper hit) is followed by the punish |
+| Overload awareness | Whether it stops committing volleys when at knockdown risk (§4.3) |
+| Punish-downed propensity | 0 for most; high only for predator personalities |
+| Rebirth etiquette | Retreat during the foe's flare vs. stalk it |
+| Corner craft | Herds the player toward corners; avoids its own cornering |
+| Temper usage | Picks bomb/pod tempers situationally (Sweep near hazards, Fetter before heavy volleys) |
+| Target logic | Multi-foe: focus, switch triggers, passivity when untargeted (§6) |
+| Mercy of the machine | A floor of deliberate imperfection — no Class is frame-perfect, ever |
+
+### 12.2 Class scaling (armiger ranks C → S)
+| Class | Feel | Reaction | Combos | Doctrine execution |
+|---|---|---|---|---|
+| **C** | Squires: telegraphs, forgets its pod | ~500 ms | Rare | One doctrine move at a time |
+| **B** | Journeyed: keeps its band, uses cover | ~350 ms | Sometimes | Doctrine plus one habit |
+| **A** | Circuit regulars: dodges by projectile type, punishes landings | ~250 ms | Often | Full doctrine, readable rhythm |
+| **S** | The Paragons: feints, baits, adapts once mid-fight | ~180 ms | Reliable | Full doctrine plus a counter-adaptation (e.g., stops circling when you fit an Arcus) |
+
+Class maps to the circuit ladder (`SETTING_AND_FACTIONS.md`): early events run C/B, the Golden Passage runs S with empowered harnesses (the run's existing ×(1+0.12·fight) power mult is the "empowered" lever — reuse it).
+
+### 12.3 Composition rules
+- **One blind spot per archetype, always** (§9) — Class raises execution, never removes the blind spot; S-Class merely makes you *earn* it.
+- **Rivals = archetype + Class + signature-part bias + home List + personality quirk** (e.g., Roald: Predator doctrine, Class A, Petronel bias, stalk-rebirth etiquette, punishes downed foes — the one legal cruelty).
+- **Observed source behaviors as acceptance tests**: the Spammer roots itself mid-volley and must be overloadable; the teleporter panic-vanishes when pressured from two threats at once (Duskmantle AI dumps both dashes under multi-threat); tag AI switches at its thresholds; untargeted Ordeal foes fight timidly; nobody attacks *through* a rebirth flare except stalk-etiquette personalities, who wait at arm's length for it to gutter.
+- **AI never drafts boons** [built rule, kept]; enemy strength scales by loadout, Class, and the power mult.
+- **Hushforged AI**: Choir and endgame only (`ARMORY_REFERENCE.md` §16).
+
+## 13. The balance framework
+
+Ten pillars, applied at design time and validated in simulation:
+
+1. **Commitment buys damage.** Recovery, toll, range-band narrowness, and aim time are the currencies that purchase MIGHT. Nothing gets a headline number without a payment (`ARMORY_REFERENCE.md` §13 profiles are the ledger).
+2. **Bodies swing survivability, not damage.** Offense mults cluster 95–105% (Hushforged excepted); ward mults spread 85–138%. Garnitures re-trim within the pattern, never past the class envelope.
+3. **Volley truth.** Balance to *realistic connect rates*, not all-hit totals — Sparrowstorm's 540 is fiction against anything moving; its real number is a third of that. Sim harness measures actual landed damage per archetype matchup.
+4. **Counterpart parity.** Each gun and its melee twin must clear comparable effectiveness *under their own doctrines* (Longshrift at long band ≈ Tilt Lance landing its lunge). Audit pairwise whenever either is tuned.
+5. **Doctrine viability.** The four loadout shapes (gun/bomb, gun/shield, melee/bomb, melee/shield) and four schools each keep a top-tier build at all times. If a patch orphans a school, the patch is wrong.
+6. **Tier economy.** Scrapwright ≈ 85% relic effectiveness + dependability perks (the floor is playable, never optimal); relic = 100%; Hushforged ≈ 115–130% minus a real drawback minus half laurels. The three tiers must *stay* ordered — a relic outclassed by a scrapwright part is a bug.
+7. **Temper budget.** A temper is worth ~10–15% effective damage; Unhorse and Fetter are the expensive ones and pay in MIGHT or toll. Branded pays in REND.
+8. **Pacing targets.** A duel between equal builds lands in **60–120 s** with **2–5 knockdowns**. REND tuning holds the knockdown count; MIGHT tuning holds the clock. Fights outside the band flag themselves in the sim harness.
+9. **The degenerate watchlist** (checked every content pass): Fetter chains (rule: 2 s fetter-immunity after a fetter ends) · Yoke + Culverin grounding loops · Rearguard-kite forever (pod energy pacing is the leash) · Cenotaph turtling (chip + toll answer it) · Testudo cycling (the 8 s toll is load-bearing — never shorten it casually) · tag heal-floor abuse (the 150 floor never rises) · Ascension Charge escape loops (boost cost on use).
+10. **Laurels are soft balance.** Anything legal-but-degenerate costs style before it costs errata: rematch decay, Hushforged halving, and task scores tuned so honor and optimality mostly point the same way.
+
+**Validation harness** (to build alongside the AI framework): seeded AI-vs-AI batch runs across a matchup matrix — 4 schools × 4 schools × arena sample — reporting win rate, TTK, knockdown count. Flag any pairing outside 40–60% win rate or outside the pacing band. Deterministic seeds make regressions bisectable; this is the balance CI for every parts pass in `ARMORY_REFERENCE.md` §12.
+
+## 14. The shape of a session
+
+The battle system lives inside a **JRPG-shaped shell with a western soul** (structure directive in `GAME_DESIGN.md` §26): a hub city, named armigers to talk to, a circuit ladder to climb, and the Passage (roguelite run) as the battle loop entered through events. A typical session: arrive in the hub → talk and shop (Wrightsguild repairs, stewardship shops, rumors of caches) → customize in the hangar and prove it in the test yard → enter an event → fight its Passage under its rules → take laurels, spoils, and a story beat → repeat. Twenty to forty minutes per event; a full circuit tier per sitting for a long one.

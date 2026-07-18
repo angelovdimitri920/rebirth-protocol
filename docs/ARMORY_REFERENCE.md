@@ -386,3 +386,97 @@ Volley/multi-projectile · shield toll + raise behaviors + March/plant/reflect/b
 - **B:** shield toll/raise on built shields; Targe, Kite Ward, Quiet Bell. **C:** volley tech → Trefoil, Palisade, Pincer, Longglaive, Hydra Flail. **D:** Fetter → Fetterlock, Rime, Winterwatch, Knell Maul, Tocsin Mace, Hoarfrost Ward. **E:** pulls/piercing → Grapnel, Hookbill, Estoc, Auger, Sawtooth Espadon. **F:** scaling/delay → Pilgrim, Tilt Lance, Courser Saber, Vigil, Penitent Flail, Beacon, Crowbeak Pick. **G:** trajectory suite → Mangonel, Evenfall, Skysword, Steeplefall, Oxbow, Oubliette(s), Falconet, Volant Falx. **H:** remaining guns/melee pairs + shields (Argent Mirror, Bastille, Cenotaph, Pallium, Echo, Springald, Cheval, Testudo, Thorn, Canopy, Caltrop). **I:** pod suite + legs wave + garnitures + charges + Casting. **J:** scrapwright line (Plowshare through Cartwright) + dependability perks. **K:** the three planned chassis + Harrier + Cockatrice. **L:** tempers + Branded. **M:** Hushforged tier (own design pass: drawbacks first).
 
 Each pass: EditMode tests for domain logic, built-player smoke check, and a `GAME_DESIGN.md` log entry.
+
+---
+
+## 13. The damage model (codified from the Weapon Damage Guide)
+
+The full chain: **Final damage = weapon base (range band, stance) × attacker offense% × defender ward%**, on the shared 1000-vigor scale. Poise (REND) damage runs down the same chain in parallel against the endurance bar.
+
+### 13.1 Guns vary by range band and stance
+Gun base damage is a function of **four range bands** — point-blank / short / medium / long (`COMBAT_DOCTRINE.md` §2) — and of **stance** (fired afoot vs. aloft). Every gun belongs to one **range profile**, and the profile is the balance identity:
+
+| Profile | Behavior | Patterns |
+|---|---|---|
+| **Flat** | Same base in every band — dependable, never spectacular | Arbalest, Mangonel, Dragoon, Versicle, Goliath Shot, Grapnel, Annulet, Wending Bolt, Yoke (afoot), Matchlock |
+| **Falloff** | Brutal close, dead at range | Culverin (142→0), Petronel (126→38), Gauntlet (pt-blank only), Auger, Portcullis, Trefoil (huge pt-blank spike, modest beyond), Chevron (152 pt-blank → 76), Longshrift (mild: 105→73), Fetterlock, Aspergill |
+| **Rangecraft** | Grows with distance flown — reward for keeping the long field | Litany (62→109), Pilgrim (53→114), Sparrowstorm (47→540 headline), Cinquefoil (52→273), Quillon Bolt (20→42 within its short reach) |
+| **Burst-point** | Peak damage at a detonation distance; weak early/late | Beacon (124 at burst, 47 past it), the Voices of the Riderless (127–285 at bloom) |
+| **Stance-split** | Ground and air fire are different weapons | Falconet (56 G / 113 A), Gyrfalcon (33 G / 48 A), Alembic (84 G / 48 A), Evenfall, Vigil (228 G / 74 A), Firecrest (endpoints only afoot), Yoke (95 aloft), Splintered Star |
+
+Rules of thumb ported intact from the source tables: multi-round volleys quote all-hit totals (per-round = volley ÷ hits; real connect rates against movers are far below 100% — see `COMBAT_DOCTRINE.md` §13 balance pillar 3); swarm/indirect weapons post the biggest headlines precisely because they land the least.
+
+### 13.2 Bombs are flat; tempers and stance modify
+Bomb base damage **does not vary with throw distance** — a Censer at arm's length and across the List hit identically (source rule, kept). Two modifiers only: **stance** (bombs loosed airborne deal ~75% of grounded values — the source's ground/air split, recalibrated) and **temper** (direction of displacement; **Branded** blasts linger and can re-hit on the victim's landing).
+
+### 13.3 Pods are pressure, not payload
+Pod hits use flat bomb-style damage at deliberately low values; their real budget is **uptime** (own energy pool, no firing vulnerability) and **LINGER** (a lingering blast that catches landings — the source's speed-pod trick, kept for Lurcher). A pod should never out-damage a gun; it should make every other weapon land more.
+
+### 13.4 The standing exceptions
+Downed harnesses are fully invulnerable (our divergence from the source's 30% rule — reaffirmed). Knockdown wipes the downed pilot's in-flight gun rounds (**overload**, `COMBAT_DOCTRINE.md` §4.3) — except scrapwright rounds. Shield block applies GUARD% *before* the damage chain; chip always passes.
+
+---
+
+## 14. The four schools of build (customization doctrine)
+
+The source's build guide (Balanced / Tank / Air / Ground) refits as the four **schools** taught across the Lists. Doctrine for the hangar, the draft AI, and the tutorial voice:
+
+| School | Frame | Kit shape | Teaching |
+|---|---|---|---|
+| **The Line School** (balanced) | Bannerman, Freelance | Flat-profile gun + Censer + line pods (Iron Squire, Pavisers) + Wayfarer | "Learn everything here. The Line has no answer missing and no answer sharpened." |
+| **The Bastion School** (tank) | Cobalt Knight, Skyanvil | The 1–2 punch: heavy gun + heavy bomb (Dragoon + Anathema), wall shield, **legs chosen to patch the frame's flaw** (Hart/Gryphon for reach) | "Trade motion for weight, then buy the motion back with your greaves." |
+| **The Sky School** (air) | Vesper, Sunplume, Skyanvil Chase | Stance-split weapons (Falconet, Evenfall, Gyrfalcon), sky-denial pods (Gonfalon, Winterwatch), Thistledown | "Fight from the stance the weapon loves. Land only where you chose in advance." |
+| **The Hedge School** (hit-and-fade) | Harrier | Falloff guns (Culverin, Petronel), arcing/planted bombs, roaming pods (Lurcher, Ratter), Destrier/Courser | "You are already in trouble when you are hit. So don't be." |
+
+**Named recipes** (the source's combo section, themed — seed content for tips, AI builds, and challenges): **the Wyrmrider's Descent** (Vesper · Steeplefall-Sweep · Dragoon — sweep them into the lingering fall, ride the wyrm in; 150+), **the Closing Vise** (Falconet · Pincer Charge — blasts fore and aft while the loops close from the flanks), **the Anchorite's Perch** (Duskmantle · Skysword · Gonfalon Watch · Quarrel Charge — perch, rain blades, ward the sky, quarrel whoever climbs), **the Headsman's Arithmetic** (Cobalt War's 105% × Dragoon — the two-knockdown fight). Hangar rule ported from the source's Test Mode: the **test yard** (Squires' Yard) is reachable from the customize screen before any Passage.
+
+---
+
+## 15. Stewardship — every pattern has a keeper
+
+Any armiger may *field* any part (loadout freedom is untouchable). But every pattern is **stewarded** by one faction — the house that maintains its lore, teaches its art, biases its spoils and shops, and whose armigers favor it. Melee patterns share their gun-counterpart's steward; shields share their bomb-counterpart's steward (the pairing is taught as one art). Full assignment:
+
+- **The Aureate Legion** (line discipline): Bannerman · guns Arbalest, Trefoil, Arcus (D/S), Chevron, Cinquefoil (D/S) (+ their melee) · bombs Censer, Quarrel Charge, Palisade (+ shields Ward Veil, Targe, Bastille) · pods Iron Squire, Pavisers, Gonfalon Watch · legs Palfrey, Curb.
+- **The Rust Cross Commandery** (walls and sieges): Cobalt Knight · guns Bombard, Longshrift, Mangonel, Portcullis, Goliath Shot (+ melee incl. Dolorous Maul) · bombs Anathema, Steeplefall, Belfry Burst, Goliath Charge (+ shields Pavise, Canopy Ward, Testudo Ward, Cenotaph) · pods Gargoyle, Goliath Ward · legs Gryphon.
+- **Order of the Winter Wing** (winter and the wing): Vesper · guns Evenfall, Gyrfalcon, Splintered Star (+ melee) · bombs Rime Charge, Crescent Charge (+ shields Hoarfrost Ward, Kite Ward) · pods Kestrel, Winterwatch (both), Sparrowhawk · legs Heron, Hart.
+- **The Solarian Talon** (sun and plumage): Sunplume · guns Thornswarm, Firecrest, Skysword, Beacon, Annulet (+ melee) · bombs Ascension Charge (+ shield Springald Ward) · pods Canopy Cast, Carrion Watch · legs Thistledown.
+- **The Kurultai Vanguard** (horse and momentum): Skyanvil · guns Dragoon, Spur Volley, Yoke, Gauntlet (+ melee — the Tilt Lance rides with them; the joust is theirs) · bombs Oxbow Charge (+ shield Pallium) · pods Lymer, Rearguard, Outriders · legs Destrier, Courser, Charger.
+- **The Drowned Compact** (salt and salvage): Freelance · guns Culverin, Petronel, Falconet, Grapnel, Alembic (+ melee) · bombs Pincer Charge, Widening Gyre (+ shields Echo Ward, Thorn Ward) · pods Springer, Slinger · legs Longstride.
+- **The Umbral Concordat** (patience and certainty): Duskmantle · guns Fetterlock, Vigil, Rookery, Wending Bolt (+ melee) · bombs Oubliette Mine & Twin, Trine Snare (+ shields Caltrop Ward, Cheval Ward) · pods Mummer, Palmer · legs — none; they walk borrowed roads.
+- **The Hedge Errantry** (the road): Harrier · guns Pilgrim, Quillon Bolt, Sparrowstorm (+ melee) · bombs — none owned; they throw what they win · pods Lurcher, Ratter, Tumbler, Brachet Trio · legs Wayfarer, Hare.
+- **The Litany Sisters**: guns Litany, Aspergill, Versicle, Processional (D/S) (+ melee) · bombs Peal Charge (all), Antiphon Charge (+ shield Quiet Bell) · pods Bellman & Twin.
+- **The Wrightsguild**: the entire scrapwright line (Plowshare, Matchlock, Felling Axe, Powder Keg, Boilerplate, Watchdog, Cartwright) · gun Auger (+ Sawtooth Espadon) — the one relic art they were ever granted.
+- **The Circuit itself**: the Herald pod (the Herald's own device); the Cockatrice and the Alaunt run masterless — stewarded by no one, coveted by everyone.
+- **The Broken Choir**: stewards nothing; *traffics* everything Hushforged (§16).
+
+---
+
+## 16. Hushforged interactions (how the banned tier touches everything)
+
+- **Acquisition**: never sold, never drafted normally. Found in **sealed reliquary caches** hidden in the world (the source's hidden-pickup pattern — behind the column, inside the broken carriage), claimed from Broken Choir masters, or granted at story beats. Collection is tracked in-fiction as **the Choir's Ledger**.
+- **Laurels**: fielding even one Hushforged part halves that fight's laurels (`COMBAT_DOCTRINE.md` §8). Vow events bar them outright; Choir gauntlets *expect* them.
+- **Balance position**: budgeted ~115–130% of relic effectiveness, always with a real drawback in the kit itself (the Martyr's ward, the Stilled Voice's damage, the Moon Door's absences) — the laurel economy prices them, the drawback disciplines them.
+- **Frame rules**: Hushforged parts may break frame directives (dash caps, mend rules) — that is *why* they're banned, and they are the only tier allowed to.
+- **Overload**: Hushforged guns obey the overload rule like any relic (the wrongness does not protect a volley — the Choir Unending is famously overloadable). Only scrapwright rounds persist.
+- **AI usage**: only Broken Choir fighters, the empowered Paragons of the Golden Passage, the First Armiger, and the Riderless ever field them. A common armiger with a Hushforged arm is a story event, never a random roll.
+- **Presentation**: violet-black glow, organic wrongness, a whisper-line per part (`ART_DIRECTION.md` §5/§7).
+
+---
+
+## Appendix A. Coverage ledger — every source part, mapped
+
+Verification table: every named part in the source lists and its counterpart here. *(Bodies map per-garniture; blast letters map to tempers.)*
+
+**Bodies** — Ray 01→Bannerman Field · Splendor→Bannerman War · Glory→Bannerman Chase · Milky Way→Sunplume Field · Earth→Sunplume War · Sol→Sunplume Chase · Metal Ape→Cobalt Field · Metal Bear→Cobalt War · Metal Ox→Cobalt Chase · Swift→Harrier Field · Shrike→Harrier War · Peregrine→Harrier Chase · Javelin→Duskmantle Field · Glaive→Duskmantle War · Halberd→Duskmantle Chase · Criminal→Freelance Field · Buggy→Freelance War · Juggler→Freelance Chase · Defender→Vesper Field · Seeker→Vesper War · Breaker→Vesper Chase · Seal Head→Skyanvil Field · Dour Head→Skyanvil War · Tank Head→Skyanvil Chase · Chickenheart→Cockatrice · Ray Legend→the Martyr · Ray Warrior→the Paragon · Rakensen→the Manifold Shadow · Ruhiel→the Grieving Wing · Athena→the Choir Aloft · Rahu I/II/III→Shards of the Riderless · Oil Can→(lineage of) Plowshare, the scrapwright frame.
+
+**Guns** — Basic→Arbalest · 3-Way→Trefoil · Gatling→Litany · Vertical→Mangonel · Sniper→Longshrift · Stun→Fetterlock · Hornet→Thornswarm · Flame→Pilgrim · Dragon→Dragoon · Splash→Aspergill · Left/Right Arc→Arcus Sinister/Dexter · Shotgun→Culverin · Rayfall→Evenfall · Bubble→Alembic · Eagle→Gyrfalcon · V Laser→Chevron · Magnum→Petronel · Needle→Versicle · Starshot→Splintered Star · Glider→Falconet · Homing Star→Rookery · Trap→Vigil · Drill→Auger · Titan→Goliath Shot · Claw→Grapnel · Knuckle→Gauntlet · Afterburner→Spur Volley · Blade→Quillon Bolt · Meteor Storm→Sparrowstorm · Twin Fang→Portcullis · Gravity→Yoke · Phoenix→Firecrest · Left/Right Pulse→Processional S/D · Sword Storm→Skysword · Ion→Wending Bolt · Flare→Beacon · Left/Right 5-Way→Cinquefoil S/D · Halo→Annulet · Wave Laser→the Stilled Voice · X Laser→the Burning Saltire · Crystal Strike→the Choir Unending · Wyrm→the Elder Wyrm · Raptor→the Twin Stoop · Waxing/Waning Arc→the Waxing/Waning Moon · Rahu 1/2/3→Voices of the Riderless · Can→Matchlock.
+
+**Bombs** — Standard (N/F/K/S/X)→Censer (Sunder/Sweep/Unhorse/Fetter tempers) · Wave→Peal Charge · L/R Wave→Peal S/D · Straight (G/S/T)→Quarrel Charge (Hoist/Fetter/Hook) · L/R Flank H→Oxbow S/D · Burrow (D/P)→Oubliette Mine (Branded Sunder/Hoist) · Double Mine→Oubliette Twin · Freeze→Rime Charge · Tomahawk (B/G)→Steeplefall (Branded Sweep / Hoist) · Gemini (B/P)→Pincer Charge · Submarine (D/P/K)→Anathema (Branded Sunder/Hoist, Unhorse) · Crescent (P/C/K)→Crescent Charge (Branded Hoist, gentle Hoist, Unhorse) · Dual (N/C)→Antiphon Charge · Acrobat→Ascension Charge · Delta→Trine Snare · Wall→Palisade · Smash→Belfry Burst · Geo Trap→Widening Gyre · Titan→Goliath Charge · Treble→the Threefold Grief · Wyvern→the Wyvern's Egg · Waxing/Waning Arc→Moontide · Grand Cross→the Ruin Cross · Can→Powder Keg.
+
+**Pods** — Standard (N/F)→Iron Squire · Seeker (F/G)→Alaunt · Speed (D/P)→Lurcher · Cockroach (G/H)→Ratter · Dolphin (N/G)→Springer · Spider (N/G)→Gargoyle · Sky Freeze→Winterwatch Aloft · Ground Freeze→Winterwatch Afoot · Feint (F/G)→Mummer · Float (F)→Carrion Watch · Jumping (B/G)→Tumbler · Diving→Sparrowhawk · Wave→Bellman · Double Wave→Bellman Twin · Satellite (N/H)→Gonfalon Watch · Beast (F)→Lymer · Trio (H)→Brachet Trio · Wall→Pavisers · Reflection→Palmer · Caboose (C/T/X)→Rearguard (gentle Hoist/Hook/Sunder) · Twin Flank (F/G)→Outriders · Umbrella→Canopy Cast · Throwing (D/P)→Slinger · Titan→Goliath Ward · Cheetah→the Coursing Shade · Wolf Spider→the Pale Weaver · Orca→the Drowned Chorister · Penumbra I/II/III→Shadows of the Riderless · Can→Watchdog.
+
+**Legs** — Standard→Wayfarer · High Jump→Heron · Ground→Destrier · Formula→Courser · Stabilizer→Palfrey · Short Thrust→Curb · Long Thrust→Hart · Quick Jump→Hare · Feather→Thistledown · Wide Jump→Longstride · Booster→Charger · Swallow→the Swallow's Road · Raven→the Raven's Step · Eclipse→the Eclipse Gait · Ultimate→the Stride of the Riderless · Can→Cartwright.
+
+**Blast letters → tempers** — F (sideways)→Sweep · H (slow sideways)→Sweep (gentle) · G (upward)→Hoist · C (slow upward)→Hoist (gentle) · K (always down)→Unhorse · S (stun)→Fetter · T (pull)→Hook · X (diagonal)→Sunder · B (sideways, lingering)→Branded Sweep · D (diagonal, lingering)→Branded Sunder · P (upward, lingering)→Branded Hoist. All eleven letters covered; "gentle" is a strength grade, not a seventh temper.
+
+*Ledger verified against the Parts FAQ, the stat-card parts list, and the Weapon Damage Guide, 2026-07-18: no source part is unmapped. Our own additions beyond the source (Bombard, Dolorous Maul, Kestrel, Gryphon Greaves, Herald, the Hushforged shields, and the scrapwright line) stand as native patterns.*

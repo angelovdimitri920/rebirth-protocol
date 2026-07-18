@@ -33,6 +33,9 @@ What each touchstone actually contributes, kept as one-line design lessons:
 - **BattleTech (Succession Wars)** — Lostech scarcity: mechs as irreplaceable inheritance, patched over centuries. Lesson: **damage is history — weathering tells you who has an armory and who has a salvage pit** (our Order-pristine vs. patchwork split).
 - **Armored Core 6** — stagger/punish rhythm, boost economy, shield-arms as active tools. Lesson: **mechanical honesty — every visual flourish must telegraph a real gameplay state.** (Already our combat skeleton.)
 - **Gundam: Iron-Blooded Orphans** — no beam-spam: maces, lances, and momentum; brutal, low-tech-reading melee on high-tech frames. Lesson: **kinetic melee reads medieval all by itself when the animation carries momentum.**
+- **Panzer World Galient (1984)** — the earliest full statement of our exact premise: legendary "panzers" preserved underground for millennia beneath a medieval world, excavated and ridden to war ([overview](https://en.wikipedia.org/wiki/Panzer_World_Galient)). Lesson: **the machine as excavated inheritance — presentation should always whisper "this was dug up, not built."**
+- **Aura Battler Dunbine (1983)** — mecha in a medieval fantasy that feel *summoned* rather than engineered: organic shells, metaphysical wrongness ([overview](https://tvtropes.org/pmwiki/pmwiki.php/Anime/AuraBattlerDunbine)). Lesson: **reserve the organic/wrong register for one thing only — for us, the Hushforged tier and the Riderless.**
+- **Imperial Knight heraldry, deepened** — house liveries vary per Knight but **no two liveries are identical**; battle honours and oaths are painted *onto* the machine ([heraldry reference](https://warhammer40k.fandom.com/wiki/Imperial_Knight_Heraldry)). **Freeblades** — knights who forsake their house — spurn house heraldry for a **single colour, a personal device, and a motto**, often with memento-mori marks ([Freeblade reference](https://warhammer40k.fandom.com/wiki/Freeblade)). Lessons: individual harnesses within an Order should carry small personal deltas (honour-marks, oath-scripts) on the shared livery; and the **Hedge Errantry's entire visual identity is the Freeblade rule** — one flat colour, one painted personal device, one motto, nothing else.
 
 ## 4. Order liveries and heraldry
 
@@ -47,6 +50,10 @@ Each Order gets a livery triplet — **field / metal / accent** — plus a devic
 | The Drowned Compact | Sea-green | Tar black | Brass | An anchor fouled in chain |
 | The Solarian Talon | Sun-gold | Jade | Scarlet | A raptor's talon grasping a sunburst |
 | The Kurultai Vanguard | Lacquer red | Dark iron | Horsehair white | A horsetail standard |
+| The Hedge Errantry | *One flat colour per knight* (never a table colour) | Bare steel | — | A personal device + painted motto, per knight |
+| The Wrightsguild | Oxide grey | Riveted iron | Safety ochre | A hammer-and-compass stencil |
+| The Litany Sisters | Slate | Pewter | Candle gold | A single unbroken ring of script |
+| The Broken Choir | Ash black | Tarnished silver | Violet-black (Hushforged glow) | A shattered ring of script |
 
 **Rules:** field colors never repeat across Orders; the Umbral Concordat is the *only* no-glow faction (already canon for the Duskmantle); non-Order/mercenary harnesses wear chipped, mismatched liveries with painted-over devices — you should be able to read a mech's *history of ownership* in its overpainting.
 
@@ -56,7 +63,7 @@ Four material registers, in strict order of finish quality:
 
 1. **Order-pristine** (relic-pattern in Order hands): clean coherent plate, livery enamel, gold trim, soft godlight glow in the seams. The Cobalt Knight is the standard.
 2. **Free-company patchwork**: same ancestral bones, generations of mismatched replacement plates, welded seams, rope and strapping, hand-painted devices. Silhouette stays clean (gameplay legibility first); *surface* carries the poverty.
-3. **Scrapwright work** (OilCan / GarbageBin / Binface tier): visibly new-made — rivets, boiler-plate, gaps, nothing fits quite right. Endearing, not pathetic.
+3. **Scrapwright work** (revised 2026-07-18 — *dependable, not comic*): visibly new-made and proud of it — thick uniform boiler-plate, exposed rivets in honest rows, stenciled Wrightsguild marks, oil-and-steam venting instead of godlight, everything over-built and square. It should read like beloved farm machinery or a working locomotive standing among cathedral relics: outclassed, unashamed, and clearly the only thing on the field its owner could fix with their own hands.
 4. **Hushforged**: ancestral geometry gone *wrong* — asymmetric growths, seams that glow violet-black, surfaces that read slightly organic. Used sparingly; it should be alarming precisely because everything else obeys the rules.
 
 ## 6. Fight choreography
@@ -92,6 +99,6 @@ All synthesized, extending the built `SynthClips`/`SfxPlayer`/`MusicSequencer` s
 
 ## 9. What this changes about existing assets
 
-Nothing built needs rework. The Cobalt Knight already satisfies §1–§5 (it defined half of them). The three primitive chassis remain placeholders pending rigged replacements; when Codex-side meshes land, they get judged against §2's seven markers and §4's livery table. The §7 muzzle-rose, toll-ring, and kneel/accolade items are the first VFX/animation tasks worth a dedicated pass, in that order.
+Nothing built needs rework. The Cobalt Knight already satisfies §1–§5 (it defined half of them). The three primitive chassis remain placeholders pending rigged replacements judged against §2's seven markers and §4's livery table. The §7 muzzle-rose, toll-ring, and kneel/accolade items are the first VFX/animation tasks worth a dedicated pass, in that order.
 
 *Research sources: [mechabay.com — About Escaflowne](https://mechabay.com/about-escaflowne), [escaflowne.fandom.com — Guymelef](https://escaflowne.fandom.com/wiki/Guymelef), [mmecha.fandom.com — Knight's & Magic mecha](https://mmecha.fandom.com/wiki/Mecha_and_Monsters_from_Knights_and_Magic); TV Tropes' Knights in Powered Armor page was requested as reference but blocks automated fetching — its trope framing (knightly codes + heraldry + powered armor as chivalric revival) is reflected via the surveyed works above.*

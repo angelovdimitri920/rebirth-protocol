@@ -1,291 +1,388 @@
-# The Armory — Canonical Parts Roster & Naming Reference v1
+# The Armory — Canonical Parts Roster & Naming Reference v2
 
-*This is the canonical naming, roster, and part-mechanics reference for Rebirth Protocol (2026-07-18). It supersedes the naming layer of [`WARBAND_THEME_REFERENCE.md`](WARBAND_THEME_REFERENCE.md) (historical-culture names) and builds directly on the archetype map in [`PARTS_AND_DAMAGE_REFERENCE.md`](PARTS_AND_DAMAGE_REFERENCE.md) — that doc identified the mechanical design space from the source material; this one names, themes, and stats it for the neo-feudal used-future world of [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md). Source basis: the user-supplied Parts FAQ (~150 parts), Weapon Damage Guide (damage formula + per-body multiplier tables), and controls/mechanics FAQ (stat-bar definitions, blast-type letters, downed-damage rule). Every name below is original; no source name or number is copied — everything is recalibrated to our own scale.*
+*Feature-complete revision (2026-07-18, second pass). v1 mapped the source material to archetype families; **v2 is the full catalog**: every body, gun, bomb, pod, and leg part in the source lists (Parts FAQ, parts list w/ stat cards, Weapon Damage Guide) has a themed counterpart here with stats, and — per standing directive — **every gun has a melee counterpart and every bomb a shield counterpart**. Sources are inspiration only: every name is original, all numbers are recalibrated to our scale (which conveniently shares the source's 1000-vigor baseline). Companion docs: [`COMBAT_DOCTRINE.md`](COMBAT_DOCTRINE.md) (how battles work), [`ARENA_ROSTER.md`](ARENA_ROSTER.md) (the Lists), [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) (world), [`ART_DIRECTION.md`](ART_DIRECTION.md) (look/sound).*
 
 ---
 
-## 1. Naming canon
+## 1. The three tiers (revised)
 
-### 1.1 The three tiers of parts
-
-The world's Lost Technology premise (`SETTING_AND_FACTIONS.md`) gives us a natural three-tier catalog structure, which also maps cleanly onto the source material's normal / "illegal" / joke-tier split:
-
-| Tier | In-fiction meaning | Source analogue | Game role |
+| Tier | In-fiction meaning | Source analogue | Game identity |
 |---|---|---|---|
-| **Relic-pattern** | Ancestral parts maintained by the Orders for generations. Nobody can build one; everybody knows its pattern-name. | The normal legal roster | The standard hangar/draft catalog — everything in §4–§10 below |
-| **Hushforged** | Parts touched by whatever caused the Long Hush — merged with something nobody understands. The Orders ban them; the banned things keep turning up. They glow *wrong*. | "Illegal" parts (the Rahu / Penumbra / Wyrm tier — "merged with an unknown living being") | Late-run rare drops and post-game unlocks: dramatically stronger, visibly corrupted, with a real drawback each. Future content, not in the current catalog |
-| **Scrapwright** | New-made human imitations — the only parts anyone alive can actually *build*. Honest work; hopeless numbers. | The "Can" joke tier (Oil Can, Can gun/bomb/pod/legs) | Joke/challenge-run tier and NPC flavor. Codex's OilCan / GarbageBin / Binface rigged meshes slot here perfectly |
+| **Relic-pattern** | Ancestral parts maintained by the Orders. Nobody can build one; every armory knows its pattern-name. | The legal roster | The standard catalog (§4–§10) |
+| **Hushforged** | Parts touched by whatever caused the Long Hush — merged with something no one understands. Banned by every Order; coveted anyway. They glow wrong. | "Illegal" parts (Rahu / Penumbra / Wyrm tier) | Endgame drops & unlocks: stronger, corrupted, each with a real drawback. **Allowed to break frame directives** (the 2-dash cap, etc.) — that's *why* they're banned. Using one halves your laurels (`COMBAT_DOCTRINE.md` §8) |
+| **Scrapwright** | **New-made, human-designed, human-maintained.** The lowest tier — and the only one people truly *own*. Not a joke: scrapwright work is boring, honest, and dependable. It can't match a relic's edge or a Hushforged part's wrongness, but it takes abuse, repairs cheap, and fits any harness without a fuss. | The "Can" tier, reimagined | The dependable floor: high SOAK/POISE, modest MIGHT, zero gimmicks, and unique **dependability perks** (§1.2). Maintained by the Wrightsguild |
 
-The scrapwright tier is quietly the most important lore beat in the catalog: **the gap between what humanity can make and what it inherited is the entire political order of the setting.** A scrapwright gun that fires at all is a life's masterwork, and it is still strictly worse than the worst relic in any Order armory.
+### 1.1 Naming language (unchanged from v1)
 
-### 1.2 Naming language rules
+No Earth-culture names. Relic-patterns use plain feudal armory words plus at most one epithet, drawn from slot vocabularies: guns = archery/siege/liturgy; melee = knightly arms and votive words; bombs = siege charges and ritual objects; shields = historical shield types; pods = retainers, hounds, and falconry; legs = "<X> Greaves" (mounts, birds, gaits); bodies = pattern-names evoking their keeper Order. Mirrored left/right parts are single entries with **Dexter/Sinister** variants (the heraldic terms). Hushforged names are hushed epithets (*the Grieving Wall*); scrapwright names are plain workshop words (*Matchlock*, *Boilerplate*).
 
-1. **No Earth-culture names.** The Long Hush erased the old world's nations from memory; a part named for a specific dead culture (Khopesh, Chu-Ko-Nu, Greek Fire, Numidian, Terracotta) breaks the fiction. This is the rule the Warband-era names violated and the reason for the §11 rename.
-2. **Relic-pattern names are plain feudal armory words plus, at most, one epithet** — the vocabulary a surviving knightly culture would actually use: arbalest, bombard, pavise, misericorde, greaves. Terms from tournament culture (tilt, lists, unhorse), heraldry (fetterlock, trefoil, argent), liturgy (litany, vigil, censer, knell), and castle-craft (oubliette, palisade, mangonel) are all fair game — these are the institutions the survivors rebuilt.
-3. **Slot vocabularies keep the catalog legible.** Each slot draws from its own register so a name alone hints at what a part is:
-   - **Guns** — archery/siege/liturgy (Arbalest, Bombard, Litany)
-   - **Melee** — knightly arms and votive words (Oathblade, Misericorde, Penitent Flail)
-   - **Bombs** — siege charges and ritual objects (Censer, Oubliette, Anathema)
-   - **Shields** — real historical shield types (Pavise, Targe, Kite Ward)
-   - **Pods** — retainers, hounds, and falconry (Iron Squire, Kestrel, Alaunt)
-   - **Legs** — always "<X> Greaves," where X is a mount, bird, or gait word (Courser, Gryphon, Thistledown)
-   - **Bodies** — chassis pattern-names evoking their keeper Order (Bannerman, Cobalt Knight, Duskmantle)
-4. **Hushforged names are hushed epithets** — spoken like something you shouldn't name directly: *the Grieving Lance*, *the Choir Unending*, *Mother-of-Rust*. Future content should follow that register.
-5. **Scrapwright names are plain and a little self-deprecating** — *Tinker's Bow*, *Second-Best Blade*, *Honest Plate*. The humor is affectionate, not contemptuous.
+### 1.2 Scrapwright design rules (new)
 
-### 1.3 In-fiction lexicon used throughout
-
-- A war-mech is a **harness** (a knight's full plate armor was literally called "a harness").
-- A duel arena is a **List**; the roster of them lives in [`ARENA_ROSTER.md`](ARENA_ROSTER.md).
-- A roguelite run is a **Passage of Arms** (the real medieval term for holding ground against all comers).
+Every scrapwright part follows the same identity: **worse peaks, better floors.**
+- Stats lean toward POISE/SOAK/reliability; MIGHT and refinement stats sit a notch below relic equivalents.
+- No gimmick behaviors — straight shots, flat swings, square shields.
+- Each carries one **dependability perk** (see entries): rounds that survive your knockdown, free full repair between fights, sure footing on hazards, an uninterruptible swing, a short toll. Dependability *is* the gimmick.
+- **Fitting**: scrapwright parts have minimal Burden (§2.6) — they fit anything, instantly. Relic parts strain a harness; Hushforged parts torture one.
 
 ---
 
-## 2. Combat-frame directives (canon as of 2026-07-18)
+## 2. Combat-frame directives (canon)
 
-These are standing design rules from the user, recorded here as canon. The first two are already built; the rest are directives for upcoming passes.
+Carried from v1, with two new systems:
 
-### 2.1 Arm pairings (built)
-Right arm carries **gun XOR melee**; left arm carries **bomb XOR shield**. The four legal loadout shapes — gun/bomb, gun/shield, melee/bomb, melee/shield — are the game's four broad fighting doctrines, and content must keep all four viable: **melee and shield rosters stay at numeric parity with gun and bomb rosters** (10 guns ↔ 10 melee; 8 bombs ↔ 8 shields).
+1. **Arm pairings** (built): right arm gun XOR melee; left arm bomb XOR shield. Four doctrines — gun/bomb, gun/shield, melee/bomb, melee/shield — all must stay viable, hence counterpart parity throughout this doc.
+2. **Air-dash cap** (applied): no relic body grants more than 2 air dashes; extra dashes come from legs only. Hushforged bodies may break this.
+3. **Shield toll + raise behavior** (to build): lowering/breaking a shield starts its toll; raise behaviors are Root / March / Air-hold / Air-drop (§8).
+4. **Damage formula** (built): weapon MIGHT × attacker offense mult × defender ward mult. Offense mults cluster (95–105%, Hushforged outliers to 150%); ward mults spread (85–138%). Per-garniture ward mults are in §4.
+5. **Tempers v2** (to build): the source's 11 blast letters distill into **six directions plus one modifier**. Direction: **Sunder** (diagonal launch — default), **Sweep** (hard sideways), **Hoist** (straight up), **Hook** (pull toward owner), **Fetter** (stun in place), **Unhorse** (guaranteed knockdown). Modifier: **Branded** (the blast lingers as a standing blaze). A bomb/pod entry lists which tempers it may be fitted with; Branded may combine with Sunder/Sweep/Hoist.
+6. **Burden & Fitting** (future system): every part has a Burden cost; every chassis a Fitting limit. Relic parts are moderate, Hushforged heavy, scrapwright near-zero. This is the mechanical home of "scrapwright is much easier to fit" and a future build-constraint lever — flagged, not scheduled.
+7. **Garnitures** (new, from the source's Normal/Armor/Speed styles): a chassis pattern comes in up to three garnitures — real medieval term for a harness's exchangeable fittings. **Field** (the baseline), **War** (armored lean), **Chase** (swift/keen lean). One mesh per pattern; garnitures are stat trims + small cosmetic deltas (plate density, crest length), which is how 25 bodies stay affordable.
 
-### 2.2 Air-dash cap (applied this pass)
-**No body grants more than 2 air dashes.** Extra dashes come only from legs (`ExtraDashes`). The Duskmantle (wraith) dropped from 3 vanish dashes to 2 — its evasion identity now rests on the vanish i-frames and short cooldown-free commitment, not on raw dash count. Gryphon Greaves (+1) remain the way to build a 3-dash harness.
-
-### 2.3 Shield toll (new mechanic — to implement)
-Shields gain a **cooldown ("toll"), like bombs**: lowering the shield, or having it broken, starts its toll; it cannot be raised again until the toll passes. This kills turtle-flicker blocking and makes raising a shield a *decision* with the same weight as throwing a bomb. Numbers per shield in §8.
-
-### 2.4 Shield raise behavior (new mechanic — to implement)
-Each shield declares what raising it does to your movement:
-
-| Behavior | Meaning |
-|---|---|
-| **Root** | Halts you in place (the current behavior — stays default for mid shields) |
-| **March** | You can still walk at reduced speed while it's up (light shields only) |
-| **Air-hold** | Raising it midair halts you and holds you hovering in place |
-| **Air-drop** | Raising it midair slams you straight to the ground — a liability, or an aggressive plummet, depending on who's underneath |
-
-### 2.5 Damage formula & stat model (confirmation, not change)
-The source's formula — *weapon damage × attacker body offense × defender body defense* — is exactly what `PartsCatalog.ComputeStats` already does with `AtkMult`/`DefMult`. Its calibration rule stays canon: **offense multipliers cluster tight (±10%); defense multipliers spread wide (±25%+)** — body choice swings survivability more than damage. Downed robos stay **fully invulnerable** (our Stage-1 judgment call) rather than the source's 30%-damage rule; revisit only if juggle/oki play ever becomes a design goal.
-
-### 2.6 Impact types ("tempers") — future system
-The source's eleven letter-suffix blast variants collapse into six named **tempers**, a modifier any bomb (and eventually pod blasts and shield bashes) can carry independent of its flight shape:
-
-| Temper | Effect on the victim |
-|---|---|
-| **Sunder** | Launched diagonally up and away (the default) |
-| **Sweep** | Shoved hard sideways, low — into hazards, off conveyors |
-| **Unhorse** | Always knocks down, regardless of remaining poise |
-| **Fetter** | Stunned in place for a beat; no launch |
-| **Pyre** | Launched straight up; the blast lingers as a burning column |
-| **Hook** | Yanked *toward* the part's owner — melee setup |
-
-Implementation shape per `PARTS_AND_DAMAGE_REFERENCE.md` §4.3: a shared `ImpactType` field consumed by the knockback/knockdown resolution, not per-part bespoke code.
+Stat bars are 0.5–5.0. Slot bar sets: Body **POISE/WARD/GAIT/WING/MIGHT** · Gun **MIGHT/BOLT/SEEK/CADENCE/REND** · Melee **MIGHT/REACH/TEMPO/GRACE/REND** · Bomb **MIGHT/LOFT/BREADTH/LINGER/REND** · Pod **MIGHT/HASTE/SEEK/BREADTH/LINGER** · Shield **GUARD/SOAK/MEND/TOLL/RIPOSTE**. "Volley" columns give total damage if every round of one trigger-pull lands, on the shared 1000-vigor scale — calibration targets, not final tuning.
 
 ---
 
-## 3. Stat language
+## 3. Bodies — 9 patterns, 25 relic garnitures
 
-Display stats are 0.5–5.0 bars (the source's own presentation, which players read instantly), skinned in the world's vocabulary. Each bar maps onto real sim fields — the bars are *presentation*, the sim numbers stay the balance truth.
+Charge = the collision/charge attack (see `COMBAT_DOCTRINE.md` §4.5). Off% = offense mult; Ward% = incoming-damage mult (lower is tougher).
 
-| Slot | Bars | Sim mapping |
-|---|---|---|
-| Body | **MIGHT / WARD / POISE / GAIT / WING** | AtkMult / DefMult / endurance+knockdown resistance / SpeedMult / dash+air profile |
-| Gun | **MIGHT / BOLT / SEEK / CADENCE / REND** | Damage / ProjectileSpeed / HomingTurnRate / FireInterval / EnduranceDamage |
-| Melee | **MIGHT / REACH / TEMPO / GRACE / REND** | Damage / HitRange / SwingActiveTime / recoveries / EnduranceDamage |
-| Bomb | **MIGHT / LOFT / BREADTH / LINGER / REND** | Damage / flight speed / BlastRadius / blast duration / EnduranceDamage |
-| Pod | **MIGHT / HASTE / SEEK / BREADTH / LINGER** | Damage / FireInterval+energy / homing / blast size / uptime |
-| Shield | **GUARD / SOAK / MEND / TOLL / RIPOSTE** | FrontBlockPercent / ShieldHp / RegenPerSec / cooldown / MeleeParryEnduranceDamage + bash |
-| Legs | trait card | SpeedMult / JumpMult / ExtraDashes / LandRecoveryMult / (new) TurnMult, FallSpeedMult |
+### Bannerman — The Aureate Legion *(built: `vanguard` = Field)*
+The standard every pattern is measured against. 2 air dashes. Off 100%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 2.5 | 3.0 | 2.5 | 2.5 | 3.5 | 107% | Straight charge |
+| War | 2.5 | 3.5 | 2.0 | 2.5 | 4.0 | 101% | Rising charge, clears walls |
+| Chase | 2.5 | 2.5 | 3.0 | 2.5 | 4.0 | 111% | Diagonal rising strike |
+
+### Sunplume — The Solarian Talon *(planned; was "Halcyon")*
+Never quite touches the ground: two continuous jumps instead of dashes; charges clear walls. Off 95%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 2.0 | 2.0 | 3.0 | 3.5 | 2.5 | 117% | Short-hop charge |
+| War | 2.0 | 2.5 | 2.5 | 4.0 | 2.5 | 111% | Diagonal rising strike |
+| Chase | 2.0 | 1.5 | 3.0 | 3.5 | 3.0 | 122% | Hop-and-strike |
+
+### Cobalt Knight — The Rust Cross Commandery *(built: `bulwark` = Field; rigged asset)*
+The ancestral wall. 1 air dash. Off 105%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 5.0 | 4.0 | 1.5 | 1.5 | 2.0 | 95% | Diagonal rising strike |
+| War | 5.0 | 4.5 | 1.0 | 1.5 | 5.0 | 90% | Devastating straight charge |
+| Chase | 5.0 | 3.5 | 2.0 | 1.5 | 4.0 | 101% | Vertical rise then charge, clears walls |
+
+### Harrier — The Hedge Errantry *(new pattern)*
+The landless knights' pattern: extreme ground speed, three continuous jumps, folds to a stiff breeze. Off 95%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 0.5 | 1.0 | 4.5 | 2.5 | 1.5 | 132% | Short-hop charge, clears walls |
+| War | 0.5 | 1.5 | 4.0 | 2.5 | 2.0 | 128% | Diagonal rising strike |
+| Chase | 0.5 | 0.5 | 5.0 | 2.5 | 2.5 | 138% | Straight charge |
+
+### Duskmantle — The Umbral Concordat *(built: `wraith` = Field)*
+Vanish-dashes phase through shots; 2 dashes (cap). Slow afoot. Off 100%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 2.5 | 3.0 | 2.0 | 2.0 | 1.0 | 107% | Repeating short charges (no guard) |
+| War | 2.5 | 3.5 | 1.5 | 2.0 | 2.0 | 101% | Feinting jump, drifts back |
+| Chase | 2.5 | 2.5 | 2.5 | 2.0 | 4.0 | 111% | Straight charge |
+
+### Freelance — The Drowned Compact *(planned; was "Corsair")*
+The mercenary hybrid: strong air game on short elaborate dashes (2 — the cap trims the source's three), sluggish afoot. Off 100%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 2.5 | 2.5 | 1.5 | 4.0 | 3.0 | 111% | Charge, drifts up after impact |
+| War | 2.5 | 3.0 | 1.5 | 3.5 | 4.0 | 107% | Vertical rise-and-return slam |
+| Chase | 2.5 | 2.0 | 1.5 | 4.5 | 2.5 | 117% | Rising dive onto the foe below |
+
+### Vesper — Order of the Winter Wing *(built: `skylance` = Field)*
+One long steerable dash; strikes hard, folds fast. Off 100%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 1.5 | 1.5 | 1.5 | 4.0 | 4.5 | 128% | Slow gliding charge |
+| War | 1.5 | 2.0 | 1.5 | 3.5 | 4.5 | 122% | Ascending charge |
+| Chase | 1.5 | 1.0 | 1.5 | 4.5 | 4.5 | 132% | Slow rising approach |
+
+### Skyanvil — The Kurultai Vanguard *(planned; was "Juggernaut")*
+Heavy *and* airborne: two continuous jumps, superb air control, slow everything else. Off 100%.
+| Garniture | POISE | WARD | GAIT | WING | MIGHT | Ward% | Charge |
+|---|---|---|---|---|---|---|---|
+| Field | 3.5 | 4.5 | 1.5 | 4.5 | 3.0 | 90% | Slow grinding advance |
+| War | 3.5 | 5.0 | 1.5 | 3.5 | 3.0 | 85% | Diagonal rise, descends after impact |
+| Chase | 3.5 | 4.0 | 1.5 | 5.0 | 4.0 | 95% | Pounce from on high, clears walls |
+
+### Cockatrice — masterless pattern *(new; single garniture)*
+A found relic no Order will claim: stealth-glide (one long cloaked glide-dash), superb jump, and a bouncing repeatable pounce charge. POISE 2.5 / WARD 2.5 / GAIT 1.5 / WING 3.5 / MIGHT 2.5 · Off 100% · Ward% 111.
+
+### Hushforged bodies
+| Name | Source basis | What it breaks | Drawback |
+|---|---|---|---|
+| **the Martyr** | Ray Legend | Off **150%** — nothing hits harder | Ward% **170** — nothing dies faster; its charge stumbles backward |
+| **the Paragon** | Ray Warrior | POISE/WARD/MIGHT all 4.5+, Off 110% | Merely mortal mobility; the Orders hunt its bearers hardest |
+| **the Manifold Shadow** | Rakensen | **5 vanish dashes** (cap broken) | Mediocre everything else; the pilot hears footsteps that aren't there |
+| **the Grieving Wing** | Ruhiel | Vesper frame with real armor and air | It sings while it fights; pilots stop sleeping |
+| **the Choir Aloft** | Athena | **6 continuous jumps** | Feather-fragile; twin examples exist and know each other |
+| **Shard of the Riderless, First / Second / Third** | Rahu I / II / III | Escalating everything; the Third: near-max all bars, Ward% **22**, cannot be knocked down, rebirth is instant | It is a piece of the Riderless. It remembers being whole |
+
+### Scrapwright body — **Plowshare**
+The Wrightsguild's pattern: over-built, under-glamored. POISE 4.0 / WARD 3.5 / GAIT 2.0 / WING 1.0 / MIGHT 2.0 · Off 100% · Ward% 100 · 1 dash · Charge: honest straight shove. **Perk:** repairs between fights cost nothing; near-zero Burden.
 
 ---
 
-## 4. Bodies — 7 chassis patterns
+## 4. Guns — 38 relic patterns (+10 Hushforged, +1 scrapwright)
 
-Each chassis pattern is kept by one Order (`SETTING_AND_FACTIONS.md` faction table). `.id`s and built geometry unchanged.
+Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium range (melee-range or far values noted when the weapon's identity lives there). G/A = ground/air behavior differs.
 
-| `.id` | Pattern name | Keeper Order | Identity | Status |
-|---|---|---|---|---|
-| `vanguard` | **Bannerman** | The Aureate Legion | The standard every other pattern is measured against. 2 dashes, no edges. | Built |
-| `skylance` | **Vesper** | Order of the Winter Wing | Glass-cannon flier; one long committed dash. Named for the evening star — seen at dusk, gone by dark. | Built |
-| `wraith` | **Duskmantle** | The Umbral Concordat | Evader; short vanish-dashes that phase through shots (now 2, per §2.2). The cowl-and-cape silhouette is literal. | Built |
-| `bulwark` | **Cobalt Knight** | The Rust Cross Commandery | Slow tank; the one finished rigged asset, now name-aligned with it. | Built (rigged) |
-| `halcyon` | **Sunplume** | The Solarian Talon | Multiple short continuous jumps — never quite touches the ground. | Planned |
-| `corsair` | **Freelance** | The Drowned Compact | The hybrid — literally a "free lance," the mercenary chassis for pilots who won't commit to one doctrine. | Planned |
-| `juggernaut` | **Skyanvil** | The Kurultai Vanguard | Heavy *and* airborne — a tank that contests the sky. The name is the mechanical identity. | Planned |
-
-Proposed stat spread for the three planned chassis (calibrated to the built four — HpMult 0.8–1.45, DefMult 0.75–1.2, AtkMult 0.9–1.25, per §2.5's tight-offense/wide-defense rule):
-
-| Pattern | HpMult | DefMult | AtkMult | Dash | SpeedMult | Notes |
+| Name | Source | Bars | Range | Volley | Identity | Melee counterpart |
 |---|---|---|---|---|---|---|
-| Sunplume | 0.85 | 1.15 | 0.95 | Normal ×2 (short, quick-recharge) | 1.0 | Needs a multi-jump capability (see §12) |
-| Freelance | 1.0 | 1.05 | 1.05 | Normal ×2 | 1.05 | Deliberately almost-Bannerman with a lean toward speed |
-| Skyanvil | 1.3 | 0.85 | 1.05 | Long ×1 | 0.8 | High WING despite weight: strong hover, cheap air-dash |
+| **Arbalest** *(built)* | Basic | 3/2/1/2/2 | Med | 88 | Three honest bolts; the workhorse | Oathblade |
+| **Trefoil** | 3-Way | 3/3/3/3/2 | Med-long | 67 | Three streams in a heraldic fan; better from afar | Longglaive |
+| **Litany** *(built)* | Gatling | 2/3/1/3/3 | Med | 88 | Eight recited rounds; power grows with distance, accuracy shrinks | Misericorde |
+| **Mangonel** | Vertical | 2/3/3/2/4 | Med | 76 | Two straight, two vaulting — the vault clears walls | Estoc |
+| **Longshrift** | Sniper | 3/5/1/1/4 | Med-long | 84–105 | One fast round and a long vulnerable breath after | Tilt Lance |
+| **Fetterlock** | Stun | 2/5/1/5/4 | Short | 53 | Two shackle-rounds; near-guaranteed down up close | Knell Maul |
+| **Thornswarm** | Hornet | 3/2/4/2/3 | Med | 130 | Five chasing thorns; layer volleys to smother | Hydra Flail |
+| **Pilgrim** | Flame | 3/3/2/3/4 | Med | 114 far | Six rounds that grow stronger the farther they travel | Courser Saber |
+| **Dragoon** | Dragon | 4/2/3/1/4 | Med-long | 114 | One heavy tracking round; slow, patient, punishing | Wyrmtail |
+| **Aspergill** | Splash | 1/2/1/5/2 | Sh-med | 19 | A sprinkling of stopping rounds; setup, not damage | Tocsin Mace |
+| **Arcus (Dexter/Sinister)** | L/R Arc | 3/4/2/2/3 | Med-long | 73 | Two rounds curving in from the named side; reversed airborne | Backsword (D/S) |
+| **Culverin** | Shotgun | 5/5/1/1/5 | Short | 142 pt-blank | Three-throat blast; downs anything, dies at range | Pollaxe |
+| **Evenfall** | Rayfall | 3/3/4/2/2 | Long | 84 | Four rounds hang at even-fall, then descend homing (G only) | Pendulum Glaive |
+| **Alembic** | Bubble | 2/1/2/3/4 | Sh-med | 84 | Fat slow alchemic orbs; two afoot, one aloft | Leaden Cudgel |
+| **Gyrfalcon** | Eagle | 2/4/2/3/3 | Med-long | 33 G / 48 A | Straight afoot; aloft it pauses, then stoops | Stooping Talon |
+| **Chevron** | V Laser | 3/4/1/3/4 | Med-long | 152 pt-blank / 76 | Fires a heraldic V afoot, a straight lance aloft | Scissor Glaive |
+| **Petronel** | Magnum | 4/5/1/1/5 | Short | 126 | One brutal cavalry-shot; toothless past arm's reach | Rondel Dagger |
+| **Versicle** | Needle | 2/3/1/4/4 | Med | 57 | Three vertical verses; hoists the victim skyward | Rising Falchion |
+| **Splintered Star** | Starshot | 2/3/2/4/2 | Long | 155 | One round splits five — vertically afoot, laterally aloft | Shatterblade |
+| **Falconet** | Glider | 3/2/5/3/1 | Long | 56 G / 113 A | Aloft, its rounds glide wide loops and return for a second pass | Volant Falx |
+| **Rookery** *(planned)* | Homing Star | 3/3/4/2/2 | Med-long | 256 | One casting breaks into seven homing rooks | Iron Rosary |
+| **Vigil** *(planned)* | Trap | 3/3/2/4/1 | Med-long | 228 | Rounds keep watch, near-invisible, then strike (G); straight aloft | Penitent Flail |
+| **Auger** | Drill | 3/5/2/3/4 | Short | 107 | A grinding stream that drags the victim up its own thread | Sawtooth Espadon |
+| **Goliath Shot** | Titan (gun) | 1/1/1/2/3 | Med | 42 | An enormous, slow, mostly-ceremonial round | Goliath Blade |
+| **Grapnel** *(planned)* | Claw | 1/3/5/4/1 | Med | 19 | Barbed lines that haul the target off their aim | Hookbill |
+| **Gauntlet** | Knuckle | 5/5/1/5/5 | Pt-blank | 152 | A fired fist; hoists afoot, hurls away aloft | Cestus |
+| **Spur Volley** | Afterburner | 4/4/2/2/3 | Med-long | 126 | Rounds that gather speed; pushes afoot, draws in aloft | Cavalcade |
+| **Quillon Bolt** | Blade | 1/3/1/5/1 | Sh-med | 20–42 | No recovery at all — fill the space between other threats | Fencer's Foil |
+| **Sparrowstorm** | Meteor Storm | 2/3/2/3/2 | Sh-med | 310 far | Sixteen sparrows; a nuisance close, a storm at distance | Threshing Flail |
+| **Portcullis** | Twin Fang (gun) | 4/4/3/3/2 | Short | 153 | Rounds rise like a gate and drop behind cover (G); straight aloft | Gatefall Maul |
+| **Yoke** | Gravity | 4/3/1/4/4 | Med | 38 G / 95 A | Hangs black weights over the foe — the sky stops being safe | Yoke Hammer |
+| **Firecrest** | Phoenix | 3/5/2/4/3 | Long | 114 | Fast burning birds; bell-curve afoot, level aloft | Brandiron |
+| **Processional (D/S)** | L/R Pulse | 2/3/4/3/2 | Med | 99–107 | Eight rounds processing in a curve from the named side | Serpentine Blade (D/S) |
+| **Skysword** | Sword Storm | 3/5/2/4/3 | Med-long | 95 | Blades cast heavenward that fall on the mark — cover is negotiable | Steeple Strike |
+| **Wending Bolt** | Ion | 3/5/5/5/2 | Med | 86 | A round that turns twice to find its man; slow but faithful | Feinting Rapier |
+| **Beacon** | Flare | 4/4/2/3/3 | Med | 124 at burst | Bursts at a set distance; time the blossom or waste the shot | Crowbeak Pick |
+| **Cinquefoil (D/S)** | L/R 5-Way | 2/4/1/4/3 | Med-long | 158–273 | Five streams fanning from the named side; reversed aloft | Quintain Sweep (D/S) |
+| **Annulet** | Halo | 3/3/4/3/3 | Med-long | 69–85 | A great ring that climbs, then hunts (G); halts before you aloft | Roundelay |
+
+### Hushforged guns
+| Name | Source | Identity | Drawback |
+|---|---|---|---|
+| **the Stilled Voice** | Wave Laser | Rounds that *still* a harness for long seconds | Almost no damage; the silence spreads to the wielder's vox |
+| **the Burning Saltire** | X Laser | Crossed beams that curve in from both flanks; strikes hiders | No straight shot at all |
+| **the Choir Unending** | Crystal Strike | An endless spammable stream of high-damage shards (260/volley) | Falls off hard against true dodgers; the choir doesn't stop when you do |
+| **the Elder Wyrm** | Wyrm | Four homing wyrms afoot (227), one swift round aloft | Fast harnesses shed the wyrms; it eats pilots' patience |
+| **the Twin Stoop** | Raptor | Twin raptors that pause, then stoop (93–95) | Ground fire is slow and stiff |
+| **the Waxing Moon / the Waning Moon** | Waxing/Waning Arc | Four homing rounds curving from dexter/sinister (113–168) | Reversed aloft; the moons wax and wane on their own schedule |
+| **Voice of the Riderless, First/Second/Third** | Rahu 1/2/3 | Blooming blast-clusters, escalating (127→285 at burst); the Third works point-blank or across the List (222) | Each Voice speaks a little more clearly to the pilot |
+
+### Scrapwright gun — **Matchlock**
+Bars 3/1/1/2/2 · Med · 88/volley but rounds shrink in flight (22 far). Three plain rounds, no gimmick. **Perk:** its rounds are never wiped by your knockdown — a Matchlock volley in the air *finishes the job* even if you're already down (`COMBAT_DOCTRINE.md` §4.3's overload rule doesn't apply).
 
 ---
 
-## 5. Guns — 10 relic patterns
+## 5. Melee — 38 relic patterns (+10 Hushforged, +1 scrapwright)
 
-Three built, seven planned (families per `PARTS_AND_DAMAGE_REFERENCE.md` §3). Sim proposals calibrated to the built range (Damage 14–90, FireInterval 0.13–1.15, speed 26–36, homing 0.6–3.4).
+Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun (§4); the pairing rule keeps every ranged answer matched by a blade answer.
 
-| `.id` | Name | Family | Identity | Proposed sim | Status |
-|---|---|---|---|---|---|
-| `blaster` | **Arbalest** | Baseline | The workhorse. Honest damage, honest tracking. | (as built: 35 dmg / 0.38 int) | Built |
-| `needler` | **Litany** | Rapid stream | A recited pressure of weak, hard-curving darts — death by repetition. | (as built: 14 / 0.13) | Built |
-| `ram-cannon` | **Bombard** | Heavy single | Slow, straight, brutal siege-shot. One hit shreds poise. | (as built: 90 / 1.15) | Built |
-| `trident` | **Trefoil** | Spread | Three simultaneous streams in a heraldic three-lobe fan. Forgiving of aim, hard to dodge laterally. | 3×16 dmg, int 0.5, spread 18° | Planned |
-| `arcjet` | **Mangonel** | Arcing anti-cover | Lobs shot over walls onto hiders — the siege engine's whole job. | 40 dmg, int 0.9, ballistic arc, no homing | Planned |
-| `snare-beam` | **Vigil** | Delayed trap | Rounds hang in the air, near-invisible, keeping watch — then strike. Rewards prediction, brutal on whiff. | 55 dmg, int 0.75, 0.8 s hang | Planned |
-| `undertow` | **Grapnel** | Pull/disorient | Barbed shot that yanks the target off their aim line — and toward you. | 18 dmg, pull 4 m/s × 0.4 s | Planned |
-| `farlight` | **Pilgrim** | Range-scaling | The round grows stronger the farther it travels. Weak in someone's face; devastating from across the List. | 20→70 dmg over 4→24 m | Planned |
-| `jolt-caster` | **Fetterlock** | Reliable stun | Short-ranged, wide, near-guaranteed knockdown — named for the heraldic shackle. | 25 dmg / 40 REND, max range 8 m, 1.2 s fetter | Planned |
-| `locust-swarm` | **Rookery** | Homing swarm | Releases a flock of slow, circling, stacking seekers. Constant pressure, never a clean single hit. | 5×9 dmg, homing 4.0, int 1.0 | Planned |
+| Name | Counterpart | Bars | Identity |
+|---|---|---|---|
+| **Oathblade** *(built)* | Arbalest | 3/3/3/3/3 | The knight's standard; balanced in every line |
+| **Longglaive** | Trefoil | 3/4/3/2/3 | Wide crescent sweep (140°) — punishes strafing |
+| **Misericorde** *(built)* | Litany | 2/2/5/5/2 | The mercy-dagger; fast, light, barely punishable |
+| **Estoc** | Mangonel | 3/3/3/3/2 | Narrow thrust that pierces 60% of a raised shield's GUARD |
+| **Tilt Lance** | Longshrift | 5/4/2/1/4 | The joust: damage scales with lunge distance (60→190) |
+| **Knell Maul** | Fetterlock | 2/3/3/3/5 | A bell-hammer that tolls through poise (REND 130) |
+| **Hydra Flail** | Thornswarm | 3/3/3/2/3 | Five heads strike five angles at once; some always connect |
+| **Courser Saber** | Pilgrim | 3/3/4/3/2 | Damage scales with your current speed — never swing standing still |
+| **Wyrmtail** | Dragoon | 4/4/2/2/4 | A heavy sweep that re-tracks mid-lunge; slow, faithful |
+| **Tocsin Mace** | Aspergill | 1/2/5/4/3 | Light stopping taps; rings a foe still for the follow-up |
+| **Backsword (D/S)** | Arcus | 3/3/3/3/3 | Curving cut that reaches around a guard's named side |
+| **Pollaxe** | Culverin | 5/3/2/1/5 | The unhorser: short, brutal, downs anything it touches |
+| **Pendulum Glaive** | Evenfall | 3/4/2/2/3 | The first swing hangs; the pendulum falls a beat later |
+| **Leaden Cudgel** | Alembic | 3/2/2/2/4 | Fat slow blows with absurd stagger |
+| **Stooping Talon** | Gyrfalcon | 3/3/4/3/3 | Aloft it becomes a plunging dive-strike |
+| **Scissor Glaive** | Chevron | 3/3/3/3/4 | Twin blades cross in a V — wide afoot, needle-narrow aloft |
+| **Rondel Dagger** | Petronel | 4/1/4/2/5 | One armor-splitting thrust at grapple range |
+| **Shatterblade** | Splintered Star | 2/3/3/3/2 | The swing splinters into a fan of five edges |
+| **Volant Falx** | Falconet | 3/4/3/2/1 | A looping crescent wave that returns for a second pass |
+| **Iron Rosary** | Rookery | 2/3/4/4/2 | A weighted chain told bead by bead — the longest string (4+ hits) |
+| **Penitent Flail** | Vigil | 4/3/2/2/3 | The arc is unreadable and the timing is late |
+| **Sawtooth Espadon** | Auger | 3/3/3/2/4 | A grinding hold that ticks damage and drags the foe up the blade |
+| **Goliath Blade** | Goliath Shot | 1/5/1/2/3 | Enormous, slow, mostly ceremony — but the toll when it lands! |
+| **Hookbill** | Grapnel | 2/4/3/3/1 | The billhook that dragged knights from horses; hauls them to you |
+| **Cestus** | Gauntlet | 5/1/5/5/5 | The fired fist's twin: hoists afoot, hurls aloft |
+| **Cavalcade** | Spur Volley | 4/3/2/2/3 | Chained accelerating lunges — each faster than the last |
+| **Fencer's Foil** | Quillon Bolt | 1/3/5/5/1 | Zero-commitment pokes to fill the space between threats |
+| **Threshing Flail** | Sparrowstorm | 2/4/3/3/2 | Many weak strikes, strongest at the tip of its wide arc |
+| **Gatefall Maul** | Portcullis | 4/3/2/2/2 | An overhead drop-gate strike — the anti-air swing |
+| **Yoke Hammer** | Yoke | 4/3/2/2/4 | Spikes an airborne foe straight into the ground |
+| **Brandiron** | Firecrest | 3/3/3/3/3 | A burning arc that leaves a lingering brand ticking damage |
+| **Serpentine Blade (D/S)** | Processional | 2/3/4/3/2 | An eight-touch winding combo curving from the named side |
+| **Steeple Strike** | Skysword | 3/3/3/2/3 | A leaping plunge that clears low cover entirely |
+| **Feinting Rapier** | Wending Bolt | 3/3/5/5/2 | Feints, re-aims mid-swing; nearly impossible to read |
+| **Crowbeak Pick** | Beacon | 4/3/3/3/3 | All the power lives in the beak's tip — space it or waste it |
+| **Quintain Sweep (D/S)** | Cinquefoil | 2/4/4/3/3 | A five-point fan combo sweeping from the named side |
+| **Roundelay** | Annulet | 3/3/3/2/3 | A full-circle spin — the answer to being surrounded |
 
----
+### Hushforged melee
+**the Hushed Edge** (↔ Stilled Voice — wounds don't hurt until seconds later, and neither do its costs), **the Saltire's Kiss** (↔ Burning Saltire — twin crossed cuts that strike both flanks), **the Verse Eternal** (↔ Choir Unending — the combo string that does not end while stamina holds), **the Wyrm's Tooth** (↔ Elder Wyrm — bites re-track like living things), **the Twinned Talon** (↔ Twin Stoop — every swing is two), **the Horned Moon / the Hollow Moon** (↔ Waxing/Waning — mirrored crescent arts), **Hand of the Riderless, First/Second/Third** (↔ the Voices — the Third simply *takes* what it touches).
 
-## 6. Melee — 10 relic patterns (parity with guns)
-
-Each melee pattern is a deliberate counterpart to a gun family (§2.1's four-doctrine rule: a melee main should have an answer wherever a gun main has one). Three built, seven new. Calibration range from the built three: Damage 85–210, HitRange 2.6–3.4, WhiffRecovery 0.6–1.4.
-
-| `.id` | Name | Gun counterpart | Identity | Proposed sim | Status |
-|---|---|---|---|---|---|
-| `saber` | **Oathblade** | Arbalest | The knight's standard. Balanced in every line. | (as built: 130 dmg) | Built |
-| `twin-fang` | **Misericorde** | Litany | The mercy-dagger: fast, light, barely punishable. Finishes what poise-loss starts. | (as built: 85 dmg) | Built |
-| `warhammer` | **Dolorous Maul** | Bombard | The dolorous stroke: enormous damage and knockback, ruinous to whiff. | (as built: 210 dmg) | Built |
-| `longglaive` | **Longglaive** | Trefoil | Wide crescent sweep — hits a whole arc, not a line. The anti-strafe swing. | 110 dmg, range 3.6, arc 140° | New |
-| `estoc` | **Estoc** | Mangonel | The armor-piercer: narrow thrust that ignores most of a raised shield's GUARD, as Mangonel ignores walls. | 95 dmg, arc 30°, pierces 60% of block | New |
-| `flail` | **Penitent Flail** | Vigil | The arc is unreadable and the timing is late — the threat that lands after you thought it missed. | 140 dmg, delayed active window (0.25 s) | New |
-| `hookbill` | **Hookbill** | Grapnel | The billhook that dragged knights off horses: a landed hit hauls the target into your face. | 75 dmg, pulls target to melee range | New |
-| `tilt-lance` | **Tilt Lance** | Pilgrim | The joust: damage scales with the distance of the closing lunge. Ridden from across the List, it is the hardest single hit in the armory. | 60→190 dmg by lunge distance, arc 40° | New |
-| `knell-maul` | **Knell Maul** | Fetterlock | A bell-hammer that barely bruises hull but tolls straight through poise — the stagger specialist. | 70 dmg / 130 REND | New |
-| `iron-rosary` | **Iron Rosary** | Rookery | A weighted chain told like beads: low damage per bead, the longest combo string in the armory. | 4-hit string, 55 dmg each, 0.2 s hit-recovery | New |
-
----
-
-## 7. Bombs — 8 relic patterns
-
-Two built, six new (families per `PARTS_AND_DAMAGE_REFERENCE.md` §4, plus two the source's reticule-tuning note anticipated). Calibration: Damage 80–120, Cooldown 5–9 s, BlastRadius 3.2–4.5.
-
-| `.id` | Name | Family | Identity | Proposed sim | Status |
-|---|---|---|---|---|---|
-| `impact` | **Censer** | Standard lob | The swung vessel of fire. Tracks the enemy; hold to aim. | (as built: 80 dmg / 5 s) | Built |
-| `quake` | **Anathema Charge** | Heavy close AoE | The great condemnation: huge blast fixed just ahead of you, long rearm. | (as built: 120 / 9 s) | Built |
-| `barricade` | **Palisade** | Cluster denial | Three grouped blasts in a stake-wall line. Doesn't need to land clean — needs them *near* it. | 3×45 dmg, cd 7, r 2.2 each | New |
-| `sidewinder` | **Oxbow Charge** | Curving | Bends around cover in a long river-meander arc. | 70 dmg, cd 5.5, curved path | New |
-| `sapper` | **Oubliette Mine** | Planted trap | The forgotten pit: lands, waits near-invisible, remembers. | 85 dmg, cd 6, 12 s dwell | New |
-| `cryo` | **Rime Charge** | Immobilize | Almost no damage; fetters the target for the follow-up. A setup tool, never a finisher. | 15 dmg, cd 6.5, 1.6 s fetter | New |
-| `steeplefall` | **Steeplefall** | Vertical drop | Climbs past steeple height, drops nearly straight down — cover means nothing. | 90 dmg, cd 6, ArcHeight ~14 | New |
-| `pincer` | **Pincer Charge** | Twin split | Splits to blast both sides of the target at once. Standing still is the wrong answer; moving is also the wrong answer. | 2×40 dmg, cd 6 | New |
+### Scrapwright melee — **Felling Axe**
+Bars 3/3/2/3/3. A woodsman's arc, nothing more. **Perk:** the swing cannot be interrupted — poise damage taken mid-swing never cancels it.
 
 ---
 
-## 8. Shields — 8 relic patterns (parity with bombs)
+## 6. Bombs — 18 relic shapes (+4 Hushforged, +1 scrapwright)
 
-Two built, six new. Every shield now carries a **TOLL** (§2.3) and a **raise behavior** (§2.4). Calibration: ShieldHp 110–420, front block 55–95%.
+Bars = MIGHT/LOFT/BREADTH/LINGER/REND. Dmg = single-blast calibration (ground / air where the source differs). Tempers list what the shape may be fitted with (§2.5); **B+** marks Branded-compatible.
 
-| `.id` | Name | Identity | GUARD front/back | SOAK | MEND | TOLL | Raise | Status |
-|---|---|---|---|---|---|---|---|---|
-| `aegis` | **Ward Veil** | Light energy veil; the flier's shield. | 75% / 25% | 180 | 25/s | 2.5 s | Air-hold | Built (add toll) |
-| `bastion` | **Pavise** | The great standing wall-shield. | 92% / 40% | 260 | 6/s | 6 s | Root + Air-drop | Built (add toll) |
-| `targe` | **Targe** | Small and quick: the only shield you can walk behind. | 60% / 15% | 110 | 30/s | 1.5 s | March (40% speed) | New |
-| `kite-ward` | **Kite Ward** | The knight's standard shield; balanced in every line. | 80% / 30% | 200 | 14/s | 3.5 s | Root | New |
-| `argent-mirror` | **Argent Mirror** | Timed art: the first instant of the raise *reflects* projectiles. Late, it's a mediocre wall. | 70% / 20% (reflect window 0.25 s) | 140 | 18/s | 5 s | Root | New |
-| `bastille` | **Bastille** | The prison door swings both ways: the bash specialist — its RIPOSTE is an attack, not a deterrent. | 85% / 35% | 220 | 10/s | 5 s | Root + Air-drop | New |
-| `cenotaph` | **Cenotaph** | The tomb-marker: a vast pool that does not mend. Broken, it is gone for the fight — refilled between Lists. | 95% / 50% | 420 | 0 (per-fight) | — | Root + Air-drop | New |
-| `pallium` | **Pallium** | The mantle: modest ahead, uniquely strong *behind* — the kiter's cloak against pursuit. | 55% / 55% | 160 | 20/s | 3 s | Air-hold | New |
+| Name | Source | Bars | Dmg | Tempers | Identity | Shield counterpart |
+|---|---|---|---|---|---|---|
+| **Censer** *(built)* | Standard | 4/3/3/3/3 | 71/55 | Sunder, Sweep, Fetter, Unhorse, B+ | The swung vessel; tracks the foe | Ward Veil |
+| **Peal Charge (D/S/True)** | Wave, L/R Wave | 3/2/2/3/3 | 25–35 | Sweep | Three tolling blasts that pass *through* walls | Quiet Bell |
+| **Quarrel Charge** | Straight | 2/4/2/2/3 | 53/36 | Hoist, Fetter, Hook | Fast and flat; no arc, no mercy | Targe |
+| **Oxbow Charge (D/S)** | L/R Flank | 3/3/4/2/3 | 63/44 | Sweep | Bends around cover from the named side | Pallium |
+| **Oubliette Mine** | Burrow | 4/3/4/5/3 | 79/55 | Sunder, Hoist, B+ | Lands, waits near-invisible, remembers | Caltrop Ward |
+| **Oubliette Twin** | Double Mine | 2/3/3/3/1 | 32 ×2 | Sunder | Two forgotten pits for the price of one throw | Caltrop Ward |
+| **Rime Charge** | Freeze | 1/3/2/4/1 | 8 | Fetter | Almost harmless; holds the foe for the real blow | Hoarfrost Ward |
+| **Steeplefall** | Tomahawk | 3/2/4/4/3 | 64–66 | Sweep, Hoist, B+ | Climbs past steeple height, falls straight down | Canopy Ward |
+| **Pincer Charge** | Gemini | 2/3/2/3/2 | 42 ×2 | Sweep, B+ | Splits to blast both sides at once — sides afoot, fore-and-aft aloft | Echo Ward |
+| **Anathema Charge** *(built)* | Submarine | 5/1/4/5/3 | 88/55 | Sunder, Hoist, Unhorse, B+ | The great condemnation: slow, vast, lingering | Pavise |
+| **Crescent Charge** | Crescent | 3/1/3/4/3 | 52–72 | Hoist, Unhorse, B+ | A tall slow crescent that forbids the sky | Kite Ward |
+| **Antiphon Charge** | Dual | 3/3/3/4/3 | 33–39 ×2 | Sunder, Hoist | Call and response: one blast before the foe, one behind | Echo Ward |
+| **Ascension Charge** | Acrobat | 0/5/4/2/1 | 0 | — | Detonates at your own feet and casts *you* skyward | Springald Ward |
+| **Trine Snare** | Delta | 2/4/1/2/2 | 31/22 ×3 | Sweep | Three points around the foe — moving is wrong, staying is worse | Cheval Ward |
+| **Palisade** *(planned)* | Wall | 4/4/3/4/3 | 79/55 | Sunder, B+ | A stake-wall of blasts before you; charges die on it | Bastille |
+| **Belfry Burst** | Smash | 4/5/3/4/3 | ~55 | Sunder | Detonates directly overhead — the sky above you is yours | Testudo Ward |
+| **Widening Gyre** | Geo Trap | 4/4/4/4/3 | 76 | Sunder, B+ | Lands small and *blooms* — always wider than it looks | Thorn Ward |
+| **Goliath Charge** | Titan (bomb) | 1/1/5/3/5 | 19 | Unhorse | An enormous, slow, humiliating blast | Cenotaph |
 
----
+### Hushforged bombs
+**the Threefold Grief** (Treble — three grown blasts, corner a foe and there is no out), **the Wyvern's Egg** (Wyvern — a long-flying egg that hatches ruin), **Moontide, Waxing / Waning** (Waxing/Waning Arc — curving tides with grown blasts), **the Ruin Cross** (Grand Cross — four enormous blasts in a cross about you, 76 each; stand still when you loose it).
 
-## 9. Pods — 6 relic patterns
-
-Pods are retainers: squires, hounds, hawks, and wards that fight beside a harness on their own energy. Two built, four new.
-
-| `.id` | Name | Family | Identity | Status |
-|---|---|---|---|---|
-| `sentry` | **Iron Squire** | Steady fire | The loyal retainer: steady chip fire while you reposition. | Built |
-| `hornet` | **Kestrel** | Burst | The cast hawk: fast stooping bursts, then an empty glove. | Built |
-| `alaunt` | **Alaunt** | Roaming hunter | The war-hound: roams the List, rushes and detonates when it winds the quarry. | New |
-| `gargoyle` | **Gargoyle** | Stationary ambush | Perches inert; the first thing to cross its ward gets fettered. | New |
-| `roodscreen` | **Roodscreen** | Zone denial | Projects a standing screen that must be flown around, not through. | New |
-| `herald` | **Herald** | Mark/support | Circles the foe crying their position: marked targets take +10% damage while it flies. | New |
-
----
-
-## 10. Legs — 6 relic patterns
-
-Always Greaves. Three built, three new (needs two new sim fields: `TurnMult`, `FallSpeedMult` — §12).
-
-| `.id` | Name | Identity | Proposed sim | Status |
-|---|---|---|---|---|
-| `strider` | **Wayfarer Greaves** | Neutral gait. Nothing gained, nothing owed. | (as built) | Built |
-| `cheetah` | **Courser Greaves** | The running horse: ground speed up, jump suffers. | (as built) | Built |
-| `cricket` | **Gryphon Greaves** | The sky rig: +1 air dash, clean landings, sluggish on foot. The only path past the 2-dash cap (§2.2). | (as built) | Built |
-| `heron` | **Heron Greaves** | The wading bird: much higher jump apex, everything else honest. | speed 0.95, jump 1.45 | New |
-| `destrier` | **Destrier Greaves** | The battle-trained mount: pivots sharply where others carve wide. | turn ×1.6, landRec 0.9 | New |
-| `thistledown` | **Thistledown Greaves** | Falls like seed-fluff: slow descent, long hang-time for air-fired weapons. | fall ×0.6, landRec 0.85 | New |
+### Scrapwright bomb — **Powder Keg**
+Bars 3/3/3/2/3 · 60. An honest keg of black powder. **Perk:** the shortest toll in the armory — it is always, dependably, nearly ready.
 
 ---
 
-## 11. Renames applied to the built catalog (2026-07-18)
+## 7. Shields — 17 relic patterns (+4 Hushforged, +1 scrapwright)
 
-Display `Name`/`Blurb` only; every `.id` untouched (save compatibility). Applied in `Assets/RebirthProtocol/Runtime/Domain/Parts.cs`.
+Every bomb shape has its shield counterpart (§6, last column). GUARD = front block% (back% second). TOLL = seconds after lowering/break. Raise: Root / March / Air-hold / Air-drop (§2).
 
-| `.id` | Old (Warband) | New (canonical) |
+| Name | GUARD | SOAK | MEND | TOLL | RIPOSTE | Raise | Identity |
+|---|---|---|---|---|---|---|---|
+| **Ward Veil** *(built)* | 75/25% | 180 | 25/s | 2.5 | 20 | Air-hold | Light energy veil; the flier's shield |
+| **Pavise** *(built)* | 92/40% | 260 | 6/s | 6 | 32 | Root, Air-drop | The great standing wall-shield |
+| **Targe** | 60/15% | 110 | 30/s | 1.5 | 16 | **March** (40% walk) | The only shield you can advance behind |
+| **Kite Ward** | 80/30% | 200 | 14/s | 3.5 | 24 | Root | The knight's standard; balanced in every line |
+| **Argent Mirror** | 70/20% | 140 | 18/s | 5 | 28 | Root | The first 0.25 s of the raise *reflects* projectiles |
+| **Bastille** | 85/35% | 220 | 10/s | 5 | 40 | Root, Air-drop | The bash specialist — its riposte is an attack |
+| **Cenotaph** | 95/50% | 420 | 0 (per-fight) | — | 30 | Root, Air-drop | The tomb-marker: vast, unmending; broken is broken until the next List |
+| **Pallium** | 55/**55%** | 160 | 20/s | 3 | 18 | Air-hold | The mantle: uniquely strong *behind* — the kiter's cloak |
+| **Quiet Bell** | 65/35% | 150 | 16/s | 4 | 18 | Root | A dome of hush: briefly muffles blasts and through-wall harm from all sides |
+| **Caltrop Ward** | 70/25% | 170 | 15/s | 4 | 20 | Root | Struck, it scatters caltrops at your feet — chasing you costs |
+| **Hoarfrost Ward** | 70/25% | 170 | 15/s | 4 | 22 | Root | Melee against it leaves the attacker rimed and slowed |
+| **Canopy Ward** | 65/25% (**90% above**) | 180 | 14/s | 4 | 20 | Root | An angled roof-plate: the answer to steeplefall and stoop |
+| **Echo Ward** | 75/30% | 190 | 12/s | 4.5 | 26 | Root | A solid block rings an answering shock on both sides |
+| **Springald Ward** | 65/20% | 140 | 18/s | 3 | 20 | Air-hold | A blocked hit winds the springald: refunds boost and flings you back a pace |
+| **Cheval Ward** | 80/0% | 240 | 8/s | 7 | 22 | Root | Can be **planted** as standing cover and fought from behind |
+| **Testudo Ward** | **100/100%** for 0.8 s | 120 | 10/s | 8 | 12 | Root, Air-drop | The full shell: a heartbeat of true invulnerability, then a long toll |
+| **Thorn Ward** | 75/25% | 180 | 12/s | 4.5 | 24 | Root | Returns a fifth of blocked harm as a pulse of thorns |
+
+### Hushforged shields
+**the Grieving Wall** (blocks *everything*, and weeps your own vigor as payment), **the Eggshell** (absorbs one killing blow per List, then is gone), **the Moon Door** (cycles: perfectly there, then perfectly not), **the Ruin Aegis** (hoards blocked harm and returns it all as a cross of ruin).
+
+### Scrapwright shield — **Boilerplate**
+GUARD 80/30% · SOAK 300 · MEND 4/s · TOLL 5 · RIPOSTE 20 · Root. A riveted slab of honest plate. **Perk:** restored to full between fights at no cost, always.
+
+---
+
+## 8. Pods — 24 relic patterns (+6 Hushforged, +1 scrapwright)
+
+Retainers, hounds, hawks, and wards on their own energy. Bars = MIGHT/HASTE/SEEK/BREADTH/LINGER. Tempers as marked.
+
+| Name | Source | Bars | Identity |
+|---|---|---|---|
+| **Iron Squire** *(built)* | Standard | 3/3/3/3/3 | The loyal retainer: steady chip fire (Sweep temper available) |
+| **Kestrel** *(built)* | *(ours)* | 2/5/2/2/2 | The cast hawk: stooping bursts, then an empty glove |
+| **Alaunt** *(planned)* | Seeker | 2/1/5/3/3 | The war-hound: slowly courses the quarry, then closes (Sweep/Hoist) |
+| **Lurcher** | Speed | 3/5/1/4/5 | Loosed flat and fast; its blast lingers like a held line (Sunder/Hoist, B+) |
+| **Ratter** | Cockroach | 2/4/4/3/3 | Wanders idly — until it winds the quarry (Hoist/Sweep) |
+| **Springer** | Dolphin | 3/4/2/3/3 | Bounds at the foe in leaping arcs; clears low walls (Hoist) |
+| **Gargoyle** *(planned)* | Spider | 2/3/2/5/3 | Perches inert; the first to cross its ward is struck (Hoist), deploys three |
+| **Winterwatch, Aloft / Afoot** | Sky/Ground Freeze | 1/2/3/4/4 | A patient rime-ward that fetters whoever comes near |
+| **Mummer** | Feint | 2/4/4/4/3 | Halts *in front of* its mark and waits — a feint made flesh (Sweep/Hoist) |
+| **Carrion Watch** | Float | 2/2/4/2/3 | Circles above the foe without striking; the sky closes |
+| **Tumbler** | Jumping | 3/2/4/4/5 | Approaches low, vaults, and bursts overhead (Sweep/Hoist, B+) |
+| **Sparrowhawk** | Diving | 2/3/4/3/3 | Rides high, marks the quarry, then dives past cover |
+| **Bellman (& Twin)** | Wave / Double Wave | 2/4/2/2/3 | Tolling blasts that carry through walls; the Twin cries from both sides |
+| **Gonfalon Watch** | Satellite | 3/1/3/3/3 | Three hanging banners that fall upon the airborne (Sweep available) |
+| **Lymer** | Beast | 2/2/4/3/3 | The leashed hound: hangs back, then is loosed to the fore (Sweep) |
+| **Brachet Trio** | Trio | 4/3/3/3/3 | Three small hounds, short of leash, jealous of ground (Sweep) |
+| **Pavisers** | Wall (pod) | 3/5/1/3/4 | A rank of shield-bearers: three blasts in a line before you (Sunder) |
+| **Palmer** | Reflection | 3/3/1/3/3 | The wandering pilgrim: roams long roads, chases no one |
+| **Rearguard** | Caboose | 5/3/3/5/3 | Flies *opposite* your aim — covers the retreat (Hook/Hoist/Sunder) |
+| **Outriders** | Twin Flank | 3/3/2/3/3 | One rides dexter, one sinister (Sweep/Hoist) |
+| **Canopy Cast** | Umbrella | 3/4/2/4/1 | Three cast wide overhead, bursting in a canopy (Sunder) |
+| **Slinger** | Throwing | 3/4/2/3/5 | A squire's high lobbed shot from behind cover (Sunder/Hoist, B+) |
+| **Goliath Ward** | Titan (pod) | 1/1/1/5/5 | The enormous, slow, ceremonial blast, in retainer form |
+| **Herald** *(ours)* | — | 1/3/4/1/3 | Circles the foe crying their position: marked targets take +10% |
+
+### Hushforged pods
+**the Coursing Shade** (Cheetah — three loosed at once, faster than sight, B+), **the Pale Weaver** (Wolf Spider — a leaping ambush-spinner), **the Drowned Chorister** (Orca — three far-ranging hunters that sing as they close), **Shadow of the Riderless, First/Second/Third** (Penumbra — tireless seekers; the Third looses three that do not stop).
+
+### Scrapwright pod — **Watchdog**
+Bars 2/2/3/2/5. Sits where you put it and barks steadily. **Perk:** never wanders, never idles — the highest uptime of any pod.
+
+---
+
+## 9. Legs — 12 relic patterns (+4 Hushforged, +1 scrapwright)
+
+| Name | Source | Trait |
 |---|---|---|
-| `vanguard` | Legionnaire | **Bannerman** |
-| `skylance` | Valkyrie | **Vesper** |
-| `wraith` | Shinobi | **Duskmantle** |
-| `bulwark` | Crusader Knight | **Cobalt Knight** |
-| `blaster` | Longbow | **Arbalest** |
-| `needler` | Chu-Ko-Nu | **Litany** |
-| `ram-cannon` | Ballista | **Bombard** |
-| `saber` | Saber | **Oathblade** |
-| `warhammer` | Warhammer | **Dolorous Maul** |
-| `twin-fang` | Khopesh | **Misericorde** |
-| `impact` | Greek Fire Pot | **Censer** |
-| `quake` | Zhen Tian Lei | **Anathema Charge** |
-| `aegis` | Aegis Barrier | **Ward Veil** |
-| `bastion` | Bastion Plate | **Pavise** |
-| `sentry` | Terracotta Sentinel | **Iron Squire** |
-| `hornet` | War Kite | **Kestrel** |
-| `strider` | Traveler's Boots | **Wayfarer Greaves** |
-| `cheetah` | Numidian Boots | **Courser Greaves** |
-| `cricket` | Winged Sandals | **Gryphon Greaves** |
+| **Wayfarer Greaves** *(built)* | Standard | Neutral gait; nothing gained, nothing owed |
+| **Heron Greaves** | High Jump | Much higher jump apex; no descent aid |
+| **Destrier Greaves** *(planned)* | Ground | Battle-trained pivots: sharp turns afoot and aloft, shorter jump, quicker jump interval |
+| **Courser Greaves** *(built)* | Formula | Top ground speed; wide turns only |
+| **Palfrey Greaves** | Stabilizer | Smooth-gaited acceleration; the "when in doubt" fit |
+| **Curb Greaves** | Short Thrust | Shorter dash, but hard air turns — control over reach |
+| **Hart Greaves** | Long Thrust | The leaping stag: much longer dash carry |
+| **Hare Greaves** | Quick Jump | Fast, low, frequent jumps |
+| **Thistledown Greaves** *(planned)* | Feather | Falls like seed-fluff; long hang, soft landings, sharp ground turns |
+| **Longstride Greaves** | Wide Jump | Long flat jumps — midair travel without dash or double-jump |
+| **Charger Greaves** | Booster | Dash builds to great speed from a slow start |
+| **Gryphon Greaves** *(built)* | *(ours)* | **+1 air dash** — the only relic road past the 2-dash cap; clean landings, slow afoot |
 
-The run-layer catalog (`RunCatalog.cs`) got the same treatment — boons read as rites and marks of favor, items as relic trinkets (Scrap Plating kept: it was already perfect used-future). The five rival pilots keep their names; their characterization deepens in `SETTING_AND_FACTIONS.md`.
+### Hushforged legs
+**the Swallow's Road** (ground speed half again over Courser), **the Raven's Step** (jump height *and* dash speed), **the Eclipse Gait** (sharp aerial turning that borders on wrong, high jumps), **the Stride of the Riderless** (Ultimate — everything, all of it, at once).
+
+### Scrapwright legs — **Cartwright Greaves**
+Neutral numbers, slightly slow. **Perk:** sure footing — ice barely slides them, conveyors barely carry them, hazard edges grip. The wagon does not tip.
 
 ---
 
-## 12. New sim capabilities the planned roster requires
+## 10. Mapping to the built catalog
 
-Each is one bounded system; parts above reference them. This is the implementation backlog, roughly ordered by how many parts each unlocks:
+The 19 implemented parts (`Parts.cs`, ids frozen) sit in this roster as: Bannerman/Vesper/Duskmantle/Cobalt Knight **Field garnitures**; Arbalest, Litany, Bombard*, Oathblade, Dolorous Maul*, Misericorde; Censer, Anathema Charge; Ward Veil, Pavise; Iron Squire, Kestrel; Wayfarer/Courser/Gryphon Greaves.
 
-1. **Multi-projectile volley** (`ProjectileCount` + `SpreadDegrees`) — Trefoil, Rookery, Palisade, Pincer Charge.
-2. **Shield toll + raise behavior** (§2.3–2.4 fields on `ShieldPart`; toll UI like the bomb's) — all 8 shields.
-3. **Status: Fetter** (brief immobilize, distinct from knockdown) — Fetterlock, Rime Charge, Gargoyle; prerequisite for tempers (§2.6).
-4. **Ballistic/arcing gun trajectory** — Mangonel (bombs already arc; guns don't).
-5. **Delayed/hanging projectiles** — Vigil; Penitent Flail's late active window is the melee twin.
-6. **Pull forces** (on-hit velocity toward owner) — Grapnel, Hookbill; later the Hook temper.
-7. **Range/charge damage scaling** — Pilgrim (distance flown), Tilt Lance (lunge distance).
-8. **Mine dwell + curved bomb paths** — Oubliette, Oxbow.
-9. **Guard-piercing melee** — Estoc (fraction of block ignored).
-10. **Extended combo strings** (per-weapon string length > 3) — Iron Rosary.
-11. **Roaming/ambush pod AI + zone denial + target mark** — Alaunt, Gargoyle, Roodscreen, Herald.
-12. **Legs fields** `TurnMult`, `FallSpeedMult`; **multi-jump body capability** — Destrier, Thistledown; Sunplume.
-13. **Tempers** (`ImpactType` on bombs) — the §2.6 system, after Fetter exists.
+*Two v1 names are superseded by v2's feature-complete mapping: v1's **Bombard** (`ram-cannon`) now reads as the **Longshrift** family's heavy cousin — keep the built part, treat it as its own entry (a short-list of 39 guns is fine); v1's **Dolorous Maul** likewise stands beside Pollaxe/Tilt Lance as the built heavy. No renames needed in code; both names remain canon.*
 
----
+## 11. New sim capabilities (updated backlog)
 
-## 13. Rollout plan (one pass per task, per CLAUDE.md's small-increments rule)
+Volley/multi-projectile · shield toll + raise behaviors + March/plant/reflect/bash/above-arc specials · Fetter status · arcing/hanging/delayed/returning projectile paths · pull forces · range/speed/lunge damage scaling · mine dwell + curved bombs · guard-piercing · extended combo strings · pod behavior suite (course/ambush/circle/vault/retreat/mark) · legs TurnMult/FallSpeedMult/hazard-grip · multi-jump bodies · garniture stat trims · tempers + Branded · charge attacks (per-garniture) · Burden/Fitting (future) · overload rule + Casting opening (`COMBAT_DOCTRINE.md`).
 
-- **Pass A (done, this session):** naming canon, full roster design, display renames, air-dash cap.
-- **Pass B:** shield toll + raise behavior on the two built shields; Targe + Kite Ward (no new capabilities beyond #2).
-- **Pass C:** multi-projectile volley → Trefoil gun + Palisade bomb; Longglaive (pure numbers, no new capability).
-- **Pass D:** Fetter status → Fetterlock, Rime Charge; then Knell Maul (numbers only).
-- **Pass E:** pulls + guard-piercing → Grapnel, Hookbill, Estoc.
-- **Pass F:** scaling damage → Pilgrim, Tilt Lance; delayed threats → Vigil, Penitent Flail.
-- **Pass G:** remaining bombs/shields (Oxbow, Oubliette, Steeplefall, Pincer; Argent Mirror, Bastille, Cenotaph, Pallium), Iron Rosary, Rookery.
-- **Pass H:** pod AI wave (Alaunt, Gargoyle, Roodscreen, Herald); legs wave (Heron, Destrier, Thistledown).
-- **Pass I:** the three planned chassis (Sunplume needs multi-jump; Freelance is numbers-only and can ship any time a mesh exists; Skyanvil).
-- **Pass J:** tempers; then the Hushforged tier design pass (needs its own doc — drawback design is the hard part).
+## 12. Rollout passes (revised)
 
-Each pass ends with EditMode tests for new domain logic and a built-player smoke check, per the standing verification rules.
+- **A (done):** naming canon + renames + dash cap. **A2 (this pass):** feature-complete roster + doctrine doc.
+- **B:** shield toll/raise on built shields; Targe, Kite Ward, Quiet Bell. **C:** volley tech → Trefoil, Palisade, Pincer, Longglaive, Hydra Flail. **D:** Fetter → Fetterlock, Rime, Winterwatch, Knell Maul, Tocsin Mace, Hoarfrost Ward. **E:** pulls/piercing → Grapnel, Hookbill, Estoc, Auger, Sawtooth Espadon. **F:** scaling/delay → Pilgrim, Tilt Lance, Courser Saber, Vigil, Penitent Flail, Beacon, Crowbeak Pick. **G:** trajectory suite → Mangonel, Evenfall, Skysword, Steeplefall, Oxbow, Oubliette(s), Falconet, Volant Falx. **H:** remaining guns/melee pairs + shields (Argent Mirror, Bastille, Cenotaph, Pallium, Echo, Springald, Cheval, Testudo, Thorn, Canopy, Caltrop). **I:** pod suite + legs wave + garnitures + charges + Casting. **J:** scrapwright line (Plowshare through Cartwright) + dependability perks. **K:** the three planned chassis + Harrier + Cockatrice. **L:** tempers + Branded. **M:** Hushforged tier (own design pass: drawbacks first).
+
+Each pass: EditMode tests for domain logic, built-player smoke check, and a `GAME_DESIGN.md` log entry.

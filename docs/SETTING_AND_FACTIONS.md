@@ -36,6 +36,10 @@ Existing chassis `.id`s and built geometry stay as-is (no re-export needed). Wha
 | `corsair` | Pirate | **The Drowned Compact** | Free Companies / routiers (14th-c. mercenary bands) crossed with coastal raider culture | Not built |
 | `halcyon` | Aztec Eagle Warrior | **The Solarian Talon** | Aztec Eagle/Jaguar Warrior societies (1428–1521) — already a real historical *military order*, barely needs reframing | Not built |
 | `juggernaut` | Mongol Kheshig | **The Kurultai Vanguard** | Mongol Kheshig imperial guard (1206–1368) — "kurultai" is the real term for a council of chieftains | Not built |
+| *(new)* `harrier` | — | **The Hedge Errantry** | Hedge knights / 40k Freeblades: landless knights-errant with no fortress and no armory — single-color liveries, personal devices, painted mottos; they survive on speed and spoils, which is the Harrier pattern's whole mechanical identity | Not built |
+| *(new)* `cockatrice` | — | *(masterless pattern)* | The Cockatrice is a found relic no Order will claim — each known example wanders between owners | Not built |
+
+**Institutions beside the Orders** (2026-07-18): **The Wrightsguild** — the neutral guild of scrapwrights and repairers; the only people who *make* parts rather than inherit them, and the keepers of the scrapwright tier (dependable, human-built — see `ARMORY_REFERENCE.md` §1). Every Order needs them and none admits it. **The Litany Sisters** — a convent-order of armigers who fight exclusively with the Litany gun; their all-sisters event is a circuit fixture. **The Broken Choir** — the antagonist cabal: traffickers of Hushforged relics whose masters field what the Orders ban. They believe the Long Hush was not an ending but an *instruction*, and the Riderless is their proof-text.
 
 ## Core mechanic tie-in: Spoils of War (proposed, not yet built)
 
@@ -62,7 +66,7 @@ Closest tonal reference points — not sources to copy, just calibration:
 - **The Lists** — the consecrated dueling grounds ([`ARENA_ROSTER.md`](ARENA_ROSTER.md)).
 - **A Passage of Arms** — a roguelite run: the medieval term for holding ground against all comers. The circuit of sanctioned Passages is **the Grand Passage**.
 - **Laurels** — victory honors (the future scoring layer: gold/silver/bronze by speed and remaining vigor, from the source's trophy system).
-- **Relic-pattern / Hushforged / Scrapwright** — the three part tiers ([`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) §1.1): maintained ancestral parts; parts corrupted by whatever caused the Long Hush (banned, coveted); and new-made human work (honest, hopeless).
+- **Relic-pattern / Hushforged / Scrapwright** — the three part tiers ([`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) §1): maintained ancestral parts; parts corrupted by whatever caused the Long Hush (banned, coveted); and new-made human work — **not a joke tier**: scrapwright work is the boring, dependable floor of the armory — tough, cheap to repair, easy to fit, incapable of brilliance.
 - **Spoils of War** — the victor's claim on the loser's arms (built: the run's spoils draft).
 
 ## The Grand Passage — tournament culture
@@ -76,6 +80,29 @@ The Orders keep the peace the only way a mech-feudal world can: **ritualized sin
 | **Shieldbrother Passage** | 2-on-2 partner battles | An AI ally with their own harness; ally bombs/pods still friendly-fire, per the source's rule |
 | **Trial by Ordeal** | Handicap battles | 1v2 fights at reduced enemy skill; mercy rule lowers enemy vigor after repeated defeats |
 | **Twin Harness** | Tag battles | Bring two loadouts, switch mid-fight on the lock-on button; each harness's remaining vigor scores |
+| **The Melee** | Battle royal | 1v3 free-for-all — the medieval melee, revived; aim discipline and opportunism decide it |
+
+### The circuit, feature-complete (2026-07-18)
+
+The full sanctioned circuit, mapped event-for-event from the source's tournament ladder (venues per [`ARENA_ROSTER.md`](ARENA_ROSTER.md); rules per [`COMBAT_DOCTRINE.md`](COMBAT_DOCTRINE.md) §8 — task scores, bronze/silver/gold laurels, −10% per rematch, Hushforged parts halve laurels, mercy rule at 75/50/25%):
+
+| Event | Source basis | Format |
+|---|---|---|
+| **The Hearthside Tilt** | Tea Room Tournament | Novice passage, no restrictions — hosted by Old Walther at his own hearth |
+| **The Cup of Tempered Hearts** | Steel Hearts Cup | Vow of Temperance (each part fights once) |
+| **The Almsbowl** | Noodle Bowl | Vow of Temperance, fought entirely in the Basin |
+| **The Wardens' Muster** | Police 2-on-2 | Shieldbrother, partnered with Warden Linnet |
+| **The Trial of Simulacra / of Wings** | Computer & Flying CPU Battles | Singles vs. the Lists' own sparring phantoms — ancestral training ghosts still running in the machine |
+| **The Twin Harness Trial** | Tag Battle Tournament | Twin Harness |
+| **The Guildhall Proofs / the Ordeal of Two / the Wrightmother's Favor** | Lab single / handicap / bonus | Wrightsguild-hosted: singles, 1v2 ordeal, and partnered bonus bouts |
+| **The Sisters' Fusillade** | Park Dance Battle | Six duels against the Litany Sisters — every foe carries the Litany |
+| **The Taproom Compact** | Bogey's 2-on-2 Festival | Shieldbrother, partnered with Ser Ernust |
+| **The Masquerade of Blades** | Mira's Battle Party | Vow of Temperance among high society; every foe is fast |
+| **The Surveyor's Circuit** | Holosseum Test | Singles across newly consecrated Lists |
+| **The Broken Choir's Gauntlets** | Eliza's Room, Shiner, Isabella's Mansion, Oboro, Z Boss Room | The antagonist arc: partnered and single gauntlets in the Choir's holdings, foes fielding Hushforged arms openly |
+| **The Bronze Ordeal** | Bronze Handicap Match | 1v2 ordeals; entry needs bronze laurels across the circuit |
+| **The Silver Melee** | Silver Battle Royal | 1v3 free-for-alls; entry needs silver laurels |
+| **The Golden Passage** | Gold Single Battle | Eight duels against the Paragons of the Passage (Class S armigers, empowered harnesses); entry needs gold laurels. It ends with the **First Armiger** (below) |
 
 ## Characters
 
@@ -89,11 +116,48 @@ Built in `RunOpponents.cs`; same escalating loadouts, now with doctrine and char
 4. **Warden Aldric** — *The Rust Cross Commandery.* A gate-warden who has never lost ground he was set to hold. Kind off the field; on it, a wall with a Bombard behind it (Cobalt Knight, Bombard + Pavise). Spoil: **Pavise**.
 5. **Grandmaster Otho** — *The Rust Cross Commandery.* The old master who knighted half the circuit, fighting with everything at once — and faster than a Cobalt Knight has any right to be (Dolorous Maul + Pavise, Courser Greaves). Otho believes the Grand Passage exists to find someone worthy of what's coming. He does not say what's coming. Spoil: **Dolorous Maul**.
 
-### Supporting figures (future content)
+### The armiger roster (2026-07-18 — expansion pool for runs and circuit events)
 
-- **The Herald of the Lists** — the voice of every Passage: announces fights, proclaims laurels, remembers every armiger who ever fought. The natural diegetic wrapper for run UI/narration.
-- **Wrightmother Sella** — the finest living scrapwright; builds parts that almost work and repairs relics she'll never be allowed to own. Future shop/upgrade vendor, and the voice of the setting's central wound: humanity fights with what it can no longer make.
-- **The Riderless** — a harness that fights with no pilot in it. The Orders deny it exists; armigers who saw it stopped competing. Hushforged, violet-black against everyone else's godlight, waiting in the Cradle (`ARENA_ROSTER.md` §19). The intended future final boss and the setting's standing question made flesh: *if nobody alive understands these machines, who says they're empty?*
+Mapped from the source's commander cast, filtered through the Orders. Doctrine names per `COMBAT_DOCTRINE.md` §9's AI archetypes; loadouts reference `ARMORY_REFERENCE.md` patterns. This is the pool future rival-roster passes draw from; the five built rivals above stay the canonical first Passage.
+
+| Armiger | Allegiance | Harness & doctrine |
+|---|---|---|
+| **Old Walther** | Circuit (host) | Skyanvil War, Dragoon — the retired champion who teaches by beating you politely |
+| **Dame Lucet** | Kurultai Vanguard | Skyanvil Chase, Alembic — cheerful, unhurried, unmovable |
+| **Wenna Quickstep** | Hedge Errantry | Harrier Field, Splintered Star — never stops moving, never commits |
+| **Wilhelm of the Arc** | Kurultai Vanguard | Skyanvil Field, Arcus Dexter — accurate around every corner |
+| **Carmine** | Wrightsguild | Cobalt Field, Quillon Bolt — a wright who fights with what she builds |
+| **Ser Ernust Ironhand** | Rust Cross | Cobalt War, Longshrift — the dependable shieldbrother; charges more than he shoots |
+| **Warden Linnet** | City Wardens | Vesper Field, Thornswarm — your first partner; rebuilds her kit every muster |
+| **Roald the Close** | unsworn | Duskmantle Chase, Petronel — the point-blank predator who stalks rebirth flares; hated, undefeated at arm's length |
+| **Marzia of the Thornswarm** | Solarian Talon | Sunplume Field, Thornswarm — plants herself and darkens the sky |
+| **Mira of the Masquerade** | Solarian Talon (host) | Sunplume Chase, Wending Bolt — society's favorite blade |
+| **Sir Haralt** | Aureate Legion | Bannerman Chase, Arcus — Legion-precise, laurel-hungry |
+| **Sofiya** | Solarian Talon | Sunplume Chase, Skysword — fights from above cover on principle |
+| **Dain the Gauntlet** | Hedge Errantry | Harrier War, Gauntlet — one punch, honestly thrown |
+| **Warden-Chief Ossian** | City Wardens | Cobalt Chase, Evenfall — the law, patiently descending |
+| **Maxen** | Rust Cross | Cobalt War, Evenfall — a wall that rains |
+| **Melvas** | Umbral Concordat | Duskmantle Field, Spur Volley — accelerates out of nowhere |
+| **Brother Golias** | Circuit (jester) | Skyanvil War; Goliath Shot, Goliath Charge, Goliath Ward — the all-Goliath fool of the Lists, beloved, occasionally victorious |
+| **Tressa** | Hedge Errantry | Harrier Chase, Dragoon — a heavy gun on the lightest frame; all or nothing |
+| **Sister Maren-Vale, and the Litany Sisters** | Litany Sisters | Six sisters, six frames, one gun — the Fusillade's roster |
+| **Boge** | Circuit (host) | Skyanvil Chase, Cinquefoil Sinister — the taproom's own champion |
+| **Fell** | Hedge Errantry | Freelance Field, Yoke — a cursed reputation, a loyal partner in the Guildhall bouts |
+
+### The Broken Choir (antagonists)
+
+- **Obron the Manifold** — the Choir's master. The Manifold Shadow (five vanish dashes), the Waxing Moon, the Eclipse Gait. Courteous, unhurried, five places at once.
+- **Eliset of the Stilled Voice** — fights with the Stilled Voice and the Raven's Step; her duels end in silence. Fields twin loyalties the Choir doesn't know about.
+- **Isabeau the Twinned** — two identical Choir Aloft harnesses, pink and purple; nobody has ever proven which one holds her.
+- **Cinder** — a fallen Winter Wing skald flying the Elder Wyrm; Skald Maren's struck-from-the-rolls sibling-in-verse. The Choir's blade when words fail.
+- **Sergei the Grieving** — bearer of the Grieving Wing; joined the Choir the day the Order buried his wing-mates. The tragedy recruit.
+- **The First Armiger** — the final duel of the Golden Passage: the player-armiger's own master and kin, fielding **the Martyr** and **the Burning Saltire** — Hushforged arms taken up deliberately, to be the wall their student must be able to break before facing what waits in the Cradle.
+
+### Supporting figures
+
+- **The Herald of the Lists** — the voice of every Passage: casts the harnesses (`COMBAT_DOCTRINE.md` §1), announces fights, proclaims laurels, remembers every armiger who ever fought. The diegetic wrapper for run UI/narration.
+- **Wrightmother Sella** — mistress of the Wrightsguild; builds the dependable tier with her own hands and repairs relics she'll never be allowed to own. Future shop/upgrade vendor, and the voice of the setting's central wound: humanity fights with what it can no longer make.
+- **The Riderless** — a harness that fights with no pilot in it. The Orders deny it exists; the Broken Choir worships it; armigers who saw it stopped competing. Hushforged, violet-black against everyone else's godlight, waiting in the Cradle (`ARENA_ROSTER.md`). Its shed pieces are the Shard/Voice/Hand/Shadow-of-the-Riderless parts. The intended final boss, and the setting's standing question made flesh: *if nobody alive understands these machines, who says they're empty?*
 
 ## What this changes for the Unity rebuild
 

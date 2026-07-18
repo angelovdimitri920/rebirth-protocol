@@ -1,60 +1,70 @@
-# The Lists — Canonical Arena Roster v1
+# The Lists — Canonical Arena Roster v2
 
-*Canonical named-arena roster for Rebirth Protocol (2026-07-18). Builds on [`HOLOSSEUM_REFERENCE.md`](HOLOSSEUM_REFERENCE.md), which extracted the design levers from the source material's 35 stages (its coined prototypes — the Basin, the Closing Vein, the Sunder, the Open Void — are adopted and named here); this doc turns those levers into a themed roster for the world of [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md). Source basis: the user-supplied Map FAQ / Holosseum lists (35 stages with descriptions and hazard notes). All names original.*
+*Feature-complete revision (2026-07-18): every one of the source material's 35 stages now maps to a named List or a hazard overlay, each with design stats. Builds on [`HOLOSSEUM_REFERENCE.md`](HOLOSSEUM_REFERENCE.md) (design levers; its coined prototypes are adopted here) and the source Map FAQs. All names original.*
 
 ## 1. What the Lists are, in fiction
 
-Duels between armigers are fought in **the Lists**: consecrated dueling grounds, most of them cleared inside ancestral ruins. Some are dead ground. Some are *not* — conveyor lines that never stopped running, defense grids that still cycle, machinery whose purpose died with the old world. The Orders didn't build the hazards; they **ritualized** them. Fighting among the ancestors' still-turning wheels is considered the highest form of the art.
+Duels between armigers are fought in **the Lists**: consecrated dueling grounds, most cleared inside ancestral ruins. Some are dead ground; some are *not* — belt-lines that never stopped, defense grids still cycling, machines walking routes their makers forgot. The Orders didn't build the hazards; they **ritualized** them. Fighting among the ancestors' still-turning wheels is the highest form of the art.
 
-This reframes every "weird mechanical stage" from the source as world-building: a conveyor arena isn't a factory theme, it's *a factory nobody can turn off*.
+## 2. Layouts × overlays
 
-## 2. The roster
+Confirmed by the source's own structure (`HOLOSSEUM_REFERENCE.md` §3.1) and matching our built roll system: a fight = **layout roll × overlay roll**. The source's "Cell" stages (same walls + magma corners) become four named **overlays** rather than separate Lists:
 
-Status: **built** = exists in `ArenaBuilder` today (renamed from its working label); **planned** = designed here, unbuilt; **story** = tied to future narrative content.
+| Overlay | Source basis | Effect |
+|---|---|---|
+| **Emberpools** | the "Cell" stages | Magma pools in the corners; DoT bypasses shields |
+| **Rimefloor** | Ice and Snow / Frozen Field | Ice footing: momentum carries, steering is a slow correction |
+| **Beltworks** | Checkmate Foundry lanes | Conveyor lanes cross the floor |
+| **The Closing Vein** | Magma Ruins | A hazard ring that tightens over the fight — spacious early, knife-range late |
 
-| # | List | Source basis | Core lever | Landmark / hazard | Status |
-|---|---|---|---|---|---|
-| 1 | **The Tiltyard** | Basic Arena | Neutral baseline | Supply-cask cover (destructible crates) | Built (was "Depot") |
-| 2 | **The Broken Colonnade** | High-Rise Plaza | Tall cover vs. low cover | High pillars + low triangular stubs | Built (was "Colonnade") |
-| 3 | **Winterfield** | Ice and Snow / Frozen Field | Footing | Central ice sheet; momentum carries | Built (was "Frostfield") |
-| 4 | **Cinderfield** | Basic Cell | Corner hazards | Three magma pools, DoT bypasses shields | Built |
-| 5 | **The Ancestors' Foundry** | Checkmate Foundry | Conveyors | Belt lanes that never stopped; fighting against the belt makes you a slow target | Planned |
-| 6 | **The Slagrun** | Dead Line / Double Dead Line | Conveyor + fatal edge | Belts feed a molten channel; immobilize/knockdown near the edge is the win condition | Planned |
-| 7 | **Keep of the Rust Cross** | Castle Keep / Castle Citadel | Sprawling walls + one landmark | The central reliquary-shrine wall — "hold the shrine" is the callout | Planned |
-| 8 | **The Closing Vein** | Magma Ruins | Shrinking safe zone | A magma ring that tightens over the fight — spacious early, knife-range late | Planned |
-| 9 | **The Basin** | Chinese Bowl | Sloped terrain | A tilted bowl: downhill is fast and knockback carries; uphill is neither | Planned |
-| 10 | **The Sunder** | Impact Craters | Terrain removal | The floor splits and shifts; gaps can't be crossed | Planned |
-| 11 | **The Hushplain** | No Man's Land | Zero walls | Dead-flat scoured ground; homing and spread weapons change entirely | Planned |
-| 12 | **The Restless Vault** | Panic Cubes / Panic Walls / Scramble Walls | Moving cover | An ancestral defense grid still cycling its blocks/walls on a rhythm you can learn | Planned |
-| 13 | **The Orrery** | Battle Gear Station / Merry-Go-Round | Rotating platforms | A vast astronomical machine; ride the wheels, fire between the spokes | Planned |
-| 14 | **The Drowned Quay** | Loading Dock | Moving platform | A suspended cargo platform that never stopped its route — Drowned Compact home List | Planned |
-| 15 | **The Reliquary Garden** | Flower Garden / Nature Park | Central arch + mixed cover | An overgrown shrine garden; the arch-bridge commands the whole List | Planned |
-| 16 | **The Close** | Sudden Death | Minimum size | The smallest List: no room, no mercy | Planned |
-| 17 | **The Longfield** | Gigantix Sprawl | Maximum size | The largest List: spacing *is* the fight | Planned |
-| 18 | **The Veil** | Dark Star | Perception | Distance and bearing lie here. High-risk per `HOLOSSEUM_REFERENCE.md` §3.5 — endgame/optional only | Planned (flagged) |
-| 19 | **The Cradle** | Lost World | Boss stage | A strange, half-organic chamber; where the Riderless waits | Story |
+Landmark Lists (marked ◆) are exempt from overlays so their identity stays clean. Fight 1 of any Passage stays overlay-free [built rule].
 
-Not carried forward as distinct Lists: the source's "X Cell" magma-corner variants (that's a hazard overlay our layout×hazard roll system already expresses — confirmed by `HOLOSSEUM_REFERENCE.md` §3.1), its lavatory/play-room novelty stages (wrong register for this world), and its practice stage (the hangar's future training mode, not a List).
+## 3. The roster — 21 Lists
 
-## 3. Per-List design notes (planned set)
+Size S/M/L/XL · Walls none/sparse/dense/maze · Motion = moving elements. Status: **built** (in `ArenaBuilder`), **planned**, **story**.
 
-- **The Ancestors' Foundry / The Slagrun** are a pair: Foundry teaches belts safely; Slagrun weaponizes them with a fatal edge. Slagrun is where Sweep/Unhorse tempers and Fetter effects (`ARMORY_REFERENCE.md` §2.6) become build-around tools — port the source's lesson that immobilization near a hazard is the real kill condition.
-- **Keep of the Rust Cross** should be the first List with real doctrine identity: sprawling wall maze rewarding Mangonel/Steeplefall arcs and Vigil traps, punishing straight-line Bombard sightlines.
-- **The Closing Vein** plugs into the hazard-roll slot as a time-scaled radius — the battle-royale pacing lever, cheap to build against the existing lava-DoT code.
-- **The Restless Vault / The Orrery** are the two "learn the machine's rhythm" Lists; each needs exactly one moving system (per `HOLOSSEUM_REFERENCE.md` §4.4) — oscillating blocks for the Vault, one rotating ring for the Orrery.
-- **The Hushplain vs. The Close vs. The Longfield** are pure pacing levers with near-zero build cost — geometry-only variants that triple perceived arena variety early. Recommended as the first planned batch for exactly that reason.
-- **The Veil** stays out of the standard roll pool whenever it's built: it degrades the camera legibility work of §11.5, so it must be opt-in (a challenge modifier or story beat), never a random roll.
-- **The Cradle** ships only with the Riderless (see `SETTING_AND_FACTIONS.md` §Characters).
+| # | List | Source basis | Size | Walls | Motion | Signature | Home | Status |
+|---|---|---|---|---|---|---|---|---|
+| 1 | **The Tiltyard** | Basic Arena | M | sparse | — | Supply-cask cover (destructible); the neutral standard | Circuit | Built (was Depot) |
+| 2 | **The Squires' Yard** | Practice Stage | M | sparse | — | Training List: target frames, forgiving sightlines | Circuit | Planned (training mode) |
+| 3 | **The Thornfield** | Diamond Fences | M | dense | — | Peculiar diamond fence-walls; easy to get cornered | — | Planned |
+| 4 | **The Broken Colonnade** | High-Rise Plaza | M | dense | — | High columns vs. low triangular stubs — two heights of cover | Aureate Legion | Built (was Colonnade) |
+| 5 | **Crevice Court** → **The Shattered Close** | Crevice Court | M | maze | — | Haphazard jagged walls; wild, unpredictable fights | — | Planned |
+| 6 | **The Gallows Ell** | L Formation | M | dense | — | L-shaped walls; every corner is a decision | — | Planned |
+| 7 | **The Ancestors' Foundry** ◆ | Checkmate Foundry | M | sparse | Belts | The factory nobody can stop; fight the belts and lose | Wrightsguild | Planned |
+| 8 | **Keep of the Rust Cross** ◆ | Castle Keep | L | maze | — | Sprawling curtain walls | Rust Cross | Planned |
+| 9 | **The Reliquary Citadel** ◆ | Castle Citadel | M | dense | — | One central shrine-wall that decides the fight ("hold the shrine") | Rust Cross | Planned |
+| 10 | **The Reliquary Garden** ◆ | Flower Garden / Nature Park | M | sparse | Center bridge rises/falls | Overgrown shrine garden; the arch-bridge commands all | Solarian Talon | Planned |
+| 11 | **The Basin** | Chinese Bowl | M | sparse | — | A tilted bowl: downhill is fast, knockback carries far | — | Planned |
+| 12 | **The Cloisters** | Robo's Room | S | maze | — | Cramped monastery corridors; movement itself is the puzzle | — | Planned |
+| 13 | **The Pilgrim Road** ◆ | Little Locomotive | M | sparse | A walking ancestral crawler | The great cargo-crawler still walks its route: moving cover, rideable | Circuit | Planned |
+| 14 | **The Reliquary Round** ◆ | Merry-Go-Round | M | sparse | Rotating procession | Saint-figures rotate the ring; fire between them | Circuit | Planned |
+| 15 | **Cinderfield** | Magma Hole | M | sparse | Sinking center | Center floor sinks to magma underfoot; one tower never sinks | — | Built |
+| 16 | **The Slagrun / Double Slagrun** | Dead Line / Double Dead Line | M | sparse | Belts → melt | Belts feed the melt; a down near the edge is the kill | Kurultai | Planned |
+| 17 | **The Restless Vault** | Panic Cubes / Panic Walls / Scramble Walls | M | dense | Oscillating grid | The defense grid still cycles; learn its rhythm or be crushed against it | — | Planned |
+| 18 | **The Orrery** ◆ | Battle Gear Station | M | sparse | Rotating cog-platforms | The great astronomical machine; ride the wheels | Winter Wing | Planned |
+| 19 | **The Drowned Quay** ◆ | Loading Dock | M | sparse | Suspended platform | The cargo platform never stopped its route | Drowned Compact | Planned |
+| 20 | **The Sunder** | Impact Craters | L | sparse | Floor splits | The ground divides in two, then four; gaps can't be crossed | — | Planned |
+| 21 | **The Close / The Longfield / The Hushplain** | Sudden Death / Gigantix Sprawl / No Man's Land | S / XL / L | sparse / sparse / **none** | — | The three pure pacing levers: smallest, largest, wall-less | — | Planned (geometry-only batch) |
 
-## 4. Fold into the run system
+Story/optional beyond the roll pool: **The Veil** (Dark Star — perception hazard; opt-in only, never randomly rolled, per the §11.5 camera-legibility concern) and **The Cradle** (Lost World — the half-organic boss chamber where the Riderless waits).
 
-Current run rolls pick from the 4 built layouts with fight 1 hazard-free. As planned Lists land, adopt the full layout×hazard matrix the domain code already supports: layout roll (Tiltyard / Colonnade / Keep / Basin / …) × hazard roll (none / magma pools / ice / conveyor / closing vein), with landmark-bearing Lists (Keep, Orrery, Quay) exempt from hazard overlays so their identity stays clean. Fight-1-safe rule stays. Home-List flavor: when a rival's Order has a home List (Winterfield for the Winter Wing, the Drowned Quay for the Compact), bias — don't force — their fight toward it; it makes rivals feel *from somewhere* for one line of code.
+Winterfield (built) = the Tiltyard layout under a full-floor **Rimefloor** overlay and stands as the Winter Wing's snow List; it stays in rotation as-is.
+
+## 4. Design notes
+
+- **Source coverage is complete**: 35 source stages → 21 Lists + 4 overlays + 2 story stages. The "Cell" trio and the ice pair fold into overlays; the three Panic/Scramble stages are difficulty settings of the Restless Vault's one grid system; Basic Arena's hidden "frame-only" variant becomes the Squires' Yard training mode.
+- **The Pilgrim Road and the Reliquary Round** rehabilitate the two "toy" stages by transposing scale: a child's train set becomes a walking ancestral freight-crawler; a carousel becomes a rotating procession of saint-figures. Same mechanics (moving rideable cover; rotating occluders), right register.
+- **The Slagrun doctrine** (from the tournament guide): belt + melt-edge arenas make Fetter/Unhorse/Sweep tempers into kill conditions — a downed harness drifts. This is the List where displacement builds headline.
+- **Corner rule** (`COMBAT_DOCTRINE.md` §3): every List keeps corner escapes expensive but real; the Thornfield is deliberately the worst offender and teaches the lesson.
+- **Home Lists**: when a rival's Order has a home List, bias (don't force) their fight there. Circuit events (`SETTING_AND_FACTIONS.md`) name their venues from this table.
 
 ## 5. Rollout order
 
-1. **Geometry-only batch:** the Close, the Longfield, the Hushplain (three Lists for one afternoon of layout work).
-2. **Landmark batch:** Keep of the Rust Cross, the Reliquary Garden, the Broken Colonnade variants.
-3. **Hazard-mechanics batch:** the Ancestors' Foundry (belts exist as a hazard already — needs lane layout), the Slagrun (belts + fatal edge), the Closing Vein (time-scaled hazard radius).
-4. **Moving-system batch:** the Restless Vault, the Orrery, the Drowned Quay.
-5. **Terrain batch:** the Basin (sloped collider), the Sunder (split-floor system).
-6. **Story/optional:** the Veil, the Cradle.
+1. **Geometry-only batch**: the Close, the Longfield, the Hushplain, the Thornfield, the Gallows Ell (five Lists of pure layout work).
+2. **Landmark batch**: Keep of the Rust Cross, the Reliquary Citadel, the Reliquary Garden, the Shattered Close, the Cloisters.
+3. **Overlay formalization**: Emberpools / Rimefloor / Beltworks as true overlay rolls on any non-◆ layout; the Closing Vein as a time-scaled hazard.
+4. **Hazard-mechanics batch**: the Ancestors' Foundry, the Slagrun(s), Cinderfield's sinking center.
+5. **Moving-system batch**: the Restless Vault, the Orrery, the Drowned Quay, the Pilgrim Road, the Reliquary Round.
+6. **Terrain batch**: the Basin (sloped collider), the Sunder (splitting floor).
+7. **Story/optional**: the Veil, the Cradle; the Squires' Yard with a training mode.

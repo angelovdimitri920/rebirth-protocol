@@ -16,6 +16,12 @@ namespace RebirthProtocol.Domain
             _cooldown -= dt;
         }
 
+        /// Trigger Coil boon: an on-hit proc wipes the remaining cooldown.
+        public void ResetCooldown()
+        {
+            _cooldown = 0f;
+        }
+
         public bool TryFire()
         {
             if (_cooldown > 0f)

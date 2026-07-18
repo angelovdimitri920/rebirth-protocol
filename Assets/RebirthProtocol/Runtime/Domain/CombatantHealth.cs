@@ -43,6 +43,7 @@ namespace RebirthProtocol.Domain
         private readonly HealthTuning _tuning;
         private float _timeSinceHit = float.PositiveInfinity;
         private float _downElapsed;
+        private float _bonusMaxHp;
 
         public CombatantHealth(HealthTuning tuning = null)
         {
@@ -62,7 +63,7 @@ namespace RebirthProtocol.Domain
             State = HealthState.Active;
         }
 
-        public float MaxHp => _tuning.MaxHp;
+        public float MaxHp => _tuning.MaxHp + _bonusMaxHp;
         public float MaxEndurance => _tuning.MaxEndurance;
         public float Hp { get; private set; }
         public float Endurance { get; private set; }
@@ -97,6 +98,50 @@ namespace RebirthProtocol.Domain
             }
 
             return HitResult.Hit;
+        }
+
+        /// Run-layer healing (Leech Node): capped at max, dead stays dead.
+        public void Heal(float amount)
+        {
+            if (State == HealthState.Dead)
+            {
+                return;
+            }
+
+            Hp = MathF.Min(MaxHp, Hp + MathF.Max(0f, amount));
+        }
+
+        /// Run-layer endurance restore (Kinetic Cell / Vampiric Relay):
+        /// capped at max, dead stays dead.
+        public void RestoreEndurance(float amount)
+        {
+            if (State == HealthState.Dead)
+            {
+                return;
+            }
+
+            Endurance = MathF.Min(MaxEndurance, Endurance + MathF.Max(0f, amount));
+        }
+
+        /// Scrap Plating: raises max AND current HP together, so a pickup
+        /// is felt immediately rather than only widening the bar.
+        public void IncreaseMaxHp(float amount)
+        {
+            _bonusMaxHp += MathF.Max(0f, amount);
+            Heal(amount);
+        }
+
+        /// Run-carry override: set HP directly at fight start (carried HP +
+        /// the between-fight heal). Clamped so it can neither kill nor
+        /// overfill.
+        public void SetHp(float value)
+        {
+            if (State == HealthState.Dead)
+            {
+                return;
+            }
+
+            Hp = MathF.Min(MaxHp, MathF.Max(1f, value));
         }
 
         /// Direct endurance drain outside the normal hit pipeline (shield-parry

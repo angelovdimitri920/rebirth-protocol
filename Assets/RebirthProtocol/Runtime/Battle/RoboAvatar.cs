@@ -465,6 +465,18 @@ namespace RebirthProtocol.Battle
             _actionLock = 0.25f;
         }
 
+        /// Shield rig tick: raise/lower per this frame's intent, toll
+        /// countdown, mend. Called by DuelManager right after the brains and
+        /// BEFORE melee resolution, so a same-frame release/melee-start
+        /// lowers the plate before any hit checks read ShieldRaised (Codex
+        /// PR #11 finding: melee must never see last frame's raise state).
+        /// A knockdown mid-raise lowers the shield here too — and that
+        /// lowering starts the toll like any other.
+        public void TickShield(float dt)
+        {
+            Shield?.Tick(dt, Intent.ShieldHeld, Health.State == HealthState.Active);
+        }
+
         // --- Motor: port of Robo.update ---
 
         public void TickMotor(float dt)
@@ -489,11 +501,6 @@ namespace RebirthProtocol.Battle
             }
 
             var downed = Health.State is HealthState.KnockedDown or HealthState.Dead;
-
-            // Shield rig: raise/lower per intent, toll countdown, mend. A
-            // knockdown mid-raise lowers the shield here — and that lowering
-            // starts the toll like any other.
-            Shield?.Tick(dt, Intent.ShieldHeld, Health.State == HealthState.Active);
 
             Boost.Tick(dt);
             if (_actionLock > 0f)

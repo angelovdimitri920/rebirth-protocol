@@ -499,6 +499,11 @@ namespace RebirthProtocol.Battle
                 _enemyBrain.Tick(dt);
             }
 
+            // Shield rigs apply this frame's raise/lower intent BEFORE any
+            // melee resolution, so hit checks never read a stale plate.
+            Player.TickShield(dt);
+            Enemy.TickShield(dt);
+
             CheckMeleeClash();
 
             Player.TickMelee(dt, Enemy);

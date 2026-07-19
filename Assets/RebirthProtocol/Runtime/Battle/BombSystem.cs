@@ -235,7 +235,8 @@ namespace RebirthProtocol.Battle
                     var result = robo.ReceiveHit(
                         (part.Damage * _owner.Stats.AtkMult + (effects?.FlatDamageBonus() ?? 0f)) * scale,
                         part.EnduranceDamage * scale,
-                        toRobo.sqrMagnitude > 0.0001f ? toRobo.normalized : Vector3.forward);
+                        toRobo.sqrMagnitude > 0.0001f ? toRobo.normalized : Vector3.forward,
+                        isBlast: true); // AoE: the Quiet Bell's muffle reads this
                     if (effects != null && robo != _owner
                         && result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
                     {

@@ -143,9 +143,12 @@ namespace RebirthProtocol.Battle
                 MashPressed = thrustPressed,
                 FiringGun = firing,
                 ShieldHeld = shieldHeld,
-                LeftArmActive = shieldHeld || _bomb.Aiming,
+                // Only a bomb mid-aim roots via LeftArmActive; the shield
+                // roots through the rig's actual raised state, so holding
+                // through the toll leaves you free to move.
+                LeftArmActive = _bomb.Aiming,
                 // Free facing: face movement normally, square up while attacking.
-                HasFaceYaw = (firing || meleeBusy || shieldHeld || _bomb.Aiming) && enemyAlive && toEnemy.sqrMagnitude > 0.0001f,
+                HasFaceYaw = (firing || meleeBusy || _avatar.ShieldRaised || _bomb.Aiming) && enemyAlive && toEnemy.sqrMagnitude > 0.0001f,
                 FaceYaw = Mathf.Atan2(toEnemy.x, toEnemy.z),
                 HasDashHoming = enemyAlive,
                 DashHomingPoint = _enemy.Position

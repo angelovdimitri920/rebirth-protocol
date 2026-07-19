@@ -108,6 +108,23 @@ namespace RebirthProtocol.Domain
         public float ReticuleRange; // clamp for Target, fixed distance for Self
     }
 
+    // Raise behaviors (ARMORY_REFERENCE §2.3, §7): what raising the shield
+    // does to your movement. Ground and air are independent axes — every
+    // shield has a ground behavior; most have no special air behavior
+    // (raising midair just halts horizontal drift and you fall normally).
+    public enum ShieldGroundRaise
+    {
+        Root, // halt in place while raised (the default)
+        March // walk at MarchSpeedMult while raised (Targe only)
+    }
+
+    public enum ShieldAirRaise
+    {
+        None, // halt horizontal drift, fall normally
+        Hold, // halt AND hover: gravity suspended while raised
+        Drop  // slam straight to the ground
+    }
+
     public sealed class ShieldPart
     {
         public string Id;
@@ -119,6 +136,11 @@ namespace RebirthProtocol.Domain
         public float FrontBlockPercent;
         public float BackBlockPercent;
         public float MeleeParryEnduranceDamage;
+        public float TollSeconds; // cooldown started on lower/break (§7 TOLL)
+        public ShieldGroundRaise GroundRaise;
+        public ShieldAirRaise AirRaise;
+        public float MarchSpeedMult; // ground speed while raised, March only
+        public float BlastMuffleSeconds; // Quiet Bell: all-sides blast guard window after raising
     }
 
     public sealed class PodPart
@@ -222,10 +244,15 @@ namespace RebirthProtocol.Domain
             new BombPart { Id = "quake", Name = "Anathema Charge", Blurb = "The great condemnation: huge blast, heavy endurance crush, long rearm. Fixed just ahead of you -- close-range, high commitment.", Damage = 120f, EnduranceDamage = 70f, Cooldown = 9f, BlastRadius = 4.5f, ArcHeight = 6.5f, ReticuleAnchor = ReticuleAnchor.Self, ReticuleRange = 4f }
         };
 
+        // Shield toll/raise data per ARMORY_REFERENCE §7 (GUARD front/back,
+        // SOAK = ShieldHp, MEND = RegenPerSec, TOLL, RIPOSTE = parry drain).
         public static readonly ShieldPart[] Shields =
         {
-            new ShieldPart { Id = "aegis", Name = "Ward Veil", Blurb = "Light energy veil: fast regen, blocks ~75% up front, ~25% behind. Hold to raise -- rooted while up.", ShieldHp = 180f, RegenPerSec = 25f, RegenDelay = 2.0f, FrontBlockPercent = 0.75f, BackBlockPercent = 0.25f, MeleeParryEnduranceDamage = 20f },
-            new ShieldPart { Id = "bastion", Name = "Pavise", Blurb = "The great standing wall-shield: bigger buffer, blocks ~92% up front, recharges slowly. Hold to raise -- rooted while up.", ShieldHp = 260f, RegenPerSec = 6f, RegenDelay = 3.5f, FrontBlockPercent = 0.92f, BackBlockPercent = 0.4f, MeleeParryEnduranceDamage = 32f }
+            new ShieldPart { Id = "aegis", Name = "Ward Veil", Blurb = "Light energy veil: fast mend, blocks ~75% up front, ~25% behind. Raised midair it holds you hovering -- the flier's shield.", ShieldHp = 180f, RegenPerSec = 25f, RegenDelay = 2.0f, FrontBlockPercent = 0.75f, BackBlockPercent = 0.25f, MeleeParryEnduranceDamage = 20f, TollSeconds = 2.5f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.Hold },
+            new ShieldPart { Id = "bastion", Name = "Pavise", Blurb = "The great standing wall-shield: bigger buffer, blocks ~92% up front, mends slowly, long toll. Raised midair it slams you to the ground.", ShieldHp = 260f, RegenPerSec = 6f, RegenDelay = 3.5f, FrontBlockPercent = 0.92f, BackBlockPercent = 0.4f, MeleeParryEnduranceDamage = 32f, TollSeconds = 6f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.Drop },
+            new ShieldPart { Id = "targe", Name = "Targe", Blurb = "The only shield you can advance behind: march at 40% speed while raised. Thin plate, quick mend, the shortest toll.", ShieldHp = 110f, RegenPerSec = 30f, RegenDelay = 1.5f, FrontBlockPercent = 0.60f, BackBlockPercent = 0.15f, MeleeParryEnduranceDamage = 16f, TollSeconds = 1.5f, GroundRaise = ShieldGroundRaise.March, AirRaise = ShieldAirRaise.None, MarchSpeedMult = 0.4f },
+            new ShieldPart { Id = "kite-ward", Name = "Kite Ward", Blurb = "The knight's standard; balanced in every line. Hold to raise -- rooted while up.", ShieldHp = 200f, RegenPerSec = 14f, RegenDelay = 2.5f, FrontBlockPercent = 0.80f, BackBlockPercent = 0.30f, MeleeParryEnduranceDamage = 24f, TollSeconds = 3.5f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.None },
+            new ShieldPart { Id = "quiet-bell", Name = "Quiet Bell", Blurb = "A dome of hush: for a breath after raising, blasts and through-wall harm are met with the full guard from every side.", ShieldHp = 150f, RegenPerSec = 16f, RegenDelay = 2.5f, FrontBlockPercent = 0.65f, BackBlockPercent = 0.35f, MeleeParryEnduranceDamage = 18f, TollSeconds = 4f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.None, BlastMuffleSeconds = 1.5f }
         };
 
         public static readonly PodPart[] Pods =

@@ -111,10 +111,17 @@ namespace RebirthProtocol.Battle
                 _shieldTimer -= dt;
                 if (_shieldTimer <= 0f)
                 {
-                    _shieldEngaged = !_shieldEngaged;
-                    _shieldTimer = _shieldEngaged
-                        ? 1.0f + NextFloat() // hold it up for a beat
-                        : 0.6f + NextFloat() * 0.8f; // then rest -- rooted isn't free
+                    if (!_shieldEngaged && !_avatar.ShieldReady)
+                    {
+                        _shieldTimer = 0.3f; // toll still running: check back shortly
+                    }
+                    else
+                    {
+                        _shieldEngaged = !_shieldEngaged;
+                        _shieldTimer = _shieldEngaged
+                            ? 1.0f + NextFloat() // hold it up for a beat
+                            : 0.6f + NextFloat() * 0.8f; // then rest -- the toll makes lowering a commitment
+                    }
                 }
 
                 shieldHeld = _shieldEngaged && dist < 10f && !_avatar.Melee.Busy
@@ -158,7 +165,8 @@ namespace RebirthProtocol.Battle
                 MashPressed = NextFloat() < 8f * dt, // ~8 mash/s
                 FiringGun = gunFiring,
                 ShieldHeld = shieldHeld,
-                LeftArmActive = shieldHeld || _bombAiming,
+                LeftArmActive = _bombAiming, // shields root via the rig's raised state
+
                 HasFaceYaw = true,
                 FaceYaw = Mathf.Atan2(dirToPlayer.x, dirToPlayer.z),
                 HasDashHoming = playerAlive,

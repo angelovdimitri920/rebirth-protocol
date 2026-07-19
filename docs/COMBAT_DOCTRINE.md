@@ -111,11 +111,13 @@ The canonical controller layout **[built]** (keyboard is a 1:1 mirror; controlle
 | Left stick | Move / steer aim while holding pod or bomb | WASD |
 | A | Jump/hover · mash to recover · **double-tap airborne = air dash** · (planned) mash to unfurl at the Casting | Space |
 | X | Dash · **(directive) grounded X with lock = the garniture's charge attack** | Shift |
-| B | Right arm: gun (held) / melee (pressed) | LMB / RMB |
+| B | Right arm: gun (held) / melee (pressed) | J |
 | RT | Left arm: bomb (hold to aim, release to throw) / shield (held) | Q |
 | LT | Pod: deploy/recall; hold + stick steers launch heading | E |
-| Y | Lock-on / switch targets (real in Ordeal/Melee/Shieldbrother modes) | Tab |
-| Start | Pause | P |
+| Y | Lock-on / switch targets (real in Ordeal/Melee/Shieldbrother modes) | L |
+| RB | Lock-on / switch targets (Y duplicate — the thumb never leaves the right stick) | — |
+| LB | Dash (X duplicate) — **provisionally earmarked as the dedicated charge-attack trigger when Pass C lands**, if doubling dash doesn't earn its keep | — |
+| Start | Pause menu (resume / customization / title / quit) | P |
 
 **Source-verb coverage audit** — every control concept in the source FAQs, and where it lives here: joystick move ✓ · jump & air-dash ✓ (A, double-tap) · fire gun / use melee ✓ (B, one button per the arm mutex) · fire bomb / use shield ✓ (RT) · fire pod ✓ (LT, no-vulnerability rule kept) · switch targets ✓ (Y — a duel no-op until multi-foe modes) · **collision/charge** — the one unbound source verb; **directive: grounded X while locked performs the charge** (charges are ground-only in the source, so air X stays dash; implement with the charge pass) · aimed bomb (hold + stick, sitting-duck rule) ✓ · slide shot ✓ (fire-while-moving momentum) · short-jump fire ✓ (tap-A + B — needs a tuning check when arcing weapons land) · jump height by hold ✓ · mash to rise ✓ · Casting mash [planned] · pause/help/rules screens [hub UI, planned with the shell].
 

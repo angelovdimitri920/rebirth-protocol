@@ -15,7 +15,10 @@ namespace RebirthProtocol.Battle
     //   Y           = lock-on / switch targets
     //   LT          = pod (toggle; hold to steer its launch heading)
     //   RT          = LEFT ARM: bomb (hold-to-aim / release-to-throw) OR shield (held)
-    //   Start       = pause / rematch (handled in DuelManager)
+    //   RB          = lock-on / switch targets (Y duplicate — thumb stays on the stick)
+    //   LB          = dash (X duplicate; earmarked for the garniture charge
+    //                 attack when Pass C lands, DOCTRINE §11)
+    //   Start       = pause menu (handled in DuelManager)
     // Keyboard is kept as a 1:1 mirror so the game is playable and testable
     // without a pad (WASD move, Space/LShift/J/L/E/Q), but the controller
     // layout above is the canonical scheme.
@@ -63,13 +66,17 @@ namespace RebirthProtocol.Battle
             // A = jump/hover/mash.
             var thrustHeld = (keyboard?.spaceKey.isPressed ?? false) || (gamepad?.buttonSouth.isPressed ?? false);
             var thrustPressed = (keyboard?.spaceKey.wasPressedThisFrame ?? false) || (gamepad?.buttonSouth.wasPressedThisFrame ?? false);
-            // X = dash.
-            var dashPressed = (keyboard?.leftShiftKey.wasPressedThisFrame ?? false) || (gamepad?.buttonWest.wasPressedThisFrame ?? false);
+            // X = dash (LB duplicates it, so a claw grip never leaves the stick).
+            var dashPressed = (keyboard?.leftShiftKey.wasPressedThisFrame ?? false)
+                || (gamepad?.buttonWest.wasPressedThisFrame ?? false)
+                || (gamepad?.leftShoulder.wasPressedThisFrame ?? false);
             // B = right arm: held drives gun fire, pressed edge-triggers melee.
             var rightArmHeld = (keyboard?.jKey.isPressed ?? false) || (gamepad?.buttonEast.isPressed ?? false);
             var rightArmPressed = (keyboard?.jKey.wasPressedThisFrame ?? false) || (gamepad?.buttonEast.wasPressedThisFrame ?? false);
-            // Y = lock-on / switch targets.
-            var lockPressed = (keyboard?.lKey.wasPressedThisFrame ?? false) || (gamepad?.buttonNorth.wasPressedThisFrame ?? false);
+            // Y = lock-on / switch targets (RB duplicates it).
+            var lockPressed = (keyboard?.lKey.wasPressedThisFrame ?? false)
+                || (gamepad?.buttonNorth.wasPressedThisFrame ?? false)
+                || (gamepad?.rightShoulder.wasPressedThisFrame ?? false);
             // RT = left arm: bomb aim / shield hold.
             var leftArmHeld = (keyboard?.qKey.isPressed ?? false) || (gamepad?.rightTrigger.isPressed ?? false);
             // LT = pod: toggle on press, steer while held.

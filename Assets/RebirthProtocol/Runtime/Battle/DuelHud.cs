@@ -39,6 +39,7 @@ namespace RebirthProtocol.Battle
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvasGo.AddComponent<CanvasScaler>();
+            _canvasRoot = canvasGo;
 
             // Player panel, bottom-left (stacked upward).
             var y = 36f;
@@ -74,10 +75,10 @@ namespace RebirthProtocol.Battle
             Label(canvasGo.transform, new Vector2(0f, 0f), new Vector2(24f, y + 26f), TextAnchor.LowerLeft, DescribeLoadout(player.Loadout));
             Label(canvasGo.transform, new Vector2(1f, 1f), new Vector2(-344f, -104f), TextAnchor.UpperLeft, DescribeLoadout(enemy.Loadout));
 
-            // Controller legend, bottom-right — shown while a gamepad is
-            // connected (keyboard bindings live in the hangar footer).
-            _padLegend = Label(canvasGo.transform, new Vector2(1f, 0f), new Vector2(-24f, 24f), TextAnchor.LowerRight,
-                "<size=14><color=#99a>A jump · X dash · B gun/melee · Y lock-on · RT bomb/shield · LT pod · Start pause</color></size>");
+            // Controller legend, bottom-right — opaque panel with a drawn
+            // Xbox pad, shown while a gamepad is connected (keyboard
+            // bindings live in the hangar footer).
+            _padLegend = ControllerLegend.Build(canvasGo.transform);
 
             // Arena layout name + run progress, top-center.
             Label(canvasGo.transform, new Vector2(0.5f, 1f), new Vector2(0f, -16f), TextAnchor.UpperCenter,
@@ -113,8 +114,16 @@ namespace RebirthProtocol.Battle
             return $"<size=14><color=#99a>{l.Body.Name} · {rightArm} · {leftArm} · {l.Legs.Name} · {l.Pod.Name}</color></size>";
         }
 
-        private Text _padLegend;
+        private GameObject _canvasRoot;
+        private GameObject _padLegend;
         private Text _buildStrip;
+
+        /// Hidden while the title card or hangar is up — combat chrome
+        /// bleeding through their dims read as clutter (uxshot pass).
+        public void Show(bool visible)
+        {
+            _canvasRoot.SetActive(visible);
+        }
         private Text _toast;
         private float _toastTimer;
 
@@ -194,7 +203,11 @@ namespace RebirthProtocol.Battle
                 UpdateShieldBar(_enemyShieldFill, _enemy);
             }
 
-            _padLegend.enabled = UnityEngine.InputSystem.Gamepad.current != null;
+            var padConnected = UnityEngine.InputSystem.Gamepad.current != null;
+            if (_padLegend.activeSelf != padConnected)
+            {
+                _padLegend.SetActive(padConnected);
+            }
 
             // Run build strip: boons by name, items by name × stack.
             var effects = _duel.Effects;
@@ -241,7 +254,7 @@ namespace RebirthProtocol.Battle
             }
             else if (_duel.Paused)
             {
-                _banner.text = "PAUSED\n<size=22>P / Start — resume</size>";
+                _banner.text = ""; // the pause MENU owns this state now
             }
             else if (_player.Health.State == HealthState.KnockedDown)
             {

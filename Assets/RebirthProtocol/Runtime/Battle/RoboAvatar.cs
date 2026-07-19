@@ -124,6 +124,10 @@ namespace RebirthProtocol.Battle
             _projectiles = projectiles;
             _facing = spawnFacing;
             Health = new CombatantHealth(new HealthTuning { MaxHp = Stats.MaxHp });
+            // The overload rule (COMBAT_DOCTRINE §4.3): the moment this robo
+            // goes down — endurance break or guard break, any damage source —
+            // its own gun rounds still in flight are wiped.
+            Health.KnockedDown += () => _projectiles.ClearGunRoundsOwnedBy(this);
             Boost = new BoostGauge();
             Gun = new GunCycle(loadout.HasGun ? loadout.Gun.FireInterval : 0.38f);
             Melee = new MeleeAction(loadout.HasMelee ? loadout.Melee.ToTuning() : null);
@@ -277,7 +281,8 @@ namespace RebirthProtocol.Battle
                 * (Effects?.GunDamageMult(Boost.Value) ?? 1f);
             _projectiles.Spawn(this, targetAlive ? target : null, muzzle, aim,
                 damage, part.EnduranceDamage, part.ProjectileSpeed,
-                targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun);
+                targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun,
+                part.SurvivesKnockdown);
         }
 
         // --- Melee ---

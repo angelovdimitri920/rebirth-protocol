@@ -74,6 +74,12 @@ namespace RebirthProtocol.Domain
 
         public bool CanAct => State == HealthState.Active;
 
+        /// Fired the instant the harness enters KnockedDown, whatever the
+        /// cause (endurance emptying, guard break). The overload rule
+        /// (COMBAT_DOCTRINE §4.3) listens here to wipe the downed pilot's
+        /// in-flight gun rounds. Death is not a knockdown — no event.
+        public event Action KnockedDown;
+
         public HitResult TakeHit(float damage, float enduranceDamage)
         {
             if (State != HealthState.Active)
@@ -172,6 +178,7 @@ namespace RebirthProtocol.Domain
             State = HealthState.KnockedDown;
             StateTimer = _tuning.KnockdownDuration;
             _downElapsed = 0f;
+            KnockedDown?.Invoke();
         }
 
         /// Mash press while downed: shaves recovery time, floored so total

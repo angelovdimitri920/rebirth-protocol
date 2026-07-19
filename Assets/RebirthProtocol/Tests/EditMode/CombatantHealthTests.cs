@@ -224,5 +224,51 @@ namespace RebirthProtocol.Tests.EditMode
             health.ForceKnockdown();
             Assert.That(health.StateTimer, Is.EqualTo(timerBefore), "no timer reset while already down");
         }
+
+        // The overload rule (COMBAT_DOCTRINE §4.3) hangs off this event: it
+        // must fire once per fall, from every path into KnockedDown, and
+        // never for lesser hits or death.
+
+        [Test]
+        public void KnockedDownEventFiresWhenAHitEmptiesEndurance()
+        {
+            var health = new CombatantHealth(Tuning());
+            var fired = 0;
+            health.KnockedDown += () => fired++;
+
+            health.TakeHit(10f, 100f);
+            Assert.That(fired, Is.EqualTo(0), "an ordinary hit is not a knockdown");
+
+            health.TakeHit(10f, 100f);
+            Assert.That(fired, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void KnockedDownEventFiresOnDrainAndForceButNotWhileAlreadyDown()
+        {
+            var health = new CombatantHealth(Tuning());
+            var fired = 0;
+            health.KnockedDown += () => fired++;
+
+            health.DrainEndurance(200f);
+            Assert.That(fired, Is.EqualTo(1), "drain-emptied endurance is a knockdown");
+
+            health.ForceKnockdown();
+            health.TakeHit(10f, 100f);
+            Assert.That(fired, Is.EqualTo(1), "no re-fire while already down");
+        }
+
+        [Test]
+        public void KnockedDownEventDoesNotFireOnDeath()
+        {
+            var health = new CombatantHealth(Tuning());
+            var fired = 0;
+            health.KnockedDown += () => fired++;
+
+            var result = health.TakeHit(1000f, 1000f);
+
+            Assert.That(result, Is.EqualTo(HitResult.Killed));
+            Assert.That(fired, Is.EqualTo(0), "death is not a knockdown — no overload wipe on a kill");
+        }
     }
 }

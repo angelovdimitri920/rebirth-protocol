@@ -21,6 +21,7 @@ namespace RebirthProtocol.Battle
             public float EnduranceDamage;
             public float HomingTurnRate;
             public HitSource Source;
+            public bool SurvivesKnockdown;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
@@ -28,7 +29,7 @@ namespace RebirthProtocol.Battle
 
         public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
             float damage, float enduranceDamage, float speed, float homingTurnRate,
-            HitSource source = HitSource.None)
+            HitSource source = HitSource.None, bool survivesKnockdown = false)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             Destroy(go.GetComponent<Collider>());
@@ -49,7 +50,8 @@ namespace RebirthProtocol.Battle
                 Damage = damage,
                 EnduranceDamage = enduranceDamage,
                 HomingTurnRate = homingTurnRate,
-                Source = source
+                Source = source,
+                SurvivesKnockdown = survivesKnockdown
             });
         }
 
@@ -178,6 +180,44 @@ namespace RebirthProtocol.Battle
             {
                 effects.OnKnockdown();
             }
+        }
+
+        /// The overload rule (COMBAT_DOCTRINE §4.3): a knockdown wipes the
+        /// downed pilot's own gun rounds still in flight. Only gunfire —
+        /// bomb and pod shots stay live — and rounds flagged
+        /// SurvivesKnockdown (the scrapwright exemption) ride it out.
+        /// This can fire reentrantly from inside Tick (a projectile hit
+        /// causes the knockdown mid-loop), so wiped rounds are only marked
+        /// dead and hidden here; the cull at the top of each Tick step
+        /// removes them before they can move or land a hit.
+        public void ClearGunRoundsOwnedBy(RoboAvatar owner)
+        {
+            foreach (var p in _active)
+            {
+                if (p.Owner != owner || p.Source != HitSource.Gun || p.SurvivesKnockdown || p.Life <= 0f)
+                {
+                    continue;
+                }
+
+                p.Life = 0f;
+                p.Tf.gameObject.SetActive(false);
+                GameEffects.Fx?.ImpactSpark(p.Tf.position, Vector3.up, new Color(0.7f, 0.85f, 1f));
+            }
+        }
+
+        /// Rounds still live (not wiped) for this owner and source.
+        public int CountLiveRounds(RoboAvatar owner, HitSource source)
+        {
+            var count = 0;
+            foreach (var p in _active)
+            {
+                if (p.Owner == owner && p.Source == source && p.Life > 0f)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         /// Remove every live shot — combatant respawns must not leave

@@ -42,9 +42,9 @@ Every gun leaves its wielder briefly rooted after firing [built: fire-slide/air-
 ### 4.2 Combos [source, adopted]
 The canonical kill pattern: **displace, then punish** — a bomb or pod temper (Hoist/Sweep/Fetter) moves or holds the victim, the gun or blade collects. Aimed bombs + simultaneous gun fire ("two shots that look like one") is advanced form. Tempers exist to make displacement composable (`ARMORY_REFERENCE.md` §2.5).
 
-### 4.3 The overload rule [source, to adopt]
+### 4.3 The overload rule [source, adopted]
 When a harness is knocked down, **its gun rounds still in flight are wiped** — a "system overload." Consequences the source demonstrates: slow buildup weapons (Evenfall, Thornswarm, Alembic) are *counter-punishable* by downing the wielder before the volley lands; guaranteed-knockdown tempers (Unhorse) do **not** trigger overload — only gunfire does, so K-bombs down without clearing the sky. This asymmetry is deliberate and worth porting exactly. **Scrapwright exception** [directed by tier design]: Matchlock rounds survive their wielder's knockdown — dependability made mechanical.
-**[divergence]** Our sim doesn't yet wipe projectiles on knockdown; adopt with the rule above.
+**[built 2026-07-19, Pass B2]** Entering knockdown from any cause — endurance break or guard break, whatever the damage source — wipes the downed pilot's own gun rounds (`HitSource.Gun`); bomb and pod shots stay live, and the opponent's sky is untouched. `GunPart.SurvivesKnockdown` carries the scrapwright exemption; no built gun sets it until Matchlock lands (Pass P). The Unhorse asymmetry needs no code today: only what is *wiped* is filtered (gunfire), not what *causes* the fall — a K-bomb downing you still clears your gun rounds but never its own kind, which is the ported behavior.
 
 ### 4.4 Aimed bombs [built + source nuance]
 Holding the bomb opens the reticule and roots you (air: halts you) — you are a sitting target while aiming [built]. Source nuances to keep: different bombs *want* different aim times (Palisade demands placement; Censer barely needs any); a skilled hand aims in half a second; aiming is also *defense* (placing a blast on your own retreat line).

@@ -60,5 +60,18 @@ namespace RebirthProtocol.Tests.EditMode
             Assert.That(vanish.Duration, Is.LessThan(normal.Duration), "vanish is the shortest dash");
             Assert.That(longDash.Duration, Is.GreaterThan(normal.Duration), "long dash commits hardest");
         }
+
+        [Test]
+        public void NoBuiltGunIsExemptFromTheOverloadRule()
+        {
+            // The SurvivesKnockdown exemption is reserved for the scrapwright
+            // line (DOCTRINE §4.3 — Matchlock, Pass P). Until then every gun's
+            // in-flight rounds must be wiped by its wielder's knockdown.
+            foreach (var gun in PartsCatalog.Guns)
+            {
+                Assert.That(gun.SurvivesKnockdown, Is.False,
+                    $"{gun.Name} must not claim the scrapwright exemption");
+            }
+        }
     }
 }

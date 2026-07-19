@@ -60,6 +60,12 @@ namespace RebirthProtocol.Domain
             public const float MinFlightTime = 0.5f;
         }
 
+        // Shared shield mechanics (per-part guard/toll numbers in PartsCatalog).
+        public static class Shield
+        {
+            public const float AirDropSpeed = -30f; // Air-drop raise: slam velocity toward the ground
+        }
+
         public static class Pod
         {
             public const float HoverHeight = 2.4f;

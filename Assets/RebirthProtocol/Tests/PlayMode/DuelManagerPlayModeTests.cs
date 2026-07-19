@@ -170,7 +170,12 @@ namespace RebirthProtocol.Tests.PlayMode
                 yield return null;
 
                 var player = duel.Player;
-                player.Intent = new RoboIntent { ShieldHeld = true, LeftArmActive = true };
+                player.Intent = new RoboIntent { ShieldHeld = true };
+
+                // One frame so the ShieldRig raises on the motor tick —
+                // raised state lives in the rig now, not the raw intent.
+                yield return null;
+                Assert.That(player.ShieldRaised, Is.True);
 
                 // Player spawns facing +x toward the enemy; an attack
                 // traveling -x hits the front arc.
@@ -188,6 +193,8 @@ namespace RebirthProtocol.Tests.PlayMode
                 Assert.That(result, Is.EqualTo(ReceiveResult.GuardBreak));
                 Assert.That(player.ShieldHp, Is.Zero);
                 Assert.That(player.Health.State, Is.EqualTo(HealthState.KnockedDown));
+                Assert.That(player.Shield.TollRemaining, Is.EqualTo(player.Loadout.Shield.TollSeconds),
+                    "the break starts the shield's toll (ARMORY §2.3)");
             }
             finally
             {

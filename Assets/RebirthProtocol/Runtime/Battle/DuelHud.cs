@@ -179,7 +179,7 @@ namespace RebirthProtocol.Battle
             SetFill(_playerPodFill, _playerPod.Energy / _player.Loadout.Pod.EnergyMax);
             if (_playerShieldFill != null)
             {
-                SetFill(_playerShieldFill, _player.ShieldHp / _player.Loadout.Shield.ShieldHp);
+                UpdateShieldBar(_playerShieldFill, _player);
             }
 
             if (_playerBombFill != null)
@@ -191,7 +191,7 @@ namespace RebirthProtocol.Battle
             SetFill(_enemyEnduranceFill, _enemy.Health.Endurance / _enemy.Health.MaxEndurance);
             if (_enemyShieldFill != null)
             {
-                SetFill(_enemyShieldFill, _enemy.ShieldHp / _enemy.Loadout.Shield.ShieldHp);
+                UpdateShieldBar(_enemyShieldFill, _enemy);
             }
 
             _padLegend.enabled = UnityEngine.InputSystem.Gamepad.current != null;
@@ -250,6 +250,26 @@ namespace RebirthProtocol.Battle
             else
             {
                 _banner.text = "";
+            }
+        }
+
+        /// Shield bar doubles as the toll gauge, mirroring the bomb rearm
+        /// bar: while the toll runs, the fill turns amber and refills over
+        /// the toll duration; otherwise it shows shield HP in cyan.
+        private static void UpdateShieldBar(Transform fill, RoboAvatar robo)
+        {
+            var rig = robo.Shield;
+            var part = robo.Loadout.Shield;
+            var image = fill.GetComponent<Image>();
+            if (rig.TollRemaining > 0f)
+            {
+                image.color = new Color(1f, 0.55f, 0.2f); // matches the bomb rearm bar
+                SetFill(fill, 1f - Mathf.Clamp01(rig.TollRemaining / part.TollSeconds));
+            }
+            else
+            {
+                image.color = new Color(0.6f, 0.95f, 1f);
+                SetFill(fill, rig.Hp / part.ShieldHp);
             }
         }
 

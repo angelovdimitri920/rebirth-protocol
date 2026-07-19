@@ -32,7 +32,7 @@ Carried from v1, with two new systems:
 
 1. **Arm pairings** (built): right arm gun XOR melee; left arm bomb XOR shield. Four doctrines — gun/bomb, gun/shield, melee/bomb, melee/shield — all must stay viable, hence counterpart parity throughout this doc.
 2. **Air-dash cap** (applied): no relic body grants more than 2 air dashes; extra dashes come from legs only. Hushforged bodies may break this.
-3. **Shield toll + raise behavior** (to build): lowering/breaking a shield starts its toll; raise behaviors are Root / March / Air-hold / Air-drop (§8).
+3. **Shield toll + raise behavior** (built, Pass B): lowering/breaking a shield starts its toll; raise behaviors are Root / March / Air-hold / Air-drop (§7).
 4. **Damage formula** (built): weapon MIGHT × attacker offense mult × defender ward mult. Offense mults cluster (95–105%, Hushforged outliers to 150%); ward mults spread (85–138%). Per-garniture ward mults are in §4.
 5. **Tempers v2** (to build): the source's 11 blast letters distill into **six directions plus one modifier**. Direction: **Sunder** (diagonal launch — default), **Sweep** (hard sideways), **Hoist** (straight up), **Hook** (pull toward owner), **Fetter** (stun in place), **Unhorse** (guaranteed knockdown). Modifier: **Branded** (the blast lingers as a standing blaze). A bomb/pod entry lists which tempers it may be fitted with; Branded may combine with Sunder/Sweep/Hoist.
 6. **Burden & Fitting** (future system): every part has a Burden cost; every chassis a Fitting limit. Relic parts are moderate, Hushforged heavy, scrapwright near-zero. This is the mechanical home of "scrapwright is much easier to fit" and a future build-constraint lever — flagged, not scheduled.
@@ -282,13 +282,13 @@ Every bomb shape has its shield counterpart (§6, last column). GUARD = front bl
 |---|---|---|---|---|---|---|---|
 | **Ward Veil** *(built)* | 75/25% | 180 | 25/s | 2.5 | 20 | Air-hold | Light energy veil; the flier's shield |
 | **Pavise** *(built)* | 92/40% | 260 | 6/s | 6 | 32 | Root, Air-drop | The great standing wall-shield |
-| **Targe** | 60/15% | 110 | 30/s | 1.5 | 16 | **March** (40% walk) | The only shield you can advance behind |
-| **Kite Ward** | 80/30% | 200 | 14/s | 3.5 | 24 | Root | The knight's standard; balanced in every line |
+| **Targe** *(built)* | 60/15% | 110 | 30/s | 1.5 | 16 | **March** (40% walk) | The only shield you can advance behind |
+| **Kite Ward** *(built)* | 80/30% | 200 | 14/s | 3.5 | 24 | Root | The knight's standard; balanced in every line |
 | **Argent Mirror** | 70/20% | 140 | 18/s | 5 | 28 | Root | The first 0.25 s of the raise *reflects* projectiles |
 | **Bastille** | 85/35% | 220 | 10/s | 5 | 40 | Root, Air-drop | The bash specialist — its riposte is an attack |
 | **Cenotaph** | 95/50% | 420 | 0 (per-fight) | — | 30 | Root, Air-drop | The tomb-marker: vast, unmending; broken is broken until the next List |
 | **Pallium** | 55/**55%** | 160 | 20/s | 3 | 18 | Air-hold | The mantle: uniquely strong *behind* — the kiter's cloak |
-| **Quiet Bell** | 65/35% | 150 | 16/s | 4 | 18 | Root | A dome of hush: briefly muffles blasts and through-wall harm from all sides |
+| **Quiet Bell** *(built)* | 65/35% | 150 | 16/s | 4 | 18 | Root | A dome of hush: briefly muffles blasts and through-wall harm from all sides |
 | **Caltrop Ward** | 70/25% | 170 | 15/s | 4 | 20 | Root | Struck, it scatters caltrops at your feet — chasing you costs |
 | **Hoarfrost Ward** | 70/25% | 170 | 15/s | 4 | 22 | Root | Melee against it leaves the attacker rimed and slowed |
 | **Canopy Ward** | 65/25% (**90% above**) | 180 | 14/s | 4 | 20 | Root | An angled roof-plate: the answer to steeplefall and stoop |
@@ -382,8 +382,8 @@ Volley/multi-projectile · shield toll + raise behaviors + March/plant/reflect/b
 
 ## 12. Rollout passes (revised)
 
-- **A (done):** naming canon + renames + dash cap. **A2 (this pass):** feature-complete roster + doctrine doc.
-- **B:** shield toll/raise on built shields; Targe, Kite Ward, Quiet Bell. **C:** volley tech → Trefoil, Palisade, Pincer, Longglaive, Hydra Flail. **D:** Fetter → Fetterlock, Rime, Winterwatch, Knell Maul, Tocsin Mace, Hoarfrost Ward. **E:** pulls/piercing → Grapnel, Hookbill, Estoc, Auger, Sawtooth Espadon. **F:** scaling/delay → Pilgrim, Tilt Lance, Courser Saber, Vigil, Penitent Flail, Beacon, Crowbeak Pick. **G:** trajectory suite → Mangonel, Evenfall, Skysword, Steeplefall, Oxbow, Oubliette(s), Falconet, Volant Falx. **H:** remaining guns/melee pairs + shields (Argent Mirror, Bastille, Cenotaph, Pallium, Echo, Springald, Cheval, Testudo, Thorn, Canopy, Caltrop). **I:** pod suite + legs wave + garnitures + charges + Casting. **J:** scrapwright line (Plowshare through Cartwright) + dependability perks. **K:** the three planned chassis + Harrier + Cockatrice. **L:** tempers + Branded. **M:** Hushforged tier (own design pass: drawbacks first).
+- **A (done):** naming canon + renames + dash cap. **A2 (done):** feature-complete roster + doctrine doc.
+- **B (done, 2026-07-18):** shield toll/raise on built shields; Targe, Kite Ward, Quiet Bell (`GAME_DESIGN.md` §27). **C:** volley tech → Trefoil, Palisade, Pincer, Longglaive, Hydra Flail. **D:** Fetter → Fetterlock, Rime, Winterwatch, Knell Maul, Tocsin Mace, Hoarfrost Ward. **E:** pulls/piercing → Grapnel, Hookbill, Estoc, Auger, Sawtooth Espadon. **F:** scaling/delay → Pilgrim, Tilt Lance, Courser Saber, Vigil, Penitent Flail, Beacon, Crowbeak Pick. **G:** trajectory suite → Mangonel, Evenfall, Skysword, Steeplefall, Oxbow, Oubliette(s), Falconet, Volant Falx. **H:** remaining guns/melee pairs + shields (Argent Mirror, Bastille, Cenotaph, Pallium, Echo, Springald, Cheval, Testudo, Thorn, Canopy, Caltrop). **I:** pod suite + legs wave + garnitures + charges + Casting. **J:** scrapwright line (Plowshare through Cartwright) + dependability perks. **K:** the three planned chassis + Harrier + Cockatrice. **L:** tempers + Branded. **M:** Hushforged tier (own design pass: drawbacks first).
 
 Each pass: EditMode tests for domain logic, built-player smoke check, and a `GAME_DESIGN.md` log entry.
 

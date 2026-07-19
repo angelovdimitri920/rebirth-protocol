@@ -155,11 +155,21 @@ namespace RebirthProtocol.Battle
         {
             if (loadout.HasShield)
             {
-                var isBastion = loadout.Shield.Id == "bastion";
-                var plate = Add(root, PrimitiveType.Cube,
-                    new Vector3(-0.68f, 0.1f, 0.15f),
-                    isBastion ? new Vector3(0.14f, 0.85f, 0.7f) : new Vector3(0.06f, 0.7f, 0.55f),
-                    isBastion ? joint : accent);
+                // One readable silhouette per pattern; the plate transform
+                // is what RoboAvatar animates on raise.
+                var plate = loadout.Shield.Id switch
+                {
+                    "bastion" => Add(root, PrimitiveType.Cube, new Vector3(-0.68f, 0.1f, 0.15f),
+                        new Vector3(0.14f, 0.85f, 0.7f), joint), // the great slab
+                    "targe" => Add(root, PrimitiveType.Cylinder, new Vector3(-0.68f, 0.1f, 0.15f),
+                        new Vector3(0.42f, 0.03f, 0.42f), accent, new Vector3(0f, 0f, 90f)), // small round buckler
+                    "kite-ward" => Add(root, PrimitiveType.Cube, new Vector3(-0.68f, 0.0f, 0.15f),
+                        new Vector3(0.08f, 0.9f, 0.45f), hull), // tall knightly kite
+                    "quiet-bell" => Add(root, PrimitiveType.Sphere, new Vector3(-0.68f, 0.1f, 0.15f),
+                        new Vector3(0.3f, 0.62f, 0.5f), accent), // the bell's dome
+                    _ => Add(root, PrimitiveType.Cube, new Vector3(-0.68f, 0.1f, 0.15f),
+                        new Vector3(0.06f, 0.7f, 0.55f), accent) // aegis: light veil plate
+                };
                 return plate.transform;
             }
 

@@ -11,11 +11,16 @@ namespace RebirthProtocol.Battle
         public bool ThrustHeld;
         public bool DashRequested;
         public bool MashPressed;
-        public bool FiringGun;
-        public bool ShieldHeld; // only meaningful with a shield left arm
 
-        /// Shield held or a bomb being aimed: hard-halts all horizontal
-        /// momentum (even mid-air) and blocks dashing entirely.
+        /// Desire to raise the shield (only meaningful with a shield left
+        /// arm). Whether it actually comes up is the ShieldRig's call — the
+        /// toll gates it (ARMORY_REFERENCE §2.3).
+        public bool ShieldHeld;
+        public bool FiringGun;
+
+        /// A bomb being aimed: hard-halts all horizontal momentum (even
+        /// mid-air) and blocks dashing entirely. A raised shield roots via
+        /// ShieldRaised instead, so a hold during the toll costs nothing.
         public bool LeftArmActive;
         public bool HasFaceYaw;
         public float FaceYaw;
@@ -66,9 +71,13 @@ namespace RebirthProtocol.Battle
         /// mirrors the prototype's per-robo WeakMap cooldown).
         public float LavaSoundCooldown;
 
-        // Shield state (§3.2: engaged-only, regenerating, breaks into knockdown).
-        public float ShieldHp { get; private set; }
-        private float _shieldHitTimer = float.PositiveInfinity;
+        // Shield state (§3.2 + ARMORY §2.3): engaged-only, regenerating,
+        // breaks into knockdown, tolls on lower/break. Null without a shield
+        // left arm.
+        public ShieldRig Shield { get; private set; }
+        public float ShieldHp => Shield?.Hp ?? 0f;
+        public bool ShieldRaised => Shield != null && Shield.Raised;
+        public bool ShieldReady => Shield != null && Shield.Ready;
 
         private CharacterController _cc;
         private ProjectileSystem _projectiles;
@@ -118,7 +127,7 @@ namespace RebirthProtocol.Battle
             Boost = new BoostGauge();
             Gun = new GunCycle(loadout.HasGun ? loadout.Gun.FireInterval : 0.38f);
             Melee = new MeleeAction(loadout.HasMelee ? loadout.Melee.ToTuning() : null);
-            ShieldHp = loadout.HasShield ? loadout.Shield.ShieldHp : 0f;
+            Shield = loadout.HasShield ? new ShieldRig(loadout.Shield) : null;
 
             _cc = gameObject.AddComponent<CharacterController>();
             _cc.height = 2f;
@@ -139,9 +148,10 @@ namespace RebirthProtocol.Battle
 
         /// All incoming damage routes through here so the shield can
         /// intercept. fromDir: attack's direction of travel (attacker ->
-        /// victim). Port of Robo.ts::receiveHit.
+        /// victim). isBlast marks AoE/through-wall damage (bomb blasts) for
+        /// the Quiet Bell's all-sides muffle. Port of Robo.ts::receiveHit.
         public ReceiveResult ReceiveHit(float damage, float enduranceDamage, Vector3 fromDir,
-            float shieldDamageMult = 1f)
+            float shieldDamageMult = 1f, bool isBlast = false)
         {
             if (Intangible)
             {
@@ -155,20 +165,20 @@ namespace RebirthProtocol.Battle
 
             var scaledDamage = damage * Stats.DefMult;
 
-            // Shield (§3.2): must be actively engaged to block at all. Even
-            // engaged, block is never 100% (chip always lands), and a hit
-            // from behind blocks far less than one from the front.
-            if (Loadout.HasShield && Intent.ShieldHeld && ShieldHp > 0f)
+            // Shield (§3.2): must be actively RAISED to block at all — the
+            // rig owns that state, so a held input during the toll blocks
+            // nothing. Even raised, block is never 100% (chip always lands),
+            // and a hit from behind blocks far less than one from the front.
+            if (ShieldRaised)
             {
-                var shield = Loadout.Shield;
                 var incoming = -new Vector3(fromDir.x, 0f, fromDir.z).normalized;
                 var isFront = Vector3.Angle(FacingDir, incoming) <= 90f;
-                var blockPercent = isFront ? shield.FrontBlockPercent : shield.BackBlockPercent;
+                var blockPercent = Shield.BlockPercent(isFront, isBlast);
 
                 var chipResult = Health.TakeHit(
                     scaledDamage * (1f - blockPercent),
                     enduranceDamage * (1f - blockPercent));
-                _shieldHitTimer = 0f;
+                Shield.NotifyBlockedHit();
 
                 if (chipResult is HitResult.Killed or HitResult.Knockdown)
                 {
@@ -186,12 +196,11 @@ namespace RebirthProtocol.Battle
 
                 // Guard Crusher boon: multiplies only how fast the shield's
                 // own pool drains, never the chip that gets through.
-                ShieldHp -= scaledDamage * blockPercent * shieldDamageMult;
-                if (ShieldHp <= 0f)
+                if (Shield.Drain(scaledDamage * blockPercent * shieldDamageMult))
                 {
                     // Guard break feeds the existing knockdown state -- no
-                    // second free defense stacked on rebirth (§3.2).
-                    ShieldHp = 0f;
+                    // second free defense stacked on rebirth (§3.2). The
+                    // break also started the shield's toll.
                     Health.ForceKnockdown();
                     GameAudio.Sfx?.GuardBreak(Position);
                     GameEffects.Fx?.ImpactSpark(Center + FacingDir, incoming, new Color(1f, 0.85f, 0.4f), 0.3f);
@@ -424,10 +433,12 @@ namespace RebirthProtocol.Battle
                 }
             }
 
-            // Shield parry (§3.2): a melee hit blocked by an ENGAGED shield
-            // drains the attacker's own endurance.
+            // Shield parry (§3.2): a melee hit blocked by a RAISED shield
+            // drains the attacker's own endurance. (A GuardBreak result
+            // means the shield was raised at contact even though the rig
+            // has already forced it down by now.)
             if (result is ReceiveResult.Shielded or ReceiveResult.GuardBreak
-                && target.Loadout.HasShield && target.Intent.ShieldHeld)
+                && target.Loadout.HasShield)
             {
                 var wasActive = Health.State == HealthState.Active;
                 Health.DrainEndurance(target.Loadout.Shield.MeleeParryEnduranceDamage);
@@ -479,16 +490,10 @@ namespace RebirthProtocol.Battle
 
             var downed = Health.State is HealthState.KnockedDown or HealthState.Dead;
 
-            // Shield regen: stops while recently hit, never mid-knockdown.
-            _shieldHitTimer += dt;
-            if (Loadout.HasShield)
-            {
-                var shield = Loadout.Shield;
-                if (Health.State == HealthState.Active && _shieldHitTimer > shield.RegenDelay && ShieldHp < shield.ShieldHp)
-                {
-                    ShieldHp = Mathf.Min(shield.ShieldHp, ShieldHp + shield.RegenPerSec * dt);
-                }
-            }
+            // Shield rig: raise/lower per intent, toll countdown, mend. A
+            // knockdown mid-raise lowers the shield here — and that lowering
+            // starts the toll like any other.
+            Shield?.Tick(dt, Intent.ShieldHeld, Health.State == HealthState.Active);
 
             Boost.Tick(dt);
             if (_actionLock > 0f)
@@ -530,13 +535,27 @@ namespace RebirthProtocol.Battle
                 _velocity.x = horiz.x;
                 _velocity.z = horiz.z;
             }
-            else if (Intent.LeftArmActive)
+            else if (Intent.LeftArmActive || ShieldRaised)
             {
-                // Bomb aiming / shield engaged: instantly halts all
-                // horizontal momentum, even mid-air. Rooted and vulnerable.
-                _velocity.x = 0f;
-                _velocity.z = 0f;
-                horiz = Vector3.zero;
+                // Left arm committed: bomb aiming or shield raised. The
+                // default (Root, and every bomb) instantly halts all
+                // horizontal momentum, even mid-air — rooted and vulnerable.
+                // Targe's March raise (ARMORY §7) instead walks at a
+                // fraction of run speed while the shield is up.
+                var shield = ShieldRaised ? Loadout.Shield : null;
+                if (shield != null && Grounded && shield.GroundRaise == ShieldGroundRaise.March)
+                {
+                    var desired = Intent.MoveDir * (Stats.RunSpeed * shield.MarchSpeedMult);
+                    _velocity.x = desired.x;
+                    _velocity.z = desired.z;
+                    horiz = desired;
+                }
+                else
+                {
+                    _velocity.x = 0f;
+                    _velocity.z = 0f;
+                    horiz = Vector3.zero;
+                }
             }
             else if (Grounded)
             {
@@ -604,7 +623,7 @@ namespace RebirthProtocol.Battle
 
             _wasOverheated = Boost.Overheated;
 
-            if (canBoost && Intent.DashRequested && _dashTimer <= 0f && !Intent.LeftArmActive
+            if (canBoost && Intent.DashRequested && _dashTimer <= 0f && !Intent.LeftArmActive && !ShieldRaised
                 && Boost.TrySpendAirDash(_dashProfile.Cost * (Effects?.DashCostMult() ?? 1f), Stats.DashCount))
             {
                 _dashDir = Intent.MoveDir.sqrMagnitude > 0.01f ? Intent.MoveDir.normalized : FacingDir;
@@ -621,13 +640,26 @@ namespace RebirthProtocol.Battle
                 }
             }
 
-            // --- Gravity ---
+            // --- Gravity (and the shield's air raise behaviors, §2.3) ---
             if (_dashTimer <= 0f && !_externalMove.HasValue)
             {
-                _velocity.y += CombatTuning.Move.Gravity * dt;
-                if (Grounded && _velocity.y < 0f)
+                if (ShieldRaised && !Grounded && Loadout.Shield.AirRaise == ShieldAirRaise.Hold)
                 {
-                    _velocity.y = -2f; // stick to the ground
+                    _velocity.y = 0f; // Air-hold: raising midair hovers you
+                }
+                else
+                {
+                    if (ShieldRaised && !Grounded && Loadout.Shield.AirRaise == ShieldAirRaise.Drop)
+                    {
+                        // Air-drop: raising midair slams you groundward.
+                        _velocity.y = Mathf.Min(_velocity.y, CombatTuning.Shield.AirDropSpeed);
+                    }
+
+                    _velocity.y += CombatTuning.Move.Gravity * dt;
+                    if (Grounded && _velocity.y < 0f)
+                    {
+                        _velocity.y = -2f; // stick to the ground
+                    }
                 }
             }
 
@@ -716,11 +748,12 @@ namespace RebirthProtocol.Battle
 
             _blade.gameObject.SetActive(Melee.Phase == MeleePhase.Swing);
 
-            // Shield raise: plate swings forward while held so the opponent
-            // can read the block state at a glance.
+            // Shield raise: plate swings forward while actually raised so
+            // the opponent can read the block state at a glance (a hold
+            // during the toll shows nothing — the shield really is down).
             if (_shieldPlate != null)
             {
-                var raised = Intent.ShieldHeld && Health.State == HealthState.Active;
+                var raised = ShieldRaised;
                 var targetPos = raised ? new Vector3(0f, 0.1f, 0.75f) : _shieldRestPos;
                 var targetRot = raised ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.identity;
                 var t = Mathf.Min(1f, 14f * dt);

@@ -20,7 +20,7 @@ Ordered so infrastructure precedes content, and every content wave lands on a va
 | # | Task | Scope | Canon spec |
 |---|---|---|---|
 | **B** | ~~Shield toll & raise behaviors~~ **done** — [PR #11](https://github.com/angelovdimitri920/rebirth-protocol/pull/11) | ~~`ShieldPart` toll + Root/March/Air-hold/Air-drop; toll UI like the bomb's; new shields **Targe, Kite Ward, Quiet Bell**~~ | ARMORY §2.3–2.4, §7 |
-| **B2** | Overload rule | Knockdown wipes the downed pilot's in-flight gun rounds; groundwork flag for the scrapwright exemption | DOCTRINE §4.3 |
+| **B2** | ~~Overload rule~~ **done** — [PR #13](https://github.com/angelovdimitri920/rebirth-protocol/pull/13) | ~~Knockdown wipes the downed pilot's in-flight gun rounds; groundwork flag for the scrapwright exemption~~ | DOCTRINE §4.3 |
 | **C** | Charge attacks | Grounded X + lock = garniture charge; per-body charge data; i-frames during, vulnerability around; the 4 built bodies | DOCTRINE §4.5, §11; ARMORY §3 |
 | **D** ⚑ | **Balance harness** | Headless seeded AI-vs-AI batch runner; 4×4 school matchup matrix; win-rate/TTK/knockdown reports with 40–60% and 60–120 s flags. Build **before** the content waves — it is the balance CI for all of them | DOCTRINE §13 |
 | **E** | Volley capability | Multi-projectile/spread → **Trefoil, Palisade, Pincer Charge, Longglaive, Hydra Flail** | ARMORY §4–§7 |

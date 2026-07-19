@@ -111,10 +111,10 @@ The canonical controller layout **[built]** (keyboard is a 1:1 mirror; controlle
 | Left stick | Move / steer aim while holding pod or bomb | WASD |
 | A | Jump/hover · mash to recover · **double-tap airborne = air dash** · (planned) mash to unfurl at the Casting | Space |
 | X | Dash · **(directive) grounded X with lock = the garniture's charge attack** | Shift |
-| B | Right arm: gun (held) / melee (pressed) | LMB / RMB |
+| B | Right arm: gun (held) / melee (pressed) | J |
 | RT | Left arm: bomb (hold to aim, release to throw) / shield (held) | Q |
 | LT | Pod: deploy/recall; hold + stick steers launch heading | E |
-| Y | Lock-on / switch targets (real in Ordeal/Melee/Shieldbrother modes) | Tab |
+| Y | Lock-on / switch targets (real in Ordeal/Melee/Shieldbrother modes) | L |
 | RB | Lock-on / switch targets (Y duplicate — the thumb never leaves the right stick) | — |
 | LB | Dash (X duplicate) — **provisionally earmarked as the dedicated charge-attack trigger when Pass C lands**, if doubling dash doesn't earn its keep | — |
 | Start | Pause menu (resume / customization / title / quit) | P |

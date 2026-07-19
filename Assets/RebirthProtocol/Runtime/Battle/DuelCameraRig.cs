@@ -16,6 +16,7 @@ namespace RebirthProtocol.Battle
         private RoboAvatar _enemy;
         private float _yaw;
         private Vector3 _position;
+        private Vector3 _lookAt; // smoothed aim point — raw fighter positions never steer the lens directly
         private float _orthoSize;
         private float _shake;
         private float _shakeTime;
@@ -40,13 +41,21 @@ namespace RebirthProtocol.Battle
             _camera.orthographicSize = _orthoSize;
 
             _yaw = DesiredYaw(_yaw);
+            _lookAt = LookAtPoint();
             _position = TargetPosition();
             Apply();
         }
 
         public void Tick(float dt)
         {
-            _yaw = DampAngle(_yaw, DesiredYaw(_yaw), CombatTuning.Camera.RotateLerp, dt);
+            // Slow-and-deliberate rule: every input to the lens is smoothed
+            // — the aim point, the yaw (with a hard deg/sec cap), the dolly,
+            // and the zoom each glide at their own rate. Dashes and
+            // knockbacks must read on the fighters, never on the frame.
+            _yaw = DampAngle(_yaw, DesiredYaw(_yaw), CombatTuning.Camera.RotateLerp,
+                CombatTuning.Camera.MaxYawSpeedDeg * Mathf.Deg2Rad, dt);
+
+            _lookAt = Vector3.Lerp(_lookAt, LookAtPoint(), Mathf.Min(1f, CombatTuning.Camera.LookAtLerp * dt));
 
             var followT = Mathf.Min(1f, CombatTuning.Camera.FollowLerp * dt);
             _position = Vector3.Lerp(_position, TargetPosition(), followT);
@@ -54,7 +63,7 @@ namespace RebirthProtocol.Battle
             var separation = Vector3.Distance(_player.Position, _enemy.Position);
             var zoomT = Mathf.Clamp01((separation - CombatTuning.Camera.ZoomStartDistance) / CombatTuning.Camera.ZoomRange);
             var targetSize = CombatTuning.Camera.FrustumSize * 0.5f * (1f + CombatTuning.Camera.ZoomMax * zoomT);
-            _orthoSize = Mathf.Lerp(_orthoSize, targetSize, followT);
+            _orthoSize = Mathf.Lerp(_orthoSize, targetSize, Mathf.Min(1f, CombatTuning.Camera.ZoomLerp * dt));
 
             _shake = Mathf.Max(0f, _shake - dt * 2.5f);
             _shakeTime += dt;
@@ -90,9 +99,10 @@ namespace RebirthProtocol.Battle
 
         private Vector3 TargetPosition()
         {
-            var lookAt = LookAtPoint();
+            // Dolly chases the SMOOTHED aim point, so position and rotation
+            // glide together instead of fighting.
             var back = new Vector3(Mathf.Sin(_yaw), 0f, Mathf.Cos(_yaw)) * CombatTuning.Camera.Back;
-            return lookAt - back + Vector3.up * CombatTuning.Camera.Height;
+            return _lookAt - back + Vector3.up * CombatTuning.Camera.Height;
         }
 
         private void Apply()
@@ -112,14 +122,18 @@ namespace RebirthProtocol.Battle
             }
 
             _camera.transform.position = _position + offset;
-            _camera.transform.rotation = Quaternion.LookRotation(LookAtPoint() - _position);
+            _camera.transform.rotation = Quaternion.LookRotation(_lookAt - _position);
             _camera.orthographicSize = _orthoSize;
         }
 
-        private static float DampAngle(float from, float to, float rate, float dt)
+        /// Proportional damping with a hard angular-speed ceiling: big
+        /// errors (fighters crossing) turn at maxSpeed, never faster.
+        private static float DampAngle(float from, float to, float rate, float maxSpeed, float dt)
         {
             var diff = Mathf.DeltaAngle(from * Mathf.Rad2Deg, to * Mathf.Rad2Deg) * Mathf.Deg2Rad;
-            return from + diff * Mathf.Min(1f, rate * dt);
+            var step = diff * Mathf.Min(1f, rate * dt);
+            var cap = maxSpeed * dt;
+            return from + Mathf.Clamp(step, -cap, cap);
         }
     }
 }

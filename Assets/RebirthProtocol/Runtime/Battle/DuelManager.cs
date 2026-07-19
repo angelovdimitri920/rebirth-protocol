@@ -25,6 +25,15 @@ namespace RebirthProtocol.Battle
         public bool IsOver { get; private set; }
         public bool PlayerWon { get; private set; }
 
+        /// True while the boot title card is up (before the hangar). Cleared
+        /// by PRESS START, CloseHangar(), or a return-to-hangar reload.
+        public bool InTitle { get; private set; }
+
+        /// One-shot flag across a scene reload: land in the hangar instead
+        /// of the title card (victory/defeat "return to hangar" and the
+        /// pause menu's customization option).
+        private static bool _skipTitleOnce;
+
         /// True while the pre-run hangar (loadout select) is open: the
         /// simulation is held until the player deploys.
         public bool InHangar { get; private set; } = true;
@@ -78,6 +87,8 @@ namespace RebirthProtocol.Battle
         private DuelCameraRig _cameraRig;
         private DuelHud _hud;
         private HangarScreen _hangar;
+        private TitleScreen _title;
+        private PauseMenu _pauseMenu;
         private BombSystem _playerBomb;
         private BombSystem _enemyBomb;
         private PodSystem _playerPod;
@@ -153,6 +164,21 @@ namespace RebirthProtocol.Battle
             _hangar.transform.SetParent(transform, false);
             _hangar.Init(LoadoutStore.Load(), OnDeploy);
 
+            _title = new GameObject("Title").AddComponent<TitleScreen>();
+            _title.transform.SetParent(transform, false);
+            _title.Init(LeaveTitle);
+
+            _pauseMenu = new GameObject("Pause Menu").AddComponent<PauseMenu>();
+            _pauseMenu.transform.SetParent(transform, false);
+            _pauseMenu.Init(OnPauseMenuPick);
+
+            // Boot lands on the title card unless a reload asked to skip
+            // straight to the hangar.
+            InTitle = !_skipTitleOnce;
+            _skipTitleOnce = false;
+            _title.Show(InTitle);
+            _hangar.Show(!InTitle);
+
             // Automated smoke tests: boot straight into combat.
             if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-autodeploy") >= 0)
             {
@@ -160,13 +186,51 @@ namespace RebirthProtocol.Battle
             }
         }
 
+        /// PRESS START on the title card: hand off to the hangar.
+        private void LeaveTitle()
+        {
+            InTitle = false;
+            _title.Show(false);
+            _hangar.Show(true);
+        }
+
         /// Close the hangar without changing the spawned loadout (PlayMode
-        /// tests, and any future skip-straight-to-fight flow).
+        /// tests, and any future skip-straight-to-fight flow). Also clears
+        /// the title card so tests and -autodeploy land straight in combat.
         public void CloseHangar()
         {
+            InTitle = false;
+            _title.Show(false);
             InHangar = false;
             _hangar.Show(false);
+            _hud.Show(true);
             _music.Play(MusicMode.Combat);
+        }
+
+        private void OnPauseMenuPick(int option)
+        {
+            switch (option)
+            {
+                case PauseMenu.OptionResume:
+                    Paused = false;
+                    _pauseMenu.Show(false);
+                    break;
+                case PauseMenu.OptionCustomization:
+                    _skipTitleOnce = true;
+                    ReloadScene();
+                    break;
+                case PauseMenu.OptionTitle:
+                    ReloadScene();
+                    break;
+                case PauseMenu.OptionQuit:
+                    Application.Quit();
+                    break;
+            }
+        }
+
+        private void ReloadScene()
+        {
+            SceneManager.LoadScene(gameObject.scene.buildIndex >= 0 ? gameObject.scene.buildIndex : 0);
         }
 
         private void OnDeploy(Loadout playerLoadout)
@@ -302,6 +366,7 @@ namespace RebirthProtocol.Battle
             _hud = new GameObject("HUD").AddComponent<DuelHud>();
             _hud.transform.SetParent(transform, false);
             _hud.Init(Player, Enemy, this, _playerBomb, _playerPod);
+            _hud.Show(!InTitle && !InHangar); // combat chrome stays off under the title/hangar
 
             // Lock-on reticle: a diamond over the enemy, red while they can
             // be damaged, grey while downed/rebirthing (invulnerable).
@@ -443,6 +508,21 @@ namespace RebirthProtocol.Battle
 
         private void Update()
         {
+            if (InTitle)
+            {
+                _title.Tick();
+                if (InTitle)
+                {
+                    // Same close-up the hangar uses: the title's turning
+                    // harness sits on the same dais.
+                    _cameraRig.transform.position = new Vector3(0f, 2.4f, 5.2f);
+                    _cameraRig.transform.rotation = Quaternion.LookRotation(new Vector3(0f, 1.3f, 0f) - _cameraRig.transform.position);
+                    _cameraRig.GetComponent<Camera>().orthographic = false;
+                }
+
+                return;
+            }
+
             if (InHangar)
             {
                 _hangar.Tick();
@@ -472,12 +552,18 @@ namespace RebirthProtocol.Battle
             if (!IsOver && PausePressed())
             {
                 Paused = !Paused;
+                _pauseMenu.Show(Paused);
                 GameAudio.Sfx?.UiClick();
             }
 
             if (Paused)
             {
-                _hud.Tick(); // banner shows PAUSED
+                _pauseMenu.Tick(); // may resume or reload via OnPauseMenuPick
+                if (Paused)
+                {
+                    _hud.Tick();
+                }
+
                 return;
             }
 
@@ -489,7 +575,9 @@ namespace RebirthProtocol.Battle
 
             if (IsOver && RestartPressed())
             {
-                SceneManager.LoadScene(gameObject.scene.buildIndex >= 0 ? gameObject.scene.buildIndex : 0);
+                // "Return to hangar": skip the title card on this reload.
+                _skipTitleOnce = true;
+                ReloadScene();
                 return;
             }
 

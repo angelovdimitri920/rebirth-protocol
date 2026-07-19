@@ -85,17 +85,23 @@ namespace RebirthProtocol.Domain
             public const float DecisionInterval = 1.2f;
         }
 
+        // Slow-and-deliberate doctrine (user playtest 2026-07-18): the rig
+        // smooths its look-at point, caps yaw speed, and glides position and
+        // zoom — the fight moves fast, the eye watching it must not.
         public static class Camera
         {
             public const float Height = 16f;
             public const float Back = 16f;
             public const float TargetBias = 0.4f;
-            public const float FollowLerp = 8f;
-            public const float RotateLerp = 2.5f;
+            public const float FollowLerp = 3f;
+            public const float LookAtLerp = 3.5f; // smoothing on the aim point itself
+            public const float RotateLerp = 1.1f;
+            public const float MaxYawSpeedDeg = 45f; // hard cap, degrees/sec
             public const float FrustumSize = 20f;
-            public const float ZoomStartDistance = 12f;
+            public const float ZoomStartDistance = 10f; // zoom out a little earlier: slow response must never lose a fighter
             public const float ZoomRange = 16f;
             public const float ZoomMax = 0.7f;
+            public const float ZoomLerp = 2f;
         }
     }
 }

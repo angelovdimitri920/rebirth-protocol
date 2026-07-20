@@ -5,19 +5,20 @@ using UnityEngine.InputSystem;
 
 namespace RebirthProtocol.Battle
 {
-    // Controller-first input, on the settled Three.js control scheme
-    // (DESIGN_HANDOFF §5, prototype §12):
+    // Controller-first input (user-directed mapping — pod on B, right arm on
+    // RT, left arm on LT; this supersedes the older Three.js handoff scheme
+    // that put the right arm on B and the pod on LT):
     //   Left stick  = move
     //   A           = jump/hover (double-tap airborne = air-dash), mash while down
     //   X           = dash airborne; grounded (lock is always-on in a duel)
     //                 it performs the garniture's charge attack instead
     //                 (DOCTRINE §11 directive — charges are ground-only, so
     //                 air X stays dash; ground dash retires from X)
-    //   B           = RIGHT ARM: gun (held to fire) OR melee (pressed) — one
-    //                 physical button, whichever the loadout equips
+    //   RT          = RIGHT ARM: gun (held to fire) OR melee (pressed) — one
+    //                 physical trigger, whichever the loadout equips
     //   Y           = lock-on / switch targets
-    //   LT          = pod (toggle; hold to steer its launch heading)
-    //   RT          = LEFT ARM: bomb (hold-to-aim / release-to-throw) OR shield (held)
+    //   B           = pod (toggle; hold to steer its launch heading)
+    //   LT          = LEFT ARM: bomb (hold-to-aim / release-to-throw) OR shield (held)
     //   RB          = lock-on / switch targets (Y duplicate — thumb stays on the stick)
     //   LB          = dash (X duplicate; earmarked for the garniture charge
     //                 attack when Pass C lands, DOCTRINE §11)
@@ -73,18 +74,18 @@ namespace RebirthProtocol.Battle
             var dashPressed = (keyboard?.leftShiftKey.wasPressedThisFrame ?? false)
                 || (gamepad?.buttonWest.wasPressedThisFrame ?? false)
                 || (gamepad?.leftShoulder.wasPressedThisFrame ?? false);
-            // B = right arm: held drives gun fire, pressed edge-triggers melee.
-            var rightArmHeld = (keyboard?.jKey.isPressed ?? false) || (gamepad?.buttonEast.isPressed ?? false);
-            var rightArmPressed = (keyboard?.jKey.wasPressedThisFrame ?? false) || (gamepad?.buttonEast.wasPressedThisFrame ?? false);
+            // RT = right arm: held drives gun fire, pressed edge-triggers melee.
+            var rightArmHeld = (keyboard?.jKey.isPressed ?? false) || (gamepad?.rightTrigger.isPressed ?? false);
+            var rightArmPressed = (keyboard?.jKey.wasPressedThisFrame ?? false) || (gamepad?.rightTrigger.wasPressedThisFrame ?? false);
             // Y = lock-on / switch targets (RB duplicates it).
             var lockPressed = (keyboard?.lKey.wasPressedThisFrame ?? false)
                 || (gamepad?.buttonNorth.wasPressedThisFrame ?? false)
                 || (gamepad?.rightShoulder.wasPressedThisFrame ?? false);
-            // RT = left arm: bomb aim / shield hold.
-            var leftArmHeld = (keyboard?.qKey.isPressed ?? false) || (gamepad?.rightTrigger.isPressed ?? false);
-            // LT = pod: toggle on press, steer while held.
-            var podPressed = (keyboard?.eKey.wasPressedThisFrame ?? false) || (gamepad?.leftTrigger.wasPressedThisFrame ?? false);
-            var podHeld = (keyboard?.eKey.isPressed ?? false) || (gamepad?.leftTrigger.isPressed ?? false);
+            // LT = left arm: bomb aim / shield hold.
+            var leftArmHeld = (keyboard?.qKey.isPressed ?? false) || (gamepad?.leftTrigger.isPressed ?? false);
+            // B = pod: toggle on press, steer while held.
+            var podPressed = (keyboard?.eKey.wasPressedThisFrame ?? false) || (gamepad?.buttonEast.wasPressedThisFrame ?? false);
+            var podHeld = (keyboard?.eKey.isPressed ?? false) || (gamepad?.buttonEast.isPressed ?? false);
 
             // Double-tap A while airborne: alternate trigger for the SAME
             // dash system X uses (prototype §11 — not a separate mechanic).
@@ -126,7 +127,7 @@ namespace RebirthProtocol.Battle
                 dashPressed = false;
             }
 
-            // Left arm (RT): shield is a plain hold; bomb is hold-to-aim,
+            // Left arm (LT): shield is a plain hold; bomb is hold-to-aim,
             // release-to-throw. Both are suppressed while melee or the
             // charge is busy (matching the prototype's !melee.busy gate) —
             // no shielding, parrying, or aiming mid-commitment. A charge
@@ -160,7 +161,7 @@ namespace RebirthProtocol.Battle
                 }
             }
 
-            // Right arm (B): gun fires while held; melee is edge-triggered.
+            // Right arm (RT): gun fires while held; melee is edge-triggered.
             var firing = rightArmHeld && _avatar.Loadout.HasGun && !actionBusy;
 
             _avatar.Intent = new RoboIntent
@@ -206,7 +207,7 @@ namespace RebirthProtocol.Battle
                 _bomb.SteerAim(worldMove, dt);
             }
 
-            // Melee on the same B button (edge-triggered): swing, or chain
+            // Melee on the same right-arm trigger (RT, edge-triggered): swing, or chain
             // the string if already mid-melee. Suppressed by a same-frame
             // charge request — otherwise melee fires synchronously right
             // here, sets the action lock, and silently steals the frame

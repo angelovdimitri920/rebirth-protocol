@@ -550,3 +550,22 @@ Third implementation rung of the task ladder (`TASK_LADDER.md`), porting COMBAT_
 - **Telegraphs on the cheap**: windup leans the harness 18° forward (the read), the strike 30° (the ram), recovery snaps upright (the exposed beat); thrust SFX on windup, dash SFX per strike launch, melee-hit SFX on contact. No `RoboVisual` changes (Codex's asset work is in flight there).
 
 Verification: compile, EditMode **77/77** (9 new: `ChargeActionTests` ×8, an armory-row canary pinning all four bodies' kinds/no-guard/vulnerability-windows), PlayMode **18/18** (4 new in `ChargePlayModeTests.cs`: connect-with-i-frames, whiff-into-rooted-vulnerable-recovery, air-refusal + knockdown-cancels-windup, the rising strike climbs), dev build + 35 s `-autodeploy` GPU run with a clean log. **Feel not yet playtested** (no gamepad in the dev environment): tuning numbers above are starting values.
+
+## 32. Control Scheme Correction: Pod→B, Right Arm→RT, Left Arm→LT (2026-07-20)
+
+User-directed remap of the controller layout, applied to the game and every canonical controls reference. The scheme is now, definitively:
+
+| Input | Action |
+|---|---|
+| Left stick | Move / steer aim while holding pod or bomb |
+| A | Jump / hover · double-tap airborne = air-dash · mash to recover |
+| X | Dash (airborne) · grounded = garniture charge attack |
+| Y | Lock-on / switch to nearest target |
+| **B** | **Pod: deploy/recall; hold + stick steers launch heading** |
+| **RT** | **Right arm: gun (held to fire) / melee (pressed)** |
+| **LT** | **Left arm: bomb (hold to aim, release to throw) / shield (held)** |
+| Start | Pause menu |
+
+RB/LB remain harmless duplicates of Y/X (kept for thumb-on-stick comfort; not otherwise used). Keyboard mirror is unchanged (J = right arm, Q = left arm, E = pod, Space = jump, Shift = dash, L = lock-on, P = pause) — the remap is controller-only, and the keyboard keys simply follow their action to the newly-assigned controller buttons in the legend.
+
+This supersedes the earlier layout described in the parity-pass and Three.js-handoff logs (which put the right arm on B, the left arm on RT, and the pod on LT). Changed in `PlayerBrain.cs` (the actual bindings + header), `ControllerLegend.cs` (the on-screen legend rows), `COMBAT_DOCTRINE.md` §11 (the canonical controls table + verb audit), and `DESIGN_HANDOFF_FROM_THREEJS.md`. **Controller feel is unverified in-engine — no physical gamepad in the dev environment; the wiring is a straight binding swap, but a real-pad playtest is still owed.** (§31 is Pass D's balance-harness log, landing on its own branch/PR — the numbers reconcile when both merge.)

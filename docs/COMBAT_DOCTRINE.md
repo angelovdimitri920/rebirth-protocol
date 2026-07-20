@@ -111,15 +111,15 @@ The canonical controller layout **[built]** (keyboard is a 1:1 mirror; controlle
 | Left stick | Move / steer aim while holding pod or bomb | WASD |
 | A | Jump/hover · mash to recover · **double-tap airborne = air dash** · (planned) mash to unfurl at the Casting | Space |
 | X | Dash airborne · **grounded X = the garniture's charge attack** *(built, Pass C — the lock gate is moot in a duel: lock is always on, so ground dash retires from X while locked, exactly the source's trade)* | Shift |
-| B | Right arm: gun (held) / melee (pressed) | J |
-| RT | Left arm: bomb (hold to aim, release to throw) / shield (held) | Q |
-| LT | Pod: deploy/recall; hold + stick steers launch heading | E |
+| RT | Right arm: gun (held) / melee (pressed) | J |
+| LT | Left arm: bomb (hold to aim, release to throw) / shield (held) | Q |
+| B | Pod: deploy/recall; hold + stick steers launch heading | E |
 | Y | Lock-on / switch targets (real in Ordeal/Melee/Shieldbrother modes) | L |
 | RB | Lock-on / switch targets (Y duplicate — the thumb never leaves the right stick) | — |
 | LB | X duplicate (dash aloft, charge afoot) — kept as a mirror in Pass C; a *dedicated* charge trigger stays an option if grounded-X-as-charge doesn't survive playtest | — |
 | Start | Pause menu (resume / customization / title / quit) | P |
 
-**Source-verb coverage audit** — every control concept in the source FAQs, and where it lives here: joystick move ✓ · jump & air-dash ✓ (A, double-tap) · fire gun / use melee ✓ (B, one button per the arm mutex) · fire bomb / use shield ✓ (RT) · fire pod ✓ (LT, no-vulnerability rule kept) · switch targets ✓ (Y — a duel no-op until multi-foe modes) · **collision/charge** ✓ (grounded X, Pass C — ground-only per the source, so air X stays dash) · aimed bomb (hold + stick, sitting-duck rule) ✓ · slide shot ✓ (fire-while-moving momentum) · short-jump fire ✓ (tap-A + B — needs a tuning check when arcing weapons land) · jump height by hold ✓ · mash to rise ✓ · Casting mash [planned] · pause/help/rules screens [hub UI, planned with the shell].
+**Source-verb coverage audit** — every control concept in the source FAQs, and where it lives here: joystick move ✓ · jump & air-dash ✓ (A, double-tap) · fire gun / use melee ✓ (RT, one trigger per the arm mutex) · fire bomb / use shield ✓ (LT) · fire pod ✓ (B, no-vulnerability rule kept) · switch targets ✓ (Y — a duel no-op until multi-foe modes) · **collision/charge** ✓ (grounded X, Pass C — ground-only per the source, so air X stays dash) · aimed bomb (hold + stick, sitting-duck rule) ✓ · slide shot ✓ (fire-while-moving momentum) · short-jump fire ✓ (tap-A + B — needs a tuning check when arcing weapons land) · jump height by hold ✓ · mash to rise ✓ · Casting mash [planned] · pause/help/rules screens [hub UI, planned with the shell].
 
 ## 12. Designing opponent AI — the layered framework
 

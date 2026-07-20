@@ -33,6 +33,16 @@ namespace RebirthProtocol.Battle
             GameAudio.Sfx?.CrateBreak(transform.position);
             OnDestroyed?.Invoke(transform.position);
             OnDestroyed = null; // a crate breaks once; bomb + shots the same frame must not double-roll
+
+            // Stop blocking shots NOW — Destroy is deferred to end of frame,
+            // and a broken crate must not eat a later-ticked projectile that
+            // frame (or for hundreds of steps in the harness's batched frames).
+            var collider = GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
+
             Destroy(gameObject);
         }
     }

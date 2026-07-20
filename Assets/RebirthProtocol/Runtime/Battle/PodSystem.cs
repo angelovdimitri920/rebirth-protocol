@@ -28,7 +28,9 @@ namespace RebirthProtocol.Battle
             Energy = owner.Loadout.Pod.EnergyMax;
 
             var shell = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            Destroy(shell.GetComponent<Collider>());
+            // Immediate: visual-only primitives must never spend a frame
+            // blocking ProjectileSystem raycasts (see ProjectileSystem.Spawn).
+            DestroyImmediate(shell.GetComponent<Collider>());
             shell.name = "Pod";
             shell.transform.SetParent(transform, false);
             shell.transform.localScale = Vector3.one * 0.55f;
@@ -36,7 +38,7 @@ namespace RebirthProtocol.Battle
             shell.GetComponent<Renderer>().material = BattleMaterials.Lit(new Color(0.2f, 0.2f, 0.27f));
 
             var eye = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Destroy(eye.GetComponent<Collider>());
+            DestroyImmediate(eye.GetComponent<Collider>());
             eye.transform.SetParent(shell.transform, false);
             eye.transform.localPosition = new Vector3(0f, 0f, 0.55f);
             eye.transform.localScale = Vector3.one * 0.4f;

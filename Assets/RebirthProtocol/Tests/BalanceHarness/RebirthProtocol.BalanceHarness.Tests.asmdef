@@ -1,0 +1,19 @@
+{
+  "name": "RebirthProtocol.BalanceHarness.Tests",
+  "rootNamespace": "RebirthProtocol.Tests.BalanceHarness",
+  "references": [
+    "RebirthProtocol.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "noEngineReferences": false
+}

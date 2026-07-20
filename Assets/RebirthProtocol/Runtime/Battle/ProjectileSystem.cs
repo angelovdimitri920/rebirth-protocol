@@ -32,7 +32,11 @@ namespace RebirthProtocol.Battle
             HitSource source = HitSource.None, bool survivesKnockdown = false)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Destroy(go.GetComponent<Collider>());
+            // Immediate, not deferred: a deferred Destroy leaves the sphere
+            // collider live until end of frame, where this very system's
+            // raycasts can strike it — one quirk frame in the real game, but
+            // hundreds of sim steps in the balance harness's batched frames.
+            DestroyImmediate(go.GetComponent<Collider>());
             go.name = "Projectile";
             go.transform.SetParent(transform, false);
             go.transform.position = muzzle;

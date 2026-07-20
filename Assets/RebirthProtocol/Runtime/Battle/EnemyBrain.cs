@@ -22,6 +22,7 @@ namespace RebirthProtocol.Battle
         private bool _firing;
         private float _fireTimer;
         private float _meleeTimer = 2f;
+        private float _chargeTimer = 4f; // don't open with a charge
         private bool _thrustHeld;
         private float _bombTimer = 3f; // don't open with a bomb
         private bool _bombAiming;
@@ -92,6 +93,18 @@ namespace RebirthProtocol.Battle
             if (_avatar.Melee.Busy && NextFloat() < 7f * dt)
             {
                 _avatar.TryMeleeChain(_player);
+            }
+
+            // Occasional garniture charge from mid range (DOCTRINE §4.5) —
+            // enough for the mechanic to show up in a fight; real charge
+            // discipline is the Pass O AI-archetype work.
+            _chargeTimer -= dt;
+            if (playerAlive && _chargeTimer <= 0f && _avatar.Grounded
+                && !_avatar.Melee.Busy && !_avatar.Charge.Busy
+                && dist > 3f && dist < 11f && NextFloat() < 0.5f)
+            {
+                _avatar.TryCharge(_player);
+                _chargeTimer = 5f + NextFloat() * 4f;
             }
 
             // Fire the gun in bursts.

@@ -598,6 +598,9 @@ namespace RebirthProtocol.Battle
             Player.TickMelee(dt, Enemy);
             Enemy.TickMelee(dt, Player);
 
+            Player.TickCharge(dt, Enemy);
+            Enemy.TickCharge(dt, Player);
+
             ApplyIce(Player);
             ApplyIce(Enemy);
             ApplyLava(Player, dt);

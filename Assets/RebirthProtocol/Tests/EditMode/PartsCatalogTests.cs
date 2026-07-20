@@ -62,6 +62,44 @@ namespace RebirthProtocol.Tests.EditMode
         }
 
         [Test]
+        public void EveryBodyCarriesItsArmoryChargeRow()
+        {
+            // ARMORY_REFERENCE §3, Field garnitures: Bannerman straight,
+            // Vesper slow gliding, Duskmantle repeating short (no guard),
+            // Cobalt Knight diagonal rising. And the doctrine's shape holds
+            // for all of them: vulnerability before AND after (§4.5).
+            foreach (var body in PartsCatalog.Bodies)
+            {
+                var c = body.Charge;
+                Assert.That(c, Is.Not.Null, $"{body.Name} has no charge");
+                Assert.That(c.Damage, Is.GreaterThan(0f));
+                Assert.That(c.Speed, Is.GreaterThan(0f));
+                Assert.That(c.StrikeTime, Is.GreaterThan(0f));
+                Assert.That(c.WindupTime, Is.GreaterThan(0f), $"{body.Name}: no vulnerable-before");
+                Assert.That(c.RecoveryTime, Is.GreaterThan(0f), $"{body.Name}: no vulnerable-after");
+            }
+
+            var vanguard = PartsCatalog.Bodies[0].Charge;
+            Assert.That(vanguard.Kind, Is.EqualTo(ChargeKind.Attack));
+            Assert.That(vanguard.Strikes, Is.EqualTo(1));
+            Assert.That(vanguard.GrantsIFrames, Is.True);
+
+            var skylance = PartsCatalog.Bodies[1].Charge;
+            Assert.That(skylance.Kind, Is.EqualTo(ChargeKind.Attack));
+            Assert.That(skylance.Speed, Is.LessThan(vanguard.Speed), "Vesper glides slow");
+            Assert.That(skylance.Damage, Is.GreaterThan(vanguard.Damage), "and hits hardest");
+            Assert.That(skylance.RecoveryTime, Is.GreaterThan(vanguard.RecoveryTime), "and whiffs worst");
+
+            var wraith = PartsCatalog.Bodies[2].Charge;
+            Assert.That(wraith.Strikes, Is.EqualTo(3), "repeating short charges");
+            Assert.That(wraith.GrantsIFrames, Is.False, "the source's \"no guard\"");
+
+            var bulwark = PartsCatalog.Bodies[3].Charge;
+            Assert.That(bulwark.Kind, Is.EqualTo(ChargeKind.Air), "rising strike contests the sky");
+            Assert.That(bulwark.RiseSpeed, Is.GreaterThan(0f));
+        }
+
+        [Test]
         public void NoBuiltGunIsExemptFromTheOverloadRule()
         {
             // The SurvivesKnockdown exemption is reserved for the scrapwright

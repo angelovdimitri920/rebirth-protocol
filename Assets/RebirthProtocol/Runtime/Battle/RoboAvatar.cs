@@ -52,6 +52,7 @@ namespace RebirthProtocol.Battle
         public BoostGauge Boost { get; private set; }
         public GunCycle Gun { get; private set; }
         public MeleeAction Melee { get; private set; }
+        public ChargeAction Charge { get; private set; }
         public RoboIntent Intent;
         public bool Grounded { get; private set; } = true;
 
@@ -112,8 +113,10 @@ namespace RebirthProtocol.Battle
             || Health.State == HealthState.Dead
             || _externalMove.HasValue;
 
-        /// Vanish-dash i-frames: attacks pass straight through.
-        public bool Intangible => Stats.DashType == DashType.Vanish && _dashTimer > 0f;
+        /// I-frames: vanish-dashes, and the charge's strike window (unless
+        /// the spec is "no guard") — attacks pass straight through.
+        public bool Intangible =>
+            (Stats.DashType == DashType.Vanish && _dashTimer > 0f) || Charge.IFramesActive;
 
         public void Init(Loadout loadout, Color hull, Color accent, ProjectileSystem projectiles, float spawnFacing,
             float powerMult = 1f)
@@ -131,6 +134,7 @@ namespace RebirthProtocol.Battle
             Boost = new BoostGauge();
             Gun = new GunCycle(loadout.HasGun ? loadout.Gun.FireInterval : 0.38f);
             Melee = new MeleeAction(loadout.HasMelee ? loadout.Melee.ToTuning() : null);
+            Charge = new ChargeAction(loadout.Body.Charge);
             Shield = loadout.HasShield ? new ShieldRig(loadout.Shield) : null;
 
             _cc = gameObject.AddComponent<CharacterController>();
@@ -461,6 +465,126 @@ namespace RebirthProtocol.Battle
             _actionLock = 0f;
         }
 
+        // --- Charge (COMBAT_DOCTRINE §4.5): the garniture's body-strike ---
+
+        /// Grounded X with the (always-on) lock. Ground-only by doctrine —
+        /// an airborne press stays a dash and never reaches here.
+        public void TryCharge(RoboAvatar target)
+        {
+            if (ControlLocked || Charge.Busy || Melee.Busy || !Grounded || _dashTimer > 0f
+                || ShieldRaised || Intent.LeftArmActive || target == null)
+            {
+                return;
+            }
+
+            if (Charge.TryStart())
+            {
+                FaceFlatToward(target);
+                _actionLock = 10f; // held through windup/strike/recovery
+                GameAudio.Sfx?.Thrust(Position); // windup cue: the telegraph
+            }
+        }
+
+        public void TickCharge(float dt, RoboAvatar target)
+        {
+            if (!Charge.Busy)
+            {
+                return;
+            }
+
+            if (Health.State is HealthState.KnockedDown or HealthState.Dead)
+            {
+                CancelCharge();
+                return;
+            }
+
+            if (Charge.Phase == ChargePhase.Strike)
+            {
+                // Contact check BEFORE the timer decrements (melee's hitch-
+                // frame lesson): a frame with dt >= StrikeTime must not let
+                // an in-range strike expire into recovery unchecked.
+                TryApplyChargeHit(target);
+            }
+
+            var ev = Charge.Tick(dt);
+            switch (ev)
+            {
+                case ChargeTickEvent.EnteredStrike:
+                    // Each strike squares on the target at launch, then
+                    // commits straight — the strike itself never tracks.
+                    FaceFlatToward(target);
+                    var move = FacingDir * Charge.Spec.Speed;
+                    if (Charge.Spec.Kind == ChargeKind.Air)
+                    {
+                        move.y = Charge.Spec.RiseSpeed; // the rising strike climbs
+                    }
+
+                    _externalMove = move;
+                    GameAudio.Sfx?.Dash(Position);
+                    TryApplyChargeHit(target);
+                    break;
+                case ChargeTickEvent.EnteredRecovery:
+                    _externalMove = null;
+                    _actionLock = 10f;
+                    break;
+                case ChargeTickEvent.Ended:
+                    _externalMove = null;
+                    _actionLock = 0f;
+                    break;
+            }
+        }
+
+        private void TryApplyChargeHit(RoboAvatar target)
+        {
+            var to = target.Position - Position;
+            to.y = 0f;
+            if (to.magnitude > Charge.Spec.HitRange)
+            {
+                return;
+            }
+
+            // A body-strike hits what it runs into: contact counts in the
+            // front hemisphere only — there is no arc to sweep.
+            var angleTo = Mathf.Atan2(to.x, to.z);
+            if (Mathf.Abs(Mathf.DeltaAngle(_facing * Mathf.Rad2Deg, angleTo * Mathf.Rad2Deg)) > 90f)
+            {
+                return;
+            }
+
+            if (!Charge.TryRegisterHit())
+            {
+                return;
+            }
+
+            var dir = to.normalized;
+            var result = target.ReceiveHit(
+                Charge.Spec.Damage * Stats.AtkMult,
+                Charge.Spec.EnduranceDamage,
+                dir);
+            if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
+            {
+                GameAudio.Sfx?.MeleeHit(target.Position);
+                target.ApplyKnockback(dir, Charge.Spec.KnockbackSpeed);
+            }
+        }
+
+        private void CancelCharge()
+        {
+            Charge.Cancel();
+            _externalMove = null;
+            _actionLock = 0f;
+        }
+
+        private void FaceFlatToward(RoboAvatar target)
+        {
+            var to = target.Position - Position;
+            to.y = 0f;
+            if (to.sqrMagnitude > 0.0001f)
+            {
+                _facing = Mathf.Atan2(to.x, to.z);
+            }
+        }
+
         /// Melee clash (GAME_DESIGN §3.1): both attacks cancel into a short
         /// step-cancel window — whoever re-engages faster wins the exchange.
         public void ClashCancel()
@@ -517,9 +641,11 @@ namespace RebirthProtocol.Battle
             Vector3 horiz;
             if (_externalMove.HasValue)
             {
-                // Melee lunge owns movement this step.
+                // Melee lunge / charge strike owns movement this step. Its y
+                // is the vertical channel: 0 for lunges and ground charges,
+                // the climb rate for an Air-kind rising strike.
                 horiz = _externalMove.Value;
-                _velocity.y = 0f;
+                _velocity.y = _externalMove.Value.y;
             }
             else if (downed || Boost.LandingRecovery > 0f || _actionLock > 0f)
             {
@@ -735,8 +861,13 @@ namespace RebirthProtocol.Battle
         {
             _visualRoot.localRotation = Quaternion.Euler(0f, _facing * Mathf.Rad2Deg, 0f);
 
-            // Knockdown: fall over backward. Otherwise stand.
-            var targetTilt = Health.State == HealthState.KnockedDown ? -90f : 0f;
+            // Knockdown: fall over backward. Charging: lean into it — the
+            // windup crouch is the opponent's read, the strike lean sells
+            // the ram. Recovery stands straight up, visibly exposed.
+            var targetTilt = Health.State == HealthState.KnockedDown ? -90f
+                : Charge.Phase == ChargePhase.Windup ? 18f
+                : Charge.Phase == ChargePhase.Strike ? 30f
+                : 0f;
             var current = _tiltRoot.localEulerAngles.x;
             if (current > 180f)
             {

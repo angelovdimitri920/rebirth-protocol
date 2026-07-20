@@ -80,7 +80,7 @@ namespace RebirthProtocol.Battle
             {
                 ("●", PlasticLight, "L stick — move"),
                 ("●", FaceA, "A — jump · hover · mash up"),
-                ("●", FaceX, "X / LB — dash"),
+                ("●", FaceX, "X / LB — dash · charge afoot"),
                 ("●", FaceB, "B — gun / melee"),
                 ("●", FaceY, "Y / RB — lock-on"),
                 ("●", PlasticLight, "RT — bomb / shield"),

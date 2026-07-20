@@ -103,14 +103,18 @@ namespace RebirthProtocol.Battle
             // staleness Codex flagged in PlayerBrain, PR #14).
             _chargeTimer -= dt;
             var chargeRequested = playerAlive && _chargeTimer <= 0f && _avatar.Grounded
-                && !_avatar.Melee.Busy && !_avatar.Charge.Busy
+                && !_avatar.Melee.Busy && !_avatar.Charge.Busy && !_bombAiming
                 && dist > 3f && dist < 11f && NextFloat() < 0.5f;
             if (chargeRequested)
             {
                 _chargeTimer = 5f + NextFloat() * 4f;
             }
 
-            // Fire the gun in bursts.
+            // Fire the gun in bursts. A same-frame charge request reserves
+            // the frame too (Codex PR #14 second-pass finding — the same
+            // race as PlayerBrain: a gunshot or a fresh shield/bomb
+            // activation can't be allowed to beat DuelManager's still-
+            // deferred TryCharge call to the action lock).
             _fireTimer -= dt;
             if (_fireTimer <= 0f)
             {
@@ -118,7 +122,8 @@ namespace RebirthProtocol.Battle
                 _fireTimer = _firing ? CombatTuning.Ai.BurstDuration : CombatTuning.Ai.FireInterval;
             }
 
-            var gunFiring = _avatar.Loadout.HasGun && _firing && playerAlive && !_avatar.Melee.Busy;
+            var gunFiring = _avatar.Loadout.HasGun && _firing && playerAlive
+                && !_avatar.Melee.Busy && !chargeRequested;
 
             // Left arm: bomb OR shield, whichever this build actually has.
             var shieldHeld = false;
@@ -140,13 +145,14 @@ namespace RebirthProtocol.Battle
                     }
                 }
 
-                shieldHeld = _shieldEngaged && dist < 10f && !_avatar.Melee.Busy
+                shieldHeld = _shieldEngaged && dist < 10f && !_avatar.Melee.Busy && !chargeRequested
                     && _avatar.Health.State == HealthState.Active;
             }
             else if (_avatar.Loadout.HasBomb)
             {
                 _bombTimer -= dt;
-                if (!_bombAiming && _bombTimer <= 0f && playerAlive && _bomb.Ready && dist < 18f)
+                if (!_bombAiming && _bombTimer <= 0f && playerAlive && _bomb.Ready && dist < 18f
+                    && !chargeRequested)
                 {
                     if (_bomb.StartAim(_player))
                     {
@@ -155,7 +161,12 @@ namespace RebirthProtocol.Battle
                     }
                 }
 
-                if (_bombAiming)
+                if (_bombAiming && chargeRequested)
+                {
+                    _bomb.CancelAim(); // charge committed mid-aim: drop the reticule, no throw
+                    _bombAiming = false;
+                }
+                else if (_bombAiming)
                 {
                     _bomb.UpdateAim(_player);
                     _bombAimTimer -= dt;

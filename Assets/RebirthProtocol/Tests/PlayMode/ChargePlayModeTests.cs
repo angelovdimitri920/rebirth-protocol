@@ -428,5 +428,189 @@ namespace RebirthProtocol.Tests.PlayMode
 
             yield return null;
         }
+
+        // Codex PR #14 second-pass finding #1: a same-frame charge request
+        // didn't reserve the frame from other actions -- a gun could still
+        // fire (or melee/shield/bomb could still start) on the very frame a
+        // charge began, racing the charge's still-deferred TryCharge call.
+        // Runs EnemyBrain for real (deterministic, seeded) across many
+        // simulated seconds and asserts no gun round ever appears on the
+        // frame a charge starts.
+        [UnityTest]
+        public IEnumerator NoGunRoundFiresOnTheSameFrameAChargeStarts()
+        {
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                var loadout = PartsCatalog.DefaultLoadout(); // has a gun
+                duel.RespawnWithLoadouts(loadout, loadout);
+                duel.BrainsEnabled = true; // EnemyBrain must make its own decisions
+                yield return null;
+
+                // The per-frame ResetCooldown below (see the loop) forces
+                // Enemy's gun into a machine-gun rate to remove per-shot
+                // timing as a SECOND layer of randomness on top of the
+                // charge roll. At that rate it would otherwise kill Player
+                // in well under a second, which permanently blocks
+                // EnemyBrain's charge decision (it requires playerAlive) --
+                // Player is made unkillable purely so the fight keeps
+                // running long enough to observe the actual thing under
+                // test. Player's own gun never fires (no input device is
+                // connected in batch mode), so this one-sided boost is
+                // inert for everything else in the test.
+                duel.Player.Health.IncreaseMaxHp(1_000_000f);
+                duel.Player.Health.SetHp(1_000_000f);
+
+                // Force the gun to always be cooldown-ready: without this,
+                // whether a round actually spawns on any given firing-mode
+                // frame is itself a ~1-in-20 shot (Arbalest's own fire
+                // interval), which nearly hides the bug behind a SECOND
+                // layer of randomness having nothing to do with what this
+                // test checks. Resetting the cooldown every frame removes
+                // that layer, so "the AI happens to be in a firing burst"
+                // becomes the only remaining gate on the coincidence.
+                var chargeStarts = 0;
+                var wasBusy = false;
+                for (var i = 0; i < 3600 && chargeStarts < 10; i++)
+                {
+                    duel.Enemy.Gun.ResetCooldown();
+                    var roundsBefore = duel.Projectiles.CountLiveRounds(duel.Enemy, HitSource.Gun);
+                    yield return null;
+                    var roundsAfter = duel.Projectiles.CountLiveRounds(duel.Enemy, HitSource.Gun);
+
+                    var isBusy = duel.Enemy.Charge.Busy;
+                    if (isBusy && !wasBusy)
+                    {
+                        chargeStarts++;
+                        Assert.That(roundsAfter, Is.LessThanOrEqualTo(roundsBefore),
+                            "no new gun round may appear on the frame a charge starts");
+                    }
+
+                    wasBusy = isBusy;
+                }
+
+                Assert.That(chargeStarts, Is.GreaterThan(0),
+                    "setup: the AI must actually charge at least once in this window");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        // Codex PR #14 second-pass finding #2: Atan2(0, 0) resolves to
+        // world yaw zero, so a target directly overhead/underfoot passed
+        // the facing check only when the charger happened to face north —
+        // identical vertical contact, facing-dependent outcome. Facing
+        // south is the case that would have missed under the old code.
+        [UnityTest]
+        public IEnumerator OverheadContactConnectsRegardlessOfFacing()
+        {
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(PartsCatalog.DefaultLoadout(), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                // 1 m directly overhead: well within the straight charge's
+                // 2.2 m HitRange, same X/Z so the flattened facing vector
+                // is exactly zero.
+                Teleport(duel.Enemy, duel.Player.Position + Vector3.up * 1f);
+                duel.Player.SetFacing(Mathf.PI); // south -- FaceFlatToward can't override this (zero flat offset)
+                yield return null;
+
+                var hpBefore = duel.Enemy.Health.Hp;
+                duel.Player.TryCharge(duel.Enemy);
+                Assert.That(duel.Player.Charge.Busy, Is.True);
+
+                for (var i = 0; i < 240 && duel.Player.Charge.Busy; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore),
+                    "directly-overhead contact must connect regardless of which way the charger faces");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        // Codex PR #14 second-pass finding #3: CombatantHealth.TakeHit goes
+        // straight to Dead on lethal damage without ever firing
+        // KnockedDown, so the Init-time event subscription (which cancels
+        // Melee/Charge synchronously) never fires for a killing blow. The
+        // gap is specifically a death landing BETWEEN TickCharge and
+        // TickMotor in the SAME frame -- exactly ApplyLava's position in
+        // DuelManager's tick order -- so this test uses a real lava pool
+        // rather than calling Health.TakeHit from the test coroutine
+        // itself (which lands safely BETWEEN frames, already caught by the
+        // next frame's own TickCharge poll, and doesn't exercise the gap
+        // at all). The backstop lives in TickMotor: downed is checked and
+        // _externalMove cleared BEFORE the movement branch reads it, in
+        // the same call the death happens in.
+        [UnityTest]
+        public IEnumerator OutOfBandDeathCancelsAnInFlightChargeBeforeItCanMove()
+        {
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.ForceArenaLayout(3); // Cinderfield: lava pools
+                duel.RespawnWithLoadouts(PartsCatalog.DefaultLoadout(), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                duel.Player.TryCharge(duel.Enemy);
+                for (var i = 0; i < 60 && duel.Player.Charge.Phase != ChargePhase.Strike; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Charge.Phase, Is.EqualTo(ChargePhase.Strike));
+
+                // Drop Player onto a lava pool's exact center (-8, 3), r=3
+                // (ArenaBuilder.cs case 3) with 0.1 hp -- the very next
+                // ApplyLava tick (24 hp/s DoT) is guaranteed lethal, and
+                // ApplyLava runs after TickCharge but before TickMotor,
+                // reproducing the exact ordering Codex's finding describes.
+                // SetHp floors at 1 (by design, for run-carryover healing),
+                // so TakeHit -- which has no such floor -- gets HP down to
+                // the edge instead.
+                var criticalFramePos = new Vector3(-8f, 0f, 3f);
+                var cc = duel.Player.GetComponent<CharacterController>();
+                cc.enabled = false;
+                duel.Player.transform.position = criticalFramePos;
+                cc.enabled = true;
+                duel.Player.Health.TakeHit(duel.Player.Health.Hp - 0.1f, 0f);
+
+                yield return null; // the critical frame: TickCharge (still alive) -> ApplyLava (kills) -> TickMotor
+                Debug.Log($"[DIAG] after: grounded={duel.Player.Grounded} hp={duel.Player.Health.Hp} state={duel.Player.Health.State}");
+
+                Assert.That(duel.Player.Health.State, Is.EqualTo(HealthState.Dead), "setup: the lava tick must kill");
+                Assert.That(duel.Player.Charge.Busy, Is.False,
+                    "TickMotor must cancel the charge the instant it sees the downed state, same frame");
+                Assert.That(Vector3.Distance(duel.Player.Position, criticalFramePos), Is.LessThan(0.05f),
+                    "a dead pilot must not still take one charge-speed step in the frame that killed it");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
     }
 }

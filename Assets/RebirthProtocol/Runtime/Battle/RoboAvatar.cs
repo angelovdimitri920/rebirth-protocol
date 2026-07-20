@@ -569,11 +569,20 @@ namespace RebirthProtocol.Battle
             to.y = 0f;
 
             // A body-strike hits what it runs into: contact counts in the
-            // front hemisphere only — there is no arc to sweep.
-            var angleTo = Mathf.Atan2(to.x, to.z);
-            if (Mathf.Abs(Mathf.DeltaAngle(_facing * Mathf.Rad2Deg, angleTo * Mathf.Rad2Deg)) > 90f)
+            // front hemisphere only — there is no arc to sweep. Skipped
+            // when the target is (near enough) directly overhead/underfoot:
+            // Atan2(0, 0) resolves to world yaw zero, so without this guard
+            // identical vertical contact would pass facing north and fail
+            // facing south — the front-hemisphere concept doesn't mean
+            // anything when there's no horizontal direction to be in front
+            // of (Codex PR #14 second-pass finding).
+            if (to.sqrMagnitude > 0.0001f)
             {
-                return;
+                var angleTo = Mathf.Atan2(to.x, to.z);
+                if (Mathf.Abs(Mathf.DeltaAngle(_facing * Mathf.Rad2Deg, angleTo * Mathf.Rad2Deg)) > 90f)
+                {
+                    return;
+                }
             }
 
             if (!Charge.TryRegisterHit())
@@ -661,6 +670,23 @@ namespace RebirthProtocol.Battle
             }
 
             var downed = Health.State is HealthState.KnockedDown or HealthState.Dead;
+
+            // Backstop for the Health.KnockedDown subscription (Init):
+            // that event covers knockdown, but death never fires it
+            // (CombatantHealth.TakeHit goes straight to Dead on lethal
+            // damage) — so a killing blow landed from outside this
+            // avatar's own TickMelee/TickCharge poll (ApplyLava, an
+            // enemy's charge resolved earlier this same frame) could
+            // otherwise still execute one more step of a stale lunge/charge
+            // move here. Downed takes priority over any pending external
+            // move, whatever caused it (Codex PR #14 second-pass finding).
+            if (downed && _externalMove.HasValue)
+            {
+                Melee.Cancel();
+                Charge.Cancel();
+                _externalMove = null;
+                _actionLock = 0f;
+            }
 
             Boost.Tick(dt);
             if (_actionLock > 0f)

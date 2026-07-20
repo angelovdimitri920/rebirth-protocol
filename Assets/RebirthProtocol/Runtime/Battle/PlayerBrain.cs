@@ -129,8 +129,15 @@ namespace RebirthProtocol.Battle
             // Left arm (RT): shield is a plain hold; bomb is hold-to-aim,
             // release-to-throw. Both are suppressed while melee or the
             // charge is busy (matching the prototype's !melee.busy gate) —
-            // no shielding, parrying, or aiming mid-commitment.
-            var actionBusy = _avatar.Melee.Busy || _avatar.Charge.Busy;
+            // no shielding, parrying, or aiming mid-commitment. A charge
+            // REQUEST this frame reserves the frame too, even though the
+            // actual TryCharge call is still deferred to DuelManager — a
+            // same-frame gunshot, melee start, or bomb/shield activation
+            // would otherwise race the deferred charge and either double up
+            // with it or steal the action lock out from under it (Codex PR
+            // #14 second-pass finding: charge wins ties on the same input
+            // frame, deterministically, not by incidental code order).
+            var actionBusy = _avatar.Melee.Busy || _avatar.Charge.Busy || chargeRequested;
             var shieldHeld = _avatar.Loadout.HasShield && leftArmHeld && !actionBusy
                 && _avatar.Health.State == HealthState.Active;
             if (_avatar.Loadout.HasBomb)
@@ -139,7 +146,7 @@ namespace RebirthProtocol.Battle
                 {
                     _bomb.CancelAim(); // melee/charge committed mid-aim: drop the reticule, no throw
                 }
-                else if (leftArmHeld && !_bomb.Aiming)
+                else if (leftArmHeld && !_bomb.Aiming && !chargeRequested)
                 {
                     _bomb.StartAim(_enemy);
                 }
@@ -200,8 +207,11 @@ namespace RebirthProtocol.Battle
             }
 
             // Melee on the same B button (edge-triggered): swing, or chain
-            // the string if already mid-melee.
-            if (rightArmPressed && _avatar.Loadout.HasMelee && enemyAlive)
+            // the string if already mid-melee. Suppressed by a same-frame
+            // charge request — otherwise melee fires synchronously right
+            // here, sets the action lock, and silently steals the frame
+            // from the charge attempt DuelManager hasn't resolved yet.
+            if (rightArmPressed && _avatar.Loadout.HasMelee && enemyAlive && !chargeRequested)
             {
                 if (_avatar.Melee.Busy)
                 {

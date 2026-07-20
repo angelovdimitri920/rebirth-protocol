@@ -53,7 +53,10 @@ namespace RebirthProtocol.Battle
             _owner = owner;
 
             var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            Destroy(ring.GetComponent<Collider>());
+            // Immediate: visual-only primitives must never spend a frame
+            // (or a batched harness frame's worth of sim steps) blocking
+            // ProjectileSystem raycasts.
+            DestroyImmediate(ring.GetComponent<Collider>());
             ring.name = "Bomb Reticule";
             ring.transform.SetParent(transform, false);
             ring.transform.localScale = new Vector3(1.4f, 0.02f, 1.4f);
@@ -152,7 +155,7 @@ namespace RebirthProtocol.Battle
             var dist = Vector3.Distance(start, end);
 
             var shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Destroy(shell.GetComponent<Collider>());
+            DestroyImmediate(shell.GetComponent<Collider>());
             shell.name = "Bomb";
             shell.transform.SetParent(transform, false);
             shell.transform.position = start;

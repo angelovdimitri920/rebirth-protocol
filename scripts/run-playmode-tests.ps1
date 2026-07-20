@@ -5,5 +5,5 @@ $Results = Join-Path $ProjectPath "TestResults\playmode-results.xml"
 
 New-Item -ItemType Directory -Path (Split-Path -Parent $Results) -Force | Out-Null
 & (Join-Path $PSScriptRoot "Invoke-UnityBatch.ps1") `
-    -UnityArgs @("-batchmode", "-nographics", "-projectPath", $ProjectPath, "-runTests", "-testPlatform", "PlayMode", "-testResults", $Results, "-logFile", $Log) `
+    -UnityArgs @("-batchmode", "-nographics", "-projectPath", $ProjectPath, "-runTests", "-testPlatform", "PlayMode", "-assemblyNames", "RebirthProtocol.PlayMode.Tests", "-testResults", $Results, "-logFile", $Log) `
     -Log $Log

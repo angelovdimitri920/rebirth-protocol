@@ -36,6 +36,36 @@ namespace RebirthProtocol.Domain
         };
     }
 
+    // Charge kinds (COMBAT_DOCTRINE §4.5). Only the kinds the built bodies'
+    // Field garnitures need exist yet — Movement (wall-clearing) and Evasion
+    // charges arrive with the War/Chase garnitures (Pass M).
+    public enum ChargeKind
+    {
+        Attack, // straight/diagonal ground strike
+        Air     // rising strike that contests the sky
+    }
+
+    // One garniture's charge attack (ARMORY_REFERENCE §3 "Charge" column):
+    // a committed body-strike — vulnerable windup, i-frames during the
+    // strike (unless GrantsIFrames is off: the source's "no guard"),
+    // vulnerable recovery. Ground-only. Plain data the ChargeAction state
+    // machine and the avatar read.
+    public sealed class ChargeSpec
+    {
+        public ChargeKind Kind;
+        public float Damage;
+        public float EnduranceDamage;
+        public float Speed;
+        public float StrikeTime; // active travel time per strike
+        public int Strikes = 1; // >1 = repeating short charges (Duskmantle)
+        public float WindupTime; // rooted, vulnerable, readable
+        public float RecoveryTime; // rooted, vulnerable — the whiff price
+        public float RiseSpeed; // vertical climb during the strike (Air kind)
+        public bool GrantsIFrames = true; // false = the source's "no guard"
+        public float KnockbackSpeed;
+        public float HitRange; // body-strike contact radius
+    }
+
     public sealed class BodyPart
     {
         public string Id;
@@ -47,6 +77,7 @@ namespace RebirthProtocol.Domain
         public DashType DashType;
         public int DashCount; // air dashes per airborne stretch
         public float SpeedMult; // body weight affects ground speed
+        public ChargeSpec Charge; // every garniture lists one (DOCTRINE §4.5)
     }
 
     public sealed class GunPart
@@ -222,12 +253,21 @@ namespace RebirthProtocol.Domain
         // 2026-07-18); .id fields stay frozen for save compatibility.
         // Standing rule (ARMORY_REFERENCE §2.2): no body grants more than
         // 2 air dashes -- extra dashes come only from legs.
+        // Field-garniture charges per ARMORY_REFERENCE §3: Bannerman =
+        // straight (the baseline), Vesper = slow gliding (hits hardest,
+        // whiffs worst), Duskmantle = repeating short charges with NO
+        // i-frames (the source's "no guard"), Cobalt Knight = diagonal
+        // rising strike (Air kind — contests the sky).
         public static readonly BodyPart[] Bodies =
         {
-            new BodyPart { Id = "vanguard", Name = "Bannerman", Blurb = "The Aureate Legion's standard-bearer pattern. Two air-dashes, no weaknesses, no edges.", HpMult = 1.0f, DefMult = 1.0f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 2, SpeedMult = 1.0f },
-            new BodyPart { Id = "skylance", Name = "Vesper", Blurb = "The Winter Wing's evening star: one long dash, hits hard, folds fast.", HpMult = 0.8f, DefMult = 1.2f, AtkMult = 1.25f, DashType = DashType.Long, DashCount = 1, SpeedMult = 1.05f },
-            new BodyPart { Id = "wraith", Name = "Duskmantle", Blurb = "The Umbral Concordat's cowled evader. Two short vanish-dashes that phase through shots.", HpMult = 0.9f, DefMult = 1.1f, AtkMult = 0.9f, DashType = DashType.Vanish, DashCount = 2, SpeedMult = 1.0f },
-            new BodyPart { Id = "bulwark", Name = "Cobalt Knight", Blurb = "The Rust Cross's ancestral wall. One dash, huge health pool, shrugs off hits.", HpMult = 1.45f, DefMult = 0.75f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 1, SpeedMult = 0.8f }
+            new BodyPart { Id = "vanguard", Name = "Bannerman", Blurb = "The Aureate Legion's standard-bearer pattern. Two air-dashes, no weaknesses, no edges.", HpMult = 1.0f, DefMult = 1.0f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 2, SpeedMult = 1.0f,
+                Charge = new ChargeSpec { Kind = ChargeKind.Attack, Damage = 110f, EnduranceDamage = 50f, Speed = 22f, StrikeTime = 0.35f, WindupTime = 0.25f, RecoveryTime = 0.8f, KnockbackSpeed = 12f, HitRange = 2.2f } },
+            new BodyPart { Id = "skylance", Name = "Vesper", Blurb = "The Winter Wing's evening star: one long dash, hits hard, folds fast.", HpMult = 0.8f, DefMult = 1.2f, AtkMult = 1.25f, DashType = DashType.Long, DashCount = 1, SpeedMult = 1.05f,
+                Charge = new ChargeSpec { Kind = ChargeKind.Attack, Damage = 175f, EnduranceDamage = 75f, Speed = 13f, StrikeTime = 0.8f, WindupTime = 0.35f, RecoveryTime = 1.25f, KnockbackSpeed = 15f, HitRange = 2.2f } },
+            new BodyPart { Id = "wraith", Name = "Duskmantle", Blurb = "The Umbral Concordat's cowled evader. Two short vanish-dashes that phase through shots.", HpMult = 0.9f, DefMult = 1.1f, AtkMult = 0.9f, DashType = DashType.Vanish, DashCount = 2, SpeedMult = 1.0f,
+                Charge = new ChargeSpec { Kind = ChargeKind.Attack, Damage = 50f, EnduranceDamage = 20f, Speed = 26f, StrikeTime = 0.16f, Strikes = 3, WindupTime = 0.2f, RecoveryTime = 0.9f, GrantsIFrames = false, KnockbackSpeed = 5f, HitRange = 2.0f } },
+            new BodyPart { Id = "bulwark", Name = "Cobalt Knight", Blurb = "The Rust Cross's ancestral wall. One dash, huge health pool, shrugs off hits.", HpMult = 1.45f, DefMult = 0.75f, AtkMult = 1.0f, DashType = DashType.Normal, DashCount = 1, SpeedMult = 0.8f,
+                Charge = new ChargeSpec { Kind = ChargeKind.Air, Damage = 140f, EnduranceDamage = 65f, Speed = 15f, StrikeTime = 0.5f, WindupTime = 0.3f, RecoveryTime = 1.0f, RiseSpeed = 9f, KnockbackSpeed = 13f, HitRange = 2.4f } }
         };
 
         public static readonly GunPart[] Guns =

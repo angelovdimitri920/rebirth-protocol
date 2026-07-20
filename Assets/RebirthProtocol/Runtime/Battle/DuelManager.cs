@@ -593,10 +593,28 @@ namespace RebirthProtocol.Battle
             Player.TickShield(dt);
             Enemy.TickShield(dt);
 
+            // Charge-start requests resolve here too, for the same reason:
+            // TryCharge's ShieldRaised gate must see THIS frame's shield
+            // state, not what it was before TickShield ran (Codex PR #14
+            // finding — a same-frame shield release must free up a charge
+            // attempt, not have it silently refused and dropped).
+            if (Player.Intent.ChargeRequested)
+            {
+                Player.TryCharge(Enemy);
+            }
+
+            if (Enemy.Intent.ChargeRequested)
+            {
+                Enemy.TryCharge(Player);
+            }
+
             CheckMeleeClash();
 
             Player.TickMelee(dt, Enemy);
             Enemy.TickMelee(dt, Player);
+
+            Player.TickCharge(dt, Enemy);
+            Enemy.TickCharge(dt, Player);
 
             ApplyIce(Player);
             ApplyIce(Enemy);

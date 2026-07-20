@@ -12,6 +12,14 @@ namespace RebirthProtocol.Battle
         public bool DashRequested;
         public bool MashPressed;
 
+        /// Grounded X: a request to start the garniture's charge attack.
+        /// Resolved by DuelManager AFTER TickShield (not by the brain that
+        /// set it) so TryCharge's ShieldRaised gate reads THIS frame's
+        /// resolved shield state — a same-frame shield release must free up
+        /// a charge attempt, not have it refused on last frame's raised
+        /// flag (Codex PR #14 finding).
+        public bool ChargeRequested;
+
         /// Desire to raise the shield (only meaningful with a shield left
         /// arm). Whether it actually comes up is the ShieldRig's call — the
         /// toll gates it (ARMORY_REFERENCE §2.3).
@@ -52,6 +60,7 @@ namespace RebirthProtocol.Battle
         public BoostGauge Boost { get; private set; }
         public GunCycle Gun { get; private set; }
         public MeleeAction Melee { get; private set; }
+        public ChargeAction Charge { get; private set; }
         public RoboIntent Intent;
         public bool Grounded { get; private set; } = true;
 
@@ -112,8 +121,10 @@ namespace RebirthProtocol.Battle
             || Health.State == HealthState.Dead
             || _externalMove.HasValue;
 
-        /// Vanish-dash i-frames: attacks pass straight through.
-        public bool Intangible => Stats.DashType == DashType.Vanish && _dashTimer > 0f;
+        /// I-frames: vanish-dashes, and the charge's strike window (unless
+        /// the spec is "no guard") — attacks pass straight through.
+        public bool Intangible =>
+            (Stats.DashType == DashType.Vanish && _dashTimer > 0f) || Charge.IFramesActive;
 
         public void Init(Loadout loadout, Color hull, Color accent, ProjectileSystem projectiles, float spawnFacing,
             float powerMult = 1f)
@@ -131,6 +142,16 @@ namespace RebirthProtocol.Battle
             Boost = new BoostGauge();
             Gun = new GunCycle(loadout.HasGun ? loadout.Gun.FireInterval : 0.38f);
             Melee = new MeleeAction(loadout.HasMelee ? loadout.Melee.ToTuning() : null);
+            Charge = new ChargeAction(loadout.Body.Charge);
+            // A downed pilot is never mid-melee or mid-charge (Codex PR #14
+            // finding): cancel synchronously the instant KnockedDown fires,
+            // not on this avatar's next TickMelee/TickCharge poll — a
+            // same-frame knockdown from a path outside those two ticks
+            // (ApplyLava, a shield-parry endurance drain) would otherwise
+            // leave _externalMove set for one frame, moving/launching a
+            // fallen pilot before TickMelee/TickCharge next get a look.
+            Health.KnockedDown += CancelMelee;
+            Health.KnockedDown += CancelCharge;
             Shield = loadout.HasShield ? new ShieldRig(loadout.Shield) : null;
 
             _cc = gameObject.AddComponent<CharacterController>();
@@ -461,6 +482,134 @@ namespace RebirthProtocol.Battle
             _actionLock = 0f;
         }
 
+        // --- Charge (COMBAT_DOCTRINE §4.5): the garniture's body-strike ---
+
+        /// Grounded X with the (always-on) lock. Ground-only by doctrine —
+        /// an airborne press stays a dash and never reaches here.
+        public void TryCharge(RoboAvatar target)
+        {
+            if (ControlLocked || Charge.Busy || Melee.Busy || !Grounded || _dashTimer > 0f
+                || ShieldRaised || Intent.LeftArmActive || target == null)
+            {
+                return;
+            }
+
+            if (Charge.TryStart())
+            {
+                FaceFlatToward(target);
+                _actionLock = 10f; // held through windup/strike/recovery
+                GameAudio.Sfx?.Thrust(Position); // windup cue: the telegraph
+            }
+        }
+
+        public void TickCharge(float dt, RoboAvatar target)
+        {
+            if (!Charge.Busy)
+            {
+                return;
+            }
+
+            if (Health.State is HealthState.KnockedDown or HealthState.Dead)
+            {
+                CancelCharge();
+                return;
+            }
+
+            if (Charge.Phase == ChargePhase.Strike)
+            {
+                // Contact check BEFORE the timer decrements (melee's hitch-
+                // frame lesson): a frame with dt >= StrikeTime must not let
+                // an in-range strike expire into recovery unchecked.
+                TryApplyChargeHit(target);
+            }
+
+            var ev = Charge.Tick(dt);
+            switch (ev)
+            {
+                case ChargeTickEvent.EnteredStrike:
+                    // Each strike squares on the target at launch, then
+                    // commits straight — the strike itself never tracks.
+                    FaceFlatToward(target);
+                    var move = FacingDir * Charge.Spec.Speed;
+                    if (Charge.Spec.Kind == ChargeKind.Air)
+                    {
+                        move.y = Charge.Spec.RiseSpeed; // the rising strike climbs
+                    }
+
+                    _externalMove = move;
+                    GameAudio.Sfx?.Dash(Position);
+                    TryApplyChargeHit(target);
+                    break;
+                case ChargeTickEvent.EnteredRecovery:
+                    _externalMove = null;
+                    _actionLock = 10f;
+                    break;
+                case ChargeTickEvent.Ended:
+                    _externalMove = null;
+                    _actionLock = 0f;
+                    break;
+            }
+        }
+
+        private void TryApplyChargeHit(RoboAvatar target)
+        {
+            // Real 3D contact — Charge.cs unlike melee has a vertical
+            // channel (the rising strike), so a flattened check would let a
+            // ground charge hit something far overhead, or Cobalt's rise
+            // connect before it's actually climbed to its target (Codex PR
+            // #14 finding). Facing stays a flat check: a strike doesn't
+            // care whether the target is above or below its nose.
+            var to3D = target.Center - Center;
+            if (to3D.magnitude > Charge.Spec.HitRange)
+            {
+                return;
+            }
+
+            var to = to3D;
+            to.y = 0f;
+
+            // A body-strike hits what it runs into: contact counts in the
+            // front hemisphere only — there is no arc to sweep.
+            var angleTo = Mathf.Atan2(to.x, to.z);
+            if (Mathf.Abs(Mathf.DeltaAngle(_facing * Mathf.Rad2Deg, angleTo * Mathf.Rad2Deg)) > 90f)
+            {
+                return;
+            }
+
+            if (!Charge.TryRegisterHit())
+            {
+                return;
+            }
+
+            var dir = to.sqrMagnitude > 0.0001f ? to.normalized : FacingDir;
+            var result = target.ReceiveHit(
+                Charge.Spec.Damage * Stats.AtkMult,
+                Charge.Spec.EnduranceDamage,
+                dir);
+            if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
+            {
+                GameAudio.Sfx?.MeleeHit(target.Position);
+                target.ApplyKnockback(dir, Charge.Spec.KnockbackSpeed);
+            }
+        }
+
+        private void CancelCharge()
+        {
+            Charge.Cancel();
+            _externalMove = null;
+            _actionLock = 0f;
+        }
+
+        private void FaceFlatToward(RoboAvatar target)
+        {
+            var to = target.Position - Position;
+            to.y = 0f;
+            if (to.sqrMagnitude > 0.0001f)
+            {
+                _facing = Mathf.Atan2(to.x, to.z);
+            }
+        }
+
         /// Melee clash (GAME_DESIGN §3.1): both attacks cancel into a short
         /// step-cancel window — whoever re-engages faster wins the exchange.
         public void ClashCancel()
@@ -479,7 +628,13 @@ namespace RebirthProtocol.Battle
         /// lowering starts the toll like any other.
         public void TickShield(float dt)
         {
-            Shield?.Tick(dt, Intent.ShieldHeld, Health.State == HealthState.Active);
+            // Centrally gated (not per-brain): no shielding mid-melee or
+            // mid-charge, however a given brain arrived at ShieldHeld —
+            // Codex PR #14 finding: EnemyBrain's shield timer didn't know
+            // about Charge.Busy and could raise a shield through a charge's
+            // required vulnerable windows.
+            var held = Intent.ShieldHeld && !Melee.Busy && !Charge.Busy;
+            Shield?.Tick(dt, held, Health.State == HealthState.Active);
         }
 
         // --- Motor: port of Robo.update ---
@@ -517,9 +672,11 @@ namespace RebirthProtocol.Battle
             Vector3 horiz;
             if (_externalMove.HasValue)
             {
-                // Melee lunge owns movement this step.
+                // Melee lunge / charge strike owns movement this step. Its y
+                // is the vertical channel: 0 for lunges and ground charges,
+                // the climb rate for an Air-kind rising strike.
                 horiz = _externalMove.Value;
-                _velocity.y = 0f;
+                _velocity.y = _externalMove.Value.y;
             }
             else if (downed || Boost.LandingRecovery > 0f || _actionLock > 0f)
             {
@@ -735,8 +892,13 @@ namespace RebirthProtocol.Battle
         {
             _visualRoot.localRotation = Quaternion.Euler(0f, _facing * Mathf.Rad2Deg, 0f);
 
-            // Knockdown: fall over backward. Otherwise stand.
-            var targetTilt = Health.State == HealthState.KnockedDown ? -90f : 0f;
+            // Knockdown: fall over backward. Charging: lean into it — the
+            // windup crouch is the opponent's read, the strike lean sells
+            // the ram. Recovery stands straight up, visibly exposed.
+            var targetTilt = Health.State == HealthState.KnockedDown ? -90f
+                : Charge.Phase == ChargePhase.Windup ? 18f
+                : Charge.Phase == ChargePhase.Strike ? 30f
+                : 0f;
             var current = _tiltRoot.localEulerAngles.x;
             if (current > 180f)
             {

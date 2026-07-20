@@ -49,8 +49,8 @@ When a harness is knocked down, **its gun rounds still in flight are wiped** —
 ### 4.4 Aimed bombs [built + source nuance]
 Holding the bomb opens the reticule and roots you (air: halts you) — you are a sitting target while aiming [built]. Source nuances to keep: different bombs *want* different aim times (Palisade demands placement; Censer barely needs any); a skilled hand aims in half a second; aiming is also *defense* (placing a blast on your own retreat line).
 
-### 4.5 Charge attacks [source, to build — per-garniture]
-Every garniture lists its charge (`ARMORY_REFERENCE.md` §3): a committed body-strike with **i-frames during, vulnerability before and after**. The four charge kinds: **Attack** (straight/diagonal strikes), **Air** (rising strikes that contest the sky), **Movement** (wall-clearing repositions), **Evasion** (drifts and feints). Charges answer point-blank pressure, punish downed-adjacent positioning, and give every body a no-ammo threat. Ground-only [source]; ours may relax this for Skyanvil-class charges later.
+### 4.5 Charge attacks [built, Pass C — per-garniture]
+Every garniture lists its charge (`ARMORY_REFERENCE.md` §3): a committed body-strike with **i-frames during, vulnerability before and after**. The four charge kinds: **Attack** (straight/diagonal strikes), **Air** (rising strikes that contest the sky), **Movement** (wall-clearing repositions), **Evasion** (drifts and feints). Charges answer point-blank pressure, punish downed-adjacent positioning, and give every body a no-ammo threat. Ground-only [source]; ours may relax this for Skyanvil-class charges later. Built for the four Field-garniture bodies (Attack/Air kinds only — Movement/Evasion arrive with the War/Chase garnitures, Pass M); `GAME_DESIGN.md` §30.
 
 ### 4.6 Pod placement [built + source doctrine]
 Pods fire with **no vulnerability window** [source; ours matches] — they are the "free" action, and doctrine is to keep them always working: trap corners, seed retreat lines, wake them as landing cover. Triangle-set patterns (Gargoyle, Gonfalon Watch: three placements) reward deliberate spacing — too tight wastes overlap, too wide leaves lanes.
@@ -110,16 +110,16 @@ The canonical controller layout **[built]** (keyboard is a 1:1 mirror; controlle
 |---|---|---|
 | Left stick | Move / steer aim while holding pod or bomb | WASD |
 | A | Jump/hover · mash to recover · **double-tap airborne = air dash** · (planned) mash to unfurl at the Casting | Space |
-| X | Dash · **(directive) grounded X with lock = the garniture's charge attack** | Shift |
+| X | Dash airborne · **grounded X = the garniture's charge attack** *(built, Pass C — the lock gate is moot in a duel: lock is always on, so ground dash retires from X while locked, exactly the source's trade)* | Shift |
 | B | Right arm: gun (held) / melee (pressed) | J |
 | RT | Left arm: bomb (hold to aim, release to throw) / shield (held) | Q |
 | LT | Pod: deploy/recall; hold + stick steers launch heading | E |
 | Y | Lock-on / switch targets (real in Ordeal/Melee/Shieldbrother modes) | L |
 | RB | Lock-on / switch targets (Y duplicate — the thumb never leaves the right stick) | — |
-| LB | Dash (X duplicate) — **provisionally earmarked as the dedicated charge-attack trigger when Pass C lands**, if doubling dash doesn't earn its keep | — |
+| LB | X duplicate (dash aloft, charge afoot) — kept as a mirror in Pass C; a *dedicated* charge trigger stays an option if grounded-X-as-charge doesn't survive playtest | — |
 | Start | Pause menu (resume / customization / title / quit) | P |
 
-**Source-verb coverage audit** — every control concept in the source FAQs, and where it lives here: joystick move ✓ · jump & air-dash ✓ (A, double-tap) · fire gun / use melee ✓ (B, one button per the arm mutex) · fire bomb / use shield ✓ (RT) · fire pod ✓ (LT, no-vulnerability rule kept) · switch targets ✓ (Y — a duel no-op until multi-foe modes) · **collision/charge** — the one unbound source verb; **directive: grounded X while locked performs the charge** (charges are ground-only in the source, so air X stays dash; implement with the charge pass) · aimed bomb (hold + stick, sitting-duck rule) ✓ · slide shot ✓ (fire-while-moving momentum) · short-jump fire ✓ (tap-A + B — needs a tuning check when arcing weapons land) · jump height by hold ✓ · mash to rise ✓ · Casting mash [planned] · pause/help/rules screens [hub UI, planned with the shell].
+**Source-verb coverage audit** — every control concept in the source FAQs, and where it lives here: joystick move ✓ · jump & air-dash ✓ (A, double-tap) · fire gun / use melee ✓ (B, one button per the arm mutex) · fire bomb / use shield ✓ (RT) · fire pod ✓ (LT, no-vulnerability rule kept) · switch targets ✓ (Y — a duel no-op until multi-foe modes) · **collision/charge** ✓ (grounded X, Pass C — ground-only per the source, so air X stays dash) · aimed bomb (hold + stick, sitting-duck rule) ✓ · slide shot ✓ (fire-while-moving momentum) · short-jump fire ✓ (tap-A + B — needs a tuning check when arcing weapons land) · jump height by hold ✓ · mash to rise ✓ · Casting mash [planned] · pause/help/rules screens [hub UI, planned with the shell].
 
 ## 12. Designing opponent AI — the layered framework
 

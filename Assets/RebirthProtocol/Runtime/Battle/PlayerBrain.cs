@@ -9,7 +9,10 @@ namespace RebirthProtocol.Battle
     // (DESIGN_HANDOFF §5, prototype §12):
     //   Left stick  = move
     //   A           = jump/hover (double-tap airborne = air-dash), mash while down
-    //   X           = dash
+    //   X           = dash airborne; grounded (lock is always-on in a duel)
+    //                 it performs the garniture's charge attack instead
+    //                 (DOCTRINE §11 directive — charges are ground-only, so
+    //                 air X stays dash; ground dash retires from X)
     //   B           = RIGHT ARM: gun (held to fire) OR melee (pressed) — one
     //                 physical button, whichever the loadout equips
     //   Y           = lock-on / switch targets
@@ -112,18 +115,29 @@ namespace RebirthProtocol.Battle
                 GameAudio.Sfx?.UiClick();
             }
 
+            // X grounded = the garniture's charge attack (DOCTRINE §11; the
+            // lock gate is moot in a duel — it's always on). Airborne X
+            // falls through to the dash intent as before. The actual
+            // TryCharge call is deferred to DuelManager, AFTER TickShield —
+            // calling it here would read last frame's ShieldRaised.
+            var chargeRequested = dashPressed && _avatar.Grounded && enemyAlive && !_bomb.Aiming;
+            if (chargeRequested)
+            {
+                dashPressed = false;
+            }
+
             // Left arm (RT): shield is a plain hold; bomb is hold-to-aim,
-            // release-to-throw. Both are suppressed while melee is busy
-            // (matching the prototype's !melee.busy gate) — no shielding or
-            // parrying mid-swing.
-            var meleeBusy = _avatar.Melee.Busy;
-            var shieldHeld = _avatar.Loadout.HasShield && leftArmHeld && !meleeBusy
+            // release-to-throw. Both are suppressed while melee or the
+            // charge is busy (matching the prototype's !melee.busy gate) —
+            // no shielding, parrying, or aiming mid-commitment.
+            var actionBusy = _avatar.Melee.Busy || _avatar.Charge.Busy;
+            var shieldHeld = _avatar.Loadout.HasShield && leftArmHeld && !actionBusy
                 && _avatar.Health.State == HealthState.Active;
             if (_avatar.Loadout.HasBomb)
             {
-                if (meleeBusy && _bomb.Aiming)
+                if (actionBusy && _bomb.Aiming)
                 {
-                    _bomb.CancelAim(); // melee committed mid-aim: drop the reticule, no throw
+                    _bomb.CancelAim(); // melee/charge committed mid-aim: drop the reticule, no throw
                 }
                 else if (leftArmHeld && !_bomb.Aiming)
                 {
@@ -140,13 +154,14 @@ namespace RebirthProtocol.Battle
             }
 
             // Right arm (B): gun fires while held; melee is edge-triggered.
-            var firing = rightArmHeld && _avatar.Loadout.HasGun && !meleeBusy;
+            var firing = rightArmHeld && _avatar.Loadout.HasGun && !actionBusy;
 
             _avatar.Intent = new RoboIntent
             {
                 MoveDir = worldMove,
                 ThrustHeld = thrustHeld,
                 DashRequested = dashPressed,
+                ChargeRequested = chargeRequested,
                 MashPressed = thrustPressed,
                 FiringGun = firing,
                 ShieldHeld = shieldHeld,
@@ -155,7 +170,7 @@ namespace RebirthProtocol.Battle
                 // through the toll leaves you free to move.
                 LeftArmActive = _bomb.Aiming,
                 // Free facing: face movement normally, square up while attacking.
-                HasFaceYaw = (firing || meleeBusy || _avatar.ShieldRaised || _bomb.Aiming) && enemyAlive && toEnemy.sqrMagnitude > 0.0001f,
+                HasFaceYaw = (firing || actionBusy || _avatar.ShieldRaised || _bomb.Aiming) && enemyAlive && toEnemy.sqrMagnitude > 0.0001f,
                 FaceYaw = Mathf.Atan2(toEnemy.x, toEnemy.z),
                 HasDashHoming = enemyAlive,
                 DashHomingPoint = _enemy.Position

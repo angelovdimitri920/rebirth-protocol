@@ -58,6 +58,7 @@ namespace RebirthProtocol.Battle
         public static int RunSeedOverride;
 
         public RunEffects Effects => _effects;
+        public ProjectileSystem Projectiles => _projectiles;
         public DraftScreen Draft => _draft;
         public int FightNumber => _run.FightIndex + 1;
         public string RivalTitle => $"{_rival.PilotName} · {_rival.OrderName}";

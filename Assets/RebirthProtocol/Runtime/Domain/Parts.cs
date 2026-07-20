@@ -59,6 +59,12 @@ namespace RebirthProtocol.Domain
         public float FireInterval;
         public float ProjectileSpeed;
         public float HomingTurnRate;
+
+        // Scrapwright exemption (DOCTRINE §4.3): rounds from a gun with this
+        // set ride out their wielder's knockdown instead of being wiped by
+        // the overload rule. Reserved for the scrapwright line — no built
+        // gun sets it; Matchlock will when the Pass P wave lands.
+        public bool SurvivesKnockdown;
     }
 
     public sealed class MeleeWeaponPart

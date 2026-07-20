@@ -117,10 +117,12 @@ namespace RebirthProtocol.Battle
 
             // X grounded = the garniture's charge attack (DOCTRINE §11; the
             // lock gate is moot in a duel — it's always on). Airborne X
-            // falls through to the dash intent as before.
-            if (dashPressed && _avatar.Grounded && enemyAlive && !_bomb.Aiming)
+            // falls through to the dash intent as before. The actual
+            // TryCharge call is deferred to DuelManager, AFTER TickShield —
+            // calling it here would read last frame's ShieldRaised.
+            var chargeRequested = dashPressed && _avatar.Grounded && enemyAlive && !_bomb.Aiming;
+            if (chargeRequested)
             {
-                _avatar.TryCharge(_enemy);
                 dashPressed = false;
             }
 
@@ -159,6 +161,7 @@ namespace RebirthProtocol.Battle
                 MoveDir = worldMove,
                 ThrustHeld = thrustHeld,
                 DashRequested = dashPressed,
+                ChargeRequested = chargeRequested,
                 MashPressed = thrustPressed,
                 FiringGun = firing,
                 ShieldHeld = shieldHeld,

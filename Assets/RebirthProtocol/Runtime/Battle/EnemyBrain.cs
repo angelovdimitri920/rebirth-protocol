@@ -97,13 +97,16 @@ namespace RebirthProtocol.Battle
 
             // Occasional garniture charge from mid range (DOCTRINE §4.5) —
             // enough for the mechanic to show up in a fight; real charge
-            // discipline is the Pass O AI-archetype work.
+            // discipline is the Pass O AI-archetype work. The actual
+            // TryCharge call is deferred to DuelManager, AFTER TickShield —
+            // calling it here would read last frame's ShieldRaised (same
+            // staleness Codex flagged in PlayerBrain, PR #14).
             _chargeTimer -= dt;
-            if (playerAlive && _chargeTimer <= 0f && _avatar.Grounded
+            var chargeRequested = playerAlive && _chargeTimer <= 0f && _avatar.Grounded
                 && !_avatar.Melee.Busy && !_avatar.Charge.Busy
-                && dist > 3f && dist < 11f && NextFloat() < 0.5f)
+                && dist > 3f && dist < 11f && NextFloat() < 0.5f;
+            if (chargeRequested)
             {
-                _avatar.TryCharge(_player);
                 _chargeTimer = 5f + NextFloat() * 4f;
             }
 
@@ -175,6 +178,7 @@ namespace RebirthProtocol.Battle
                 MoveDir = move,
                 ThrustHeld = _thrustHeld,
                 DashRequested = NextFloat() < CombatTuning.Ai.DashChancePerSec * dt,
+                ChargeRequested = chargeRequested,
                 MashPressed = NextFloat() < 8f * dt, // ~8 mash/s
                 FiringGun = gunFiring,
                 ShieldHeld = shieldHeld,

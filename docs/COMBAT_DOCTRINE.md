@@ -49,8 +49,8 @@ When a harness is knocked down, **its gun rounds still in flight are wiped** —
 ### 4.4 Aimed bombs [built + source nuance]
 Holding the bomb opens the reticule and roots you (air: halts you) — you are a sitting target while aiming [built]. Source nuances to keep: different bombs *want* different aim times (Palisade demands placement; Censer barely needs any); a skilled hand aims in half a second; aiming is also *defense* (placing a blast on your own retreat line).
 
-### 4.5 Charge attacks [source, to build — per-garniture]
-Every garniture lists its charge (`ARMORY_REFERENCE.md` §3): a committed body-strike with **i-frames during, vulnerability before and after**. The four charge kinds: **Attack** (straight/diagonal strikes), **Air** (rising strikes that contest the sky), **Movement** (wall-clearing repositions), **Evasion** (drifts and feints). Charges answer point-blank pressure, punish downed-adjacent positioning, and give every body a no-ammo threat. Ground-only [source]; ours may relax this for Skyanvil-class charges later.
+### 4.5 Charge attacks [built, Pass C — per-garniture]
+Every garniture lists its charge (`ARMORY_REFERENCE.md` §3): a committed body-strike with **i-frames during, vulnerability before and after**. The four charge kinds: **Attack** (straight/diagonal strikes), **Air** (rising strikes that contest the sky), **Movement** (wall-clearing repositions), **Evasion** (drifts and feints). Charges answer point-blank pressure, punish downed-adjacent positioning, and give every body a no-ammo threat. Ground-only [source]; ours may relax this for Skyanvil-class charges later. Built for the four Field-garniture bodies (Attack/Air kinds only — Movement/Evasion arrive with the War/Chase garnitures, Pass M); `GAME_DESIGN.md` §30.
 
 ### 4.6 Pod placement [built + source doctrine]
 Pods fire with **no vulnerability window** [source; ours matches] — they are the "free" action, and doctrine is to keep them always working: trap corners, seed retreat lines, wake them as landing cover. Triangle-set patterns (Gargoyle, Gonfalon Watch: three placements) reward deliberate spacing — too tight wastes overlap, too wide leaves lanes.

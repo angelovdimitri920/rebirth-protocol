@@ -12,6 +12,14 @@ namespace RebirthProtocol.Battle
         public bool DashRequested;
         public bool MashPressed;
 
+        /// Grounded X: a request to start the garniture's charge attack.
+        /// Resolved by DuelManager AFTER TickShield (not by the brain that
+        /// set it) so TryCharge's ShieldRaised gate reads THIS frame's
+        /// resolved shield state — a same-frame shield release must free up
+        /// a charge attempt, not have it refused on last frame's raised
+        /// flag (Codex PR #14 finding).
+        public bool ChargeRequested;
+
         /// Desire to raise the shield (only meaningful with a shield left
         /// arm). Whether it actually comes up is the ShieldRig's call — the
         /// toll gates it (ARMORY_REFERENCE §2.3).
@@ -135,6 +143,15 @@ namespace RebirthProtocol.Battle
             Gun = new GunCycle(loadout.HasGun ? loadout.Gun.FireInterval : 0.38f);
             Melee = new MeleeAction(loadout.HasMelee ? loadout.Melee.ToTuning() : null);
             Charge = new ChargeAction(loadout.Body.Charge);
+            // A downed pilot is never mid-melee or mid-charge (Codex PR #14
+            // finding): cancel synchronously the instant KnockedDown fires,
+            // not on this avatar's next TickMelee/TickCharge poll — a
+            // same-frame knockdown from a path outside those two ticks
+            // (ApplyLava, a shield-parry endurance drain) would otherwise
+            // leave _externalMove set for one frame, moving/launching a
+            // fallen pilot before TickMelee/TickCharge next get a look.
+            Health.KnockedDown += CancelMelee;
+            Health.KnockedDown += CancelCharge;
             Shield = loadout.HasShield ? new ShieldRig(loadout.Shield) : null;
 
             _cc = gameObject.AddComponent<CharacterController>();
@@ -536,12 +553,20 @@ namespace RebirthProtocol.Battle
 
         private void TryApplyChargeHit(RoboAvatar target)
         {
-            var to = target.Position - Position;
-            to.y = 0f;
-            if (to.magnitude > Charge.Spec.HitRange)
+            // Real 3D contact — Charge.cs unlike melee has a vertical
+            // channel (the rising strike), so a flattened check would let a
+            // ground charge hit something far overhead, or Cobalt's rise
+            // connect before it's actually climbed to its target (Codex PR
+            // #14 finding). Facing stays a flat check: a strike doesn't
+            // care whether the target is above or below its nose.
+            var to3D = target.Center - Center;
+            if (to3D.magnitude > Charge.Spec.HitRange)
             {
                 return;
             }
+
+            var to = to3D;
+            to.y = 0f;
 
             // A body-strike hits what it runs into: contact counts in the
             // front hemisphere only — there is no arc to sweep.
@@ -556,7 +581,7 @@ namespace RebirthProtocol.Battle
                 return;
             }
 
-            var dir = to.normalized;
+            var dir = to.sqrMagnitude > 0.0001f ? to.normalized : FacingDir;
             var result = target.ReceiveHit(
                 Charge.Spec.Damage * Stats.AtkMult,
                 Charge.Spec.EnduranceDamage,
@@ -603,7 +628,13 @@ namespace RebirthProtocol.Battle
         /// lowering starts the toll like any other.
         public void TickShield(float dt)
         {
-            Shield?.Tick(dt, Intent.ShieldHeld, Health.State == HealthState.Active);
+            // Centrally gated (not per-brain): no shielding mid-melee or
+            // mid-charge, however a given brain arrived at ShieldHeld —
+            // Codex PR #14 finding: EnemyBrain's shield timer didn't know
+            // about Charge.Busy and could raise a shield through a charge's
+            // required vulnerable windows.
+            var held = Intent.ShieldHeld && !Melee.Busy && !Charge.Busy;
+            Shield?.Tick(dt, held, Health.State == HealthState.Active);
         }
 
         // --- Motor: port of Robo.update ---

@@ -562,5 +562,25 @@ Fourth rung of the ladder (`TASK_LADDER.md`), building COMBAT_DOCTRINE `§13`'s 
 - **Reporting** (`Domain/BalanceStats.cs`, plain C# so the flag logic is EditMode-testable): per matchup, N seeded fights → win rate (draws count half), mean TTK, mean knockdowns, with band flags; output is both a human-skimmable **markdown table with a flag digest** and a machine-parseable **JSON** (`TestResults/balance-report.{md,json}`). Invoked via `scripts/run-balance-harness.ps1` (its own `RebirthProtocol.BalanceHarness.Tests` assembly, so the regular PlayMode suite never pays for it — and `run-playmode-tests.ps1` now filters to `RebirthProtocol.PlayMode.Tests` to keep it out).
 - **First findings (data, not this task's to fix)**: with the current tuning + the scrub randomized `EnemyBrain`, **every** pairing kills far faster than the 60–120 s band (12–48 s), and **Cobalt Knight is a wall** — 0% win rate for every body against it on the gun/bomb kit, its mirror running long and grindy (48 s, 7.5 knockdowns) where Vesper's mirror ends in 12 s. These are the balance CI's headline signals for the content/tuning passes and Pass O's AI work; combat re-tuning is out of scope here.
 - **Test rigor** (carrying the handoff's hard-won lesson): the harness's own flagging logic (`BalanceStatsTests`, 9 EditMode) was validated by **temporarily forcing the flagger to return early** and confirming 6/9 tests flipped to failing — a passing flag-test isn't trusted until the thing it guards is shown to break it.
+- **Post-review fixes** (Codex, same day): arena selection was correlated with side assignment (`f % arenas.Length` and `f % 2` tied together whenever arena count is even, so build i always landed in slot A on the same arenas — an asymmetric arena like Cinderfield could leak positional advantage into what read as loadout strength); fixed via `arenas[(f/2) % arenas.Length]` so both side assignments run on each arena before advancing. A same-frame double KO was scored as a draw; `DuelManager` actually checks Enemy-dead first and unconditionally awards Player the win, so `HeadlessDuel.OutcomeNow()` now reproduces that exact priority — a true draw is now only a timeout at the fight cap. The slot→build remap was extracted into a testable `BalanceStats.RemapSlotResult` (sabotage-verified). Regenerating the report with these fixes surfaced *more* mirror-bias flags in a few pairings — the confound removal working as intended, not a regression.
 
-Verification: compile, EditMode **95/95** (9 new `BalanceStatsTests`, sabotage-confirmed), PlayMode **26/26** (unchanged suite, harness excluded), harness determinism proven bit-identical across step-batching, full `default` run = 480 fights in ~30 s wall, dev build + 12 s `-autodeploy` GPU run with a clean log. No feel question this pass — the deliverable is headless infrastructure, not a mechanic a human plays.
+Verification: compile, EditMode **92/92** (15 `BalanceStatsTests` after the fix pass, sabotage-confirmed), PlayMode **26/26** (unchanged suite, harness excluded), harness determinism proven bit-identical across step-batching, full `default` run = 480 fights in ~30 s wall, dev build + 12 s `-autodeploy` GPU run with a clean log. No feel question this pass — the deliverable is headless infrastructure, not a mechanic a human plays.
+
+## 32. Control Scheme Correction: Pod→B, Right Arm→RT, Left Arm→LT (2026-07-20)
+
+User-directed remap of the controller layout, applied to the game and every canonical controls reference. The scheme is now, definitively:
+
+| Input | Action |
+|---|---|
+| Left stick | Move / steer aim while holding pod or bomb |
+| A | Jump / hover · double-tap airborne = air-dash · mash to recover |
+| X | Dash (airborne) · grounded = garniture charge attack |
+| Y | Lock-on / switch to nearest target |
+| **B** | **Pod: deploy/recall; hold + stick steers launch heading** |
+| **RT** | **Right arm: gun (held to fire) / melee (pressed)** |
+| **LT** | **Left arm: bomb (hold to aim, release to throw) / shield (held)** |
+| Start | Pause menu |
+
+RB/LB remain harmless duplicates of Y/X (kept for thumb-on-stick comfort; not otherwise used). Keyboard mirror is unchanged (J = right arm, Q = left arm, E = pod, Space = jump, Shift = dash, L = lock-on, P = pause) — the remap is controller-only, and the keyboard keys simply follow their action to the newly-assigned controller buttons in the legend.
+
+This supersedes the earlier layout described in the parity-pass and Three.js-handoff logs (which put the right arm on B, the left arm on RT, and the pod on LT). Changed in `PlayerBrain.cs` (the actual bindings + header), `ControllerLegend.cs` (the on-screen legend rows), `COMBAT_DOCTRINE.md` §11 (the canonical controls table + verb audit — including a second stray "tap-A + B" mention in the verb-coverage line that the first pass missed, caught in Codex review), and `DESIGN_HANDOFF_FROM_THREEJS.md` (also fixed there to mention grounded X's charge behavior and to point at COMBAT_DOCTRINE §11 as the single canonical table going forward). **Controller feel is unverified in-engine — no physical gamepad in the dev environment; the wiring is a straight binding swap, but a real-pad playtest is still owed.**

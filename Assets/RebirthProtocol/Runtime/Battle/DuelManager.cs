@@ -60,6 +60,12 @@ namespace RebirthProtocol.Battle
         public RunEffects Effects => _effects;
         public ProjectileSystem Projectiles => _projectiles;
         public DraftScreen Draft => _draft;
+
+        /// PlayMode-test hook (RespawnWithLoadouts' precedent): direct
+        /// access to each side's bomb system, so a test can drive
+        /// StartAim/UpdateAim/Release without going through PlayerBrain.
+        public BombSystem PlayerBomb => _playerBomb;
+        public BombSystem EnemyBomb => _enemyBomb;
         public int FightNumber => _run.FightIndex + 1;
         public string RivalTitle => $"{_rival.PilotName} · {_rival.OrderName}";
 

@@ -37,6 +37,11 @@ namespace RebirthProtocol.Domain
         public float HitRecovery = 0.45f;
         public float WhiffRecovery = 0.95f;
         public float KnockbackSpeed = 10f;
+
+        // Volley capability (ARMORY §5, Pass E): multi-angle hit checks for
+        // weapons like Hydra Flail. Null = the default single arc around
+        // facing (every weapon before it). See MeleeWeaponPart.ProngAngles.
+        public float[] ProngAngles;
     }
 
     // Melee with a gap-closer (GAME_DESIGN.md §3.1): high commitment,

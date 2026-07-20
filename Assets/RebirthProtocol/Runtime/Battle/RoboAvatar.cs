@@ -300,10 +300,27 @@ namespace RebirthProtocol.Battle
                 : Position + FacingDir * 10f + Vector3.up * CombatTuning.Gun.MuzzleHeight;
             var damage = (part.Damage * Stats.AtkMult + (Effects?.FlatDamageBonus() ?? 0f))
                 * (Effects?.GunDamageMult(Boost.Value) ?? 1f);
-            _projectiles.Spawn(this, targetAlive ? target : null, muzzle, aim,
-                damage, part.EnduranceDamage, part.ProjectileSpeed,
-                targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun,
-                part.SurvivesKnockdown);
+
+            // Volley capability (ARMORY §4, DOCTRINE §13 pillar 3): a spread
+            // gun fires ProjectileCount independently-homing streams fanned
+            // across SpreadDegrees, not one shot worth N× damage — each
+            // stream must individually connect. count==1 (every gun before
+            // Trefoil) takes the offset==0 branch below every iteration, so
+            // this is byte-identical to the old single-Spawn call.
+            var count = Mathf.Max(1, part.ProjectileCount);
+            for (var i = 0; i < count; i++)
+            {
+                var offsetDegrees = count > 1
+                    ? part.SpreadDegrees * ((float)i / (count - 1) - 0.5f)
+                    : 0f;
+                var shotAim = offsetDegrees == 0f
+                    ? aim
+                    : muzzle + Quaternion.Euler(0f, offsetDegrees, 0f) * (aim - muzzle);
+                _projectiles.Spawn(this, targetAlive ? target : null, muzzle, shotAim,
+                    damage, part.EnduranceDamage, part.ProjectileSpeed,
+                    targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun,
+                    part.SurvivesKnockdown);
+            }
         }
 
         // --- Melee ---
@@ -425,8 +442,34 @@ namespace RebirthProtocol.Battle
             }
 
             var angleTo = Mathf.Atan2(to.x, to.z);
-            var diff = Mathf.DeltaAngle(_facing * Mathf.Rad2Deg, angleTo * Mathf.Rad2Deg);
-            if (Mathf.Abs(diff) > Melee.Tuning.HitArcDegrees * 0.5f)
+            var facingDeg = _facing * Mathf.Rad2Deg;
+            var angleToDeg = angleTo * Mathf.Rad2Deg;
+            var halfArc = Melee.Tuning.HitArcDegrees * 0.5f;
+
+            // Volley capability (ARMORY §5, Hydra Flail): ProngAngles checks
+            // several named angle-centers instead of one arc around facing —
+            // a hit lands if the target falls within ANY prong's half-arc.
+            // Null/empty (every weapon before Hydra Flail) is the original
+            // single-prong-at-0° check, unchanged.
+            var prongs = Melee.Tuning.ProngAngles;
+            var withinAnyProng = false;
+            if (prongs == null || prongs.Length == 0)
+            {
+                withinAnyProng = Mathf.Abs(Mathf.DeltaAngle(facingDeg, angleToDeg)) <= halfArc;
+            }
+            else
+            {
+                foreach (var prong in prongs)
+                {
+                    if (Mathf.Abs(Mathf.DeltaAngle(facingDeg + prong, angleToDeg)) <= halfArc)
+                    {
+                        withinAnyProng = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!withinAnyProng)
             {
                 return;
             }

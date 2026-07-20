@@ -97,16 +97,25 @@ namespace RebirthProtocol.Tests.BalanceHarness
         public bool IsOver =>
             _a.Health.State == HealthState.Dead || _b.Health.State == HealthState.Dead;
 
+        /// Reproduces DuelManager.Update's EXACT same-frame double-KO
+        /// resolution rather than inventing a fairer-looking rule: it checks
+        /// Enemy.Health.State == Dead first and unconditionally awards
+        /// Player the win in that branch, only falling through to an `else
+        /// if` on Player's own death — so a same-frame bomb trade that kills
+        /// both sides is scored as a PLAYER win in the real game, never a
+        /// draw. A spawns at -8 (Player's slot), B at +8 (Enemy's slot), so
+        /// B is checked first here too (Codex PR #16 finding: the harness
+        /// must measure the game's actual scoring rule, not a rule that
+        /// merely sounds more symmetric). A true draw is now ONLY a timeout
+        /// at the fight cap — see BalanceHarnessRun's maxFightSeconds loop.
         public FightOutcome OutcomeNow()
         {
-            var aDead = _a.Health.State == HealthState.Dead;
-            var bDead = _b.Health.State == HealthState.Dead;
-            if (aDead && bDead)
+            if (_b.Health.State == HealthState.Dead)
             {
-                return FightOutcome.Draw; // double KO (a bomb trade)
+                return FightOutcome.WinA;
             }
 
-            return bDead ? FightOutcome.WinA : aDead ? FightOutcome.WinB : FightOutcome.Draw;
+            return _a.Health.State == HealthState.Dead ? FightOutcome.WinB : FightOutcome.Draw;
         }
 
         public void Step(float dt)

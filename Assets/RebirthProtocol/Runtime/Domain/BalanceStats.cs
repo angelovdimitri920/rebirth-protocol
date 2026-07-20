@@ -16,7 +16,9 @@ namespace RebirthProtocol.Domain
     {
         WinA,
         WinB,
-        Draw // timeout at the cap, or a double KO (bomb trades both out)
+        Draw // timeout at the cap ONLY — a same-frame double KO is a WinA/
+             // WinB per HeadlessDuel.OutcomeNow(), matching DuelManager's
+             // enemy-checked-first resolution (Codex PR #16 finding)
     }
 
     [Serializable]
@@ -141,10 +143,40 @@ namespace RebirthProtocol.Domain
             if (result.Draws > 0)
             {
                 result.Flags.Add(FormattableString.Invariant(
-                    $"DRAWS {result.Draws}/{records.Count} (timeouts or double KOs)"));
+                    $"DRAWS {result.Draws}/{records.Count} (timeouts at the fight cap)"));
             }
 
             return result;
+        }
+
+        /// Remaps a HeadlessDuel's slot-relative result (slot A/B, always
+        /// -x/+x spawn) back to build i/j when the runner alternated which
+        /// build occupied slot A for this fight (the fairness rotation that
+        /// washes out slot A's first-mover tick-order edge). Pure function,
+        /// independent of the Unity-coupled duel loop, so the remap itself
+        /// is unit-testable (Codex PR #16 finding: this logic previously
+        /// lived inline in BalanceHarnessRun with no direct test coverage).
+        public static FightRecord RemapSlotResult(int seed, int arenaIndex, bool rolesSwapped,
+            FightOutcome slotOutcome, float durationSeconds,
+            int knockdownsSlotA, int knockdownsSlotB, float endHpSlotA, float endHpSlotB)
+        {
+            var outcome = !rolesSwapped ? slotOutcome
+                : slotOutcome == FightOutcome.WinA ? FightOutcome.WinB
+                : slotOutcome == FightOutcome.WinB ? FightOutcome.WinA
+                : FightOutcome.Draw;
+
+            return new FightRecord
+            {
+                Seed = seed,
+                ArenaIndex = arenaIndex,
+                SidesSwapped = rolesSwapped,
+                Outcome = outcome,
+                DurationSeconds = durationSeconds,
+                KnockdownsA = rolesSwapped ? knockdownsSlotB : knockdownsSlotA,
+                KnockdownsB = rolesSwapped ? knockdownsSlotA : knockdownsSlotB,
+                EndHpA = rolesSwapped ? endHpSlotB : endHpSlotA,
+                EndHpB = rolesSwapped ? endHpSlotA : endHpSlotB
+            };
         }
 
         /// Human-skimmable report: one table per matrix, flags inline, then

@@ -50,6 +50,20 @@ namespace RebirthProtocol.Tests.BalanceHarness
                 $"roster={roster} fightsPerPair={fightsPerPair} baseSeed={baseSeed} arenas=[{string.Join(",", arenas)}] maxFightSeconds={maxFightSeconds:F0} dt={Dt:F4}");
             Debug.Log($"[BalanceHarness] {config}");
 
+            // The arena/side rotation (below) needs a full cycle — 2 side
+            // assignments × arenas.Length arenas — to actually balance out;
+            // a fightsPerPair that isn't a multiple of it truncates the
+            // cycle and silently reintroduces a partial version of the same
+            // confound the rotation exists to remove (Codex PR #16 finding).
+            // A warning, not a hard failure: small ad-hoc smoke runs
+            // (fightsPerPair=2, one arena) are still a legitimate use.
+            var rotationPeriod = 2 * arenas.Length;
+            if (fightsPerPair % rotationPeriod != 0)
+            {
+                Debug.LogWarning(FormattableString.Invariant(
+                    $"[BalanceHarness] fightsPerPair={fightsPerPair} is not a multiple of 2*arenas.Length={rotationPeriod} — the arena/side rotation cycle is truncated, so results may retain a residual arena/side confound. Use a multiple of {rotationPeriod} for a clean run."));
+            }
+
             var matrices = BalanceRoster.Select(roster);
             var bands = new BalanceBands();
             var results = new List<MatrixResult>();
@@ -74,7 +88,20 @@ namespace RebirthProtocol.Tests.BalanceHarness
                             // Deterministic and bisectable: the seed is a
                             // pure function of (baseSeed, pair, fight).
                             var fightSeed = baseSeed * 1000003 + pairIndex * 8191 + f * 2;
-                            var arena = arenas[f % arenas.Length];
+
+                            // Arena and side rotation must be INDEPENDENT: a
+                            // naive `f % arenas.Length` for arena alongside
+                            // `f % 2` for side ties them together whenever
+                            // arenas.Length is even (with the default 4
+                            // arenas, build i lands in slot A on arenas 0/2
+                            // and slot B on arenas 1/3, EVERY pairing, EVERY
+                            // run) — an asymmetric arena (Depot/Cinderfield's
+                            // hazard layout isn't left-right symmetric) then
+                            // leaks a positional advantage into what reads as
+                            // loadout strength (Codex PR #16 finding). `f/2`
+                            // runs both side assignments back-to-back on
+                            // each arena before advancing, decoupling them.
+                            var arena = arenas[(f / 2) % arenas.Length];
 
                             // Alternate which build takes slot A (the -x
                             // spawn, ticked first, seeded fightSeed). Slot A
@@ -108,24 +135,14 @@ namespace RebirthProtocol.Tests.BalanceHarness
                                 }
                             }
 
-                            var rawOutcome = duel.OutcomeNow();
-                            var outcome = !rolesSwapped ? rawOutcome
-                                : rawOutcome == FightOutcome.WinA ? FightOutcome.WinB
-                                : rawOutcome == FightOutcome.WinB ? FightOutcome.WinA
-                                : FightOutcome.Draw;
-
-                            records.Add(new FightRecord
-                            {
-                                Seed = fightSeed,
-                                ArenaIndex = arena,
-                                SidesSwapped = rolesSwapped,
-                                Outcome = outcome,
-                                DurationSeconds = duel.Elapsed,
-                                KnockdownsA = rolesSwapped ? duel.KnockdownsB : duel.KnockdownsA,
-                                KnockdownsB = rolesSwapped ? duel.KnockdownsA : duel.KnockdownsB,
-                                EndHpA = (rolesSwapped ? duel.B : duel.A).Health.Hp,
-                                EndHpB = (rolesSwapped ? duel.A : duel.B).Health.Hp
-                            });
+                            // The slot→build remap (outcome inversion + KD/HP
+                            // swap) is a pure function, extracted to
+                            // BalanceStats.RemapSlotResult so it has its own
+                            // EditMode test coverage independent of this
+                            // Unity-coupled loop (Codex PR #16 finding).
+                            records.Add(BalanceStats.RemapSlotResult(fightSeed, arena, rolesSwapped,
+                                duel.OutcomeNow(), duel.Elapsed, duel.KnockdownsA, duel.KnockdownsB,
+                                duel.A.Health.Hp, duel.B.Health.Hp));
 
                             duel.Dispose();
                             yield return null; // flush deferred Destroys before the next arena goes up

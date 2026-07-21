@@ -1,4 +1,4 @@
-# Art Direction — Mecha Knights After the Last Edict v2
+# Art Direction — Mecha Knights After the Final Edict v2
 
 *Canonical art, animation, VFX, and audio direction for Rebirth Protocol (2026-07-18). Builds on [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) (world), [`ROBOT_SHELL_DESIGN.md`](ROBOT_SHELL_DESIGN.md) (silhouette-first rule, still in force), and [`KNIGHT_ROBOT_ASSET.md`](KNIGHT_ROBOT_ASSET.md) (the Cobalt Knight, the calibration standard for everything here). Research basis: the Knights in Powered Armor trope family and a survey of how giant-knight media actually designs and fights its machines — Vision of Escaflowne (Guymelefs), Knight's & Magic (Silhouette Knights), Break Blade (Golems), Warhammer 40k Imperial Knights, BattleTech, Armored Core 6, Gundam Iron-Blooded Orphans.*
 
@@ -69,7 +69,7 @@ These marks can cross Order liveries because belief and military allegiance over
 - **Covenant of the Second Sun:** a radiant inner circle within a dark outer housing, most often on reactor, solar, greenhouse, or thermal-service plate rather than a war crest.
 - **Rite of the Whole Crown:** closed circles, perfect command rings, symmetrical seals, and complete crowns. Its visual opposition to Communion gaps should read instantly.
 - **Broken Choir:** concentric violet-black rings broken inward, as though the fracture is pulling toward a missing center.
-- **Mortal Measure:** a human hand beneath a simple measuring line; moderate marks are painted workshop signs, while Ash Levelers cut or burn the mark into captured plate.
+- **Second Sun Mortal Measure:** a human hand beneath a simple measuring line, often placed inside the Second Sun's radiant inner circle. Moderate marks are painted workshop signs; Ash Levelers cut or burn the hand-and-line into captured plate.
 - **Cinderbound:** deliberately incomplete personal markings and obvious disposable Edictbound grafts; they do not expect the transformed body or harness to survive.
 
 Religious symbols should not replace Order heraldry unless a character has renounced their military allegiance. Layer them as oath marks, cockpit seals, relic tags, pilgrim ribbons, inspection chalk, or battle honors.
@@ -81,7 +81,7 @@ Four material registers, in strict order of finish quality:
 1. **Order-pristine** (relic-pattern in Order hands): clean coherent plate, livery enamel, gold trim, soft godlight glow in the seams. The Cobalt Knight is the standard.
 2. **Free-company patchwork**: same ancestral bones, generations of mismatched replacement plates, welded seams, rope and strapping, hand-painted devices. Silhouette stays clean (gameplay legibility first); *surface* carries the poverty.
 3. **Scrapwright work** (revised 2026-07-18 — *dependable, not comic*): visibly new-made and proud of it — thick uniform boiler-plate, exposed rivets in honest rows, stenciled Wrightsguild marks, oil-and-steam venting instead of godlight, everything over-built and square. It should read like beloved farm machinery or a working locomotive standing among cathedral relics: outclassed, unashamed, and clearly the only thing on the field its owner could fix with their own hands.
-4. **Edictbound**: ancestral geometry gone *wrong* — asymmetric growths, seams that glow violet-black, surfaces that read slightly organic. Used sparingly; it should be alarming precisely because everything else obeys the rules.
+4. **Edictbound**: the underlying design, whether ancestral or modern, gone *wrong* through Final Edict infection. Asymmetric additions, violet-black seams, repeated command glyphs, and surfaces that read slightly organic show a system overriding its own manufacture. Used sparingly; it should be alarming precisely because everything else obeys its era's rules.
 
 ## 6. Fight choreography
 

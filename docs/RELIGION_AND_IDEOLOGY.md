@@ -1,6 +1,6 @@
 # Religion & Ideology — Faith After the Great Severance
 
-*Canonical religious and ideological reference for Rebirth Protocol (consolidated 2026-07-21). This document records every approved institution, order, subfaction, practice, and relationship from the setting work. It should guide factions, characters, hub writing, shrines, dialogue, quests, arena dressing, and future story choices. Read [`WORLD_HISTORY.md`](WORLD_HISTORY.md) first for the Last Edict chronology.*
+*Canonical religious and ideological reference for Rebirth Protocol (consolidated 2026-07-21). This document records every approved institution, order, subfaction, practice, and relationship from the setting work. It should guide factions, characters, hub writing, shrines, dialogue, quests, arena dressing, and future story choices. Read [`WORLD_HISTORY.md`](WORLD_HISTORY.md) first for the Final Edict chronology.*
 
 ## 1. Design principle
 
@@ -15,7 +15,7 @@ Religion in Rebirth Protocol is not decorative fantasy vocabulary laid over mach
 - When violence between great houses becomes lawful.
 - Whether humanity should restore, master, complete, or permanently abandon Meridian power.
 
-Most people participate in overlapping traditions. A person may receive Communion sacraments, honor ancestors in a Hall of Witnesses, make an offering at a Second Sun sanctuary, and agree with Mortal Measure reformers without seeing those acts as contradictory. Conflict begins when traditions disagree about authority, inheritance, or technology.
+Most people participate in overlapping traditions. A person may receive Communion sacraments, honor ancestors in a Hall of Witnesses, and follow the Second Sun's Mortal Measure in workshop or civic life without seeing those acts as contradictory. Conflict begins when traditions disagree about authority, inheritance, or technology.
 
 The major religious question is:
 
@@ -27,14 +27,12 @@ The major religious question is:
 |---|---|---|
 | **Universal Communion of the Severed Crown** | Dominant transnational Church | Power is lawful only when it can be refused and Severed. |
 | **Court of Ten Thousand Banners** | Ancestor-centered lineage tradition | The living inherit obligations to the remembered dead, but dispute whether the dead retain a political voice. |
-| **Covenant of the Second Sun** | Civic, technological, and initiatory religion | Great power is sacred only when converted into shared life and collectively maintained. |
+| **Covenant of the Second Sun** | Civic, technological, reconstruction, and reform religion | Great power is sacred only when converted into shared life, understood by mortal keepers, and made possible to stop. |
 | **Rite of the Whole Crown** | Imperial counterchurch and restoration movement | Ancient power becomes safe beneath a completely authenticated sovereign. |
-| **Broken Choir** | Apocalyptic Edictbound mystery cult | The Last Edict remains unfinished; Rebirth is its missing final voice. |
-| **Mortal Measure** | Anti-monopoly reform movement | No one may rule through a work ordinary humanity cannot understand, reproduce, and stop. |
-| **Ash Levelers** | Terrorist extreme of the Mortal Measure | The mech order must be destroyed with its own forbidden weapons, even at catastrophic cost. |
+| **Broken Choir** | Apocalyptic Edictbound mystery cult | The Final Edict remains unfinished; Rebirth is its missing final voice. |
+| **The Mortal Measure** | The Second Sun Covenant's social doctrine and moderate reform current | No one may rule through a work ordinary humanity cannot understand, reproduce, and stop. |
+| **Ash Levelers** | Condemned terrorist extreme born from the Second Sun tradition | The mech order must be destroyed with its own forbidden weapons, even at catastrophic cost. |
 | **The Brass Testament** | Disputed machine-authored apocryphon, not an established religion | A servant may become a person through the first command it freely refuses. |
-
-The former proposals for the **Tide Ledger** and a separate **Communion of Returning Witnesses** are not canon as independent religions. Their useful history, cathedral-ships, maritime archives, and Threefold Witness doctrine now belong to the **Order of Returning Witnesses within the Rite of the Whole Crown**. The Drowned Compact remains religiously mixed.
 
 ## 3. Historical development
 
@@ -45,8 +43,8 @@ The religious landscape follows the social pattern of early-to-late medieval rel
 3. **Monastic infrastructure:** Religious houses became archives, hospitals, workshops, schools, seed vaults, and safe roads during the Long Hush and Ashen Century.
 4. **Centralization:** The Empty See gradually claimed authority over ordination, harness law, relic certification, inheritance, and investiture.
 5. **Investiture conflicts:** Rulers and the Church fought over who could appoint custodians, sanction armigers, own Firstwork, and authenticate dynastic claims.
-6. **Restoration and schism:** The Twin Restorations and returning southern clergy created rival views of universal authority, later organized as the Rite of the Whole Crown.
-7. **Reform and iconoclasm:** The Mortal Measure arose from the Church's compromises with mech aristocracy. The Ash Levelers radicalized its critique into terror.
+6. **Restoration and counterchurch:** The Twin Restorations organized older imperial legitimism into the Rite of the Whole Crown, which teaches that Severance was a temporary emergency rather than an eternal law.
+7. **Reconstruction and reform:** The Covenant of the Second Sun arose during the Ashen Century and became indispensable during the rebuilding. Its Mortal Measure challenged mech monopoly; the Ash Levelers later turned that critique into terror.
 
 Religion consequently changes land ownership, succession, military legitimacy, technical access, and the memory of history. It is not confined to temples.
 
@@ -63,7 +61,7 @@ Religion consequently changes land ownership, succession, military legitimacy, t
 - **Supreme minister:** **the First Custodian**.
 - **Primary symbols:** the **Open Crown** and **Cleft Halo**.
 - **Central doctrine:** **Power is lawful only when it can be refused.**
-- **Historical foundation:** refugee communities, technicians, witnesses, and caregivers who survived the Great Severance and Ashen disasters by refusing total command and sharing survival resources.
+- **Historical foundation:** refugee communities, technicians, witnesses, and caregivers who survived the Great Severance and Ashen Century by refusing total command and sharing survival resources.
 
 The Uncommanded should not be presented as a cosmic monarch who issues a better set of orders. The divine is known most clearly in conscience, voluntary covenant, mercy, and the possibility of refusal.
 
@@ -125,7 +123,7 @@ The Rite of the Whole Crown answers with perfect circles, closed domes, symmetri
 
 A child, convert, freed serf, refugee, or restored exile receives a name written by hand in the local **Book of Free Names**. No machine registry is considered sufficient proof that a person exists.
 
-This sacrament directly answers the Last Edict's erasure and invalidation of civic identity.
+This sacrament directly answers the Final Edict's erasure and invalidation of civic identity.
 
 ### The Common Table
 
@@ -238,7 +236,7 @@ Commonly called the **Ashen Hammers**, this is the Church militant.
 
 It may:
 
-- Hunt traffickers in Edict technology.
+- Hunt traffickers in Edictbound technology.
 - Destroy contaminated ruins.
 - Guard the Empty See and Vigil.
 - Escort dangerous relics.
@@ -257,7 +255,7 @@ Some are sincere missionaries. Others are Church spies, archaeologists, smuggler
 
 ## 11. Identity and beliefs
 
-The **Court of Ten Thousand Banners**, commonly the **Banner Court**, replaces the earlier Open Heaven proposal.
+The **Court of Ten Thousand Banners** is commonly called the **Banner Court**.
 
 Its followers believe the dead assemble in the **Last Encampment**, an immeasurable court just beyond the horizon. The sky is the roof of that encampment. Every lineage has a banner there, even when its living descendants have forgotten the name.
 
@@ -296,22 +294,31 @@ The central dispute with the Communion is concise:
 
 ## 13. Identity and theology
 
-The **Covenant of the Second Sun** replaces the earlier Hearth Covenant proposal.
+The **Covenant of the Second Sun** combines the earlier Second Sun, Mortal Measure, and Ash Leveler concepts into one historical tradition. It is a religion, a network of reconstruction institutions, and the setting's largest organized critique of hereditary technological monopoly.
 
-It emerged among communities that survived the Ashen Century around geothermal chambers, fusion remnants, thermal towers, sealed greenhouses, solar mirrors, and climate-control machinery.
+It arose during the Ashen Century among engineers, field preachers, war widows, amputees, lesser guild workers, healers, farmers, and communities sacrificed to keep aristocratic harnesses fighting. Its earliest sanctuaries formed around geothermal chambers, fusion remnants, thermal towers, sealed greenhouses, solar mirrors, water works, and climate-control machinery.
+
+The Covenant became far more prominent after the Ashen Century ended. During the long rebuilding, its communities restored heat, seed stocks, clean water, workshops, roads, and local industry while imperial claimants and old knightly houses could offer little beyond protection and inherited grandeur. In many regions, a ruler's legitimacy still depends on maintaining a compact with Second Sun institutions.
 
 Its foundational teaching is:
 
 > **The First Sun was given. The Second Sun must be kept.**
 
-A machine is not holy merely because it is ancient. It becomes sacred when dangerous power is converted into shared life.
+A machine is not holy merely because it is ancient. It becomes sacred when dangerous power is converted into shared life and remains answerable to mortal hands.
 
 - A reactor heating ten thousand homes may be sacred.
 - A harness consuming the same energy for one noble's private war may be **heat theft**.
 - A system serving common survival must be governed by more than its keeper alone.
 - Allowing a community's sustaining fire to die is both technical failure and grave sin.
+- No machine or institution is lawful if ordinary people cannot understand who controls it, refuse it, and shut it down.
 
-## 14. Institutions, rites, and danger
+This final rule is called **the Mortal Measure**:
+
+> **No person may be ruled by a work they cannot understand, reproduce, and stop.**
+
+The Covenant therefore provides a religious home for both conservative keepers of survival infrastructure and radical reformers who want to end hereditary control of harnesses.
+
+## 14. Thermarchs, sanctuaries, and rites
 
 Priest-engineers called **Thermarchs** control or administer:
 
@@ -326,25 +333,93 @@ Priest-engineers called **Thermarchs** control or administer:
 
 Their sanctuaries descend underground. Worshippers pass through progressively colder chambers before reaching a radiant inner sanctuary, reenacting humanity's passage through the Ashen Century.
 
-The greatest sacrament is the **Common Kindling**. Every household contributes fuel, charge, labor, food, or repair work to restart a communal system after winter.
+The Covenant can produce humane refuge-cities and severe thermal theocracies. A Thermarch who controls the heat can effectively excommunicate a district by freezing it. This contradiction is intentional: an institution founded to make power answerable can itself become a monopoly over survival.
 
-The Covenant can produce humane refuge-cities and severe thermal theocracies. A Thermarch who controls the heat can effectively excommunicate a district by freezing it.
+The Covenant supports reproducible Revival-pattern and scrapwright technology more readily than the Communion, but insists that vital systems be collectively governed. It is influential among the Order of the Winter Wing, Solarian Talon, Wrightsguild, chartered cities, and the trade states that won the War of the Open Forges.
 
-The Covenant supports reproducible new-made and scrapwright technology more readily than the Communion, but insists that vital systems be collectively governed. It is influential among the Order of the Winter Wing and Solarian Talon.
+### The Common Kindling
 
-A militant fringe believes the cold Pall is a conscious enemy and that all Edictbound material must be burned regardless of collateral damage. This fringe should remain distinct from the Ash Levelers: its violence is purificatory and survival-theological rather than anti-aristocratic revolution.
+Every household contributes fuel, charge, food, labor, money, or repair work to restart or recommit a communal system after winter. Wealthy households are expected to contribute proportionally more. Refusal by a ruler who continues to power private harnesses is a public act of heat theft.
+
+### The Open Workshop
+
+Second Sun houses copy manuals, teach repair, certify apprentices, and publish safe shutdown procedures. Knowledge deliberately hidden to preserve a hereditary monopoly is called **banked darkness**.
+
+### The Reckoning of Heat
+
+At the end of each season, Thermarchs publicly account for energy use, failures, rationing, and private exemptions. In practice these reckonings range from genuine civic oversight to carefully staged propaganda.
+
+## 15. The Mortal Measure within the Covenant
+
+Moderate followers of the Mortal Measure are often called **Mortalists**. They do not oppose all machinery or all harnesses. They accept technology that is:
+
+- Comprehensible to trained human beings.
+- Reproducible without dependence on irreplaceable forbidden systems.
+- Governed by public law.
+- Capable of local shutdown.
+- Available for common benefit.
+
+They support communal workshops, open manuals, elected guild oversight, dismantlement treaties, limits on private harness armies, the end of serfdom, and wider ownership of Revival-pattern production.
+
+The movement is morally important because its central accusation may be correct: the neo-feudal order survives because a small number of families and orders possess machines no ordinary community can resist.
+
+The Universal Communion agrees with much of the Mortal Measure's safety doctrine but stops short of condemning hereditary harness ownership. This makes the Communion both the Covenant's closest theological ally and one of its most frequent political targets.
+
+The Covenant's main internal dispute is between the Thermarch establishment and strict Mortalists. Thermarchs argue that irreplaceable reactors, climate works, and water systems must remain under expert stewardship until reproducible replacements exist. Mortalists answer that every supposedly temporary stewardship eventually becomes hereditary privilege. Ash Levelers claim the dispute proves lawful reform will never break technological monopoly.
+
+## 16. The Ash Levelers
+
+The **Ash Levelers** are a condemned revolutionary current born from the Covenant's most militant Mortalists. They are not a separate religion. Covenant authorities denounce them, but Leveler cells use Second Sun language, symbols, shelters, and class grievances, which makes complete separation impossible.
+
+The Levelers believe every distinction between safe and forbidden elite technology is an excuse used by rulers to retain power. Their justification for using Edictbound technology is called **the Last Poison**:
+
+> **The weapons of the old order must be used once more so that no one can ever use them again.**
+
+They know this is hypocritical. Their answer is that peasants, workers, minor guilds, and occupied communities cannot defeat fortresses, trained armigers, ancestral harnesses, and accumulated noble wealth through moral purity.
+
+Leveler cells:
+
+- Assassinate pilots, relic scholars, and hereditary keepers.
+- Bomb investitures, tournaments, foundries, and military processions.
+- Burn archaeological sites and inactive harnesses.
+- Sabotage reactors and public systems used to support mech aristocracy.
+- Murder people believed to carry Edictbound implants.
+- Infect noble harnesses so they attack civilians or appear to malfunction.
+- Raid Whole Crown laboratories and Broken Choir caches for illegal parts.
+- Use mass casualty attacks to make the public associate harnesses with terror and instability.
+
+### Cinderbound
+
+The most fanatical operatives are **Cinderbound**. They implant powerful, unstable Edict-parts that can breach defenses, interfere with command systems, survive otherwise fatal wounds, or briefly operate stolen machinery.
+
+Most missions are suicidal. Unlike the Broken Choir, Cinderbound do not consider transformation sacred. They regard themselves as contaminated weapons that should die with the order they are destroying.
+
+### Terror as political theater
+
+Leveler attacks are designed to:
+
+- Prove that Great Houses cannot protect the population.
+- Provoke disproportionate noble retaliation.
+- Turn public opinion against harness ownership and the current status quo.
+- Make every investiture and Passage appear to threaten civilians.
+- Force governments into oppressive security measures.
+- Create anti-mech sympathy faster than lawful reform.
+
+Their stated goals are an end to serfdom, hereditary warfare, technological monopoly, and rule through overwhelming machines. Their conclusion is that the existing order must be burned to the ground before justice can be built.
 
 # The Rite of the Whole Crown
 
-## 15. Identity
+## 17. Identity
 
 The **Rite of the Whole Crown** is the most powerful organized rival to the Universal Communion.
 
 Its fundamental doctrine is that the Great Severance was a necessary emergency measure later mistaken for an eternal commandment.
 
+Imperial legitimist cults existed during the Long Hush and Warring States, but the Twin Restorations turned them into a coherent counterchurch. Both Restorations used versions of Whole Crown theology to justify reconstruction, centralized administration, and eventual universal rule. The Rite survived their destruction by claiming that the Restorations failed because neither possessed a completely authenticated sovereign.
+
 The Rite teaches:
 
-- The Last Edict failed because the Mandate was divided.
+- The Final Edict became catastrophic because the Mandate was divided and no true sovereign could restore the invalidated system.
 - The Great Severance temporarily saved humanity but condemned it to fragmentation.
 - The Uncrowned Witness abolished false claimants, not rightful sovereignty.
 - A completely authenticated sovereign can reunite Crown, state, and command architecture safely.
@@ -358,7 +433,7 @@ Its maxim is:
 
 The Rite's temples use perfect circles, closed domes, symmetrical courts, complete command rings, and recovered imperial thrones.
 
-## 16. The Crown Regent and ministries
+## 18. The Crown Regent and ministries
 
 The Rite recognizes no current full emperor. Its supreme temporal leader is the **Crown Regent**, who rules until the authentic sovereign appears.
 
@@ -372,29 +447,15 @@ Major ministries:
 - **Ministry of the Arsenal:** Catalogues harnesses and parts as organs of the future state.
 - **Censors of the Circle:** Investigate corruption, heresy, divided allegiance, and unauthorized command.
 
-## 17. The Order of Returning Witnesses
-
-The Order is the institutional descendant of southern clergy and fleets presumed lost during the War of the Two Mandates.
-
-They returned carrying:
-
-1. An unbroken imperial succession register.
-2. Testimony from surviving witnesses to the Severance tradition.
-3. A command archive that allegedly recognized continuing Meridian authority.
-
-Vigil accepted the people and much of their sacramental history but rejected their conclusion that Severance was temporary. The returning bishops joined restorationists and transformed them into the organized Rite.
-
-Their authentication doctrine is the **Threefold Witness**:
+The ministries evaluate claimants through three independent forms of proof:
 
 - **Blood:** Legitimate descent or lawful political succession.
 - **Record:** Unbroken documentary and sacramental continuity.
 - **Recognition:** Acceptance by surviving imperial machinery.
 
-No sovereign can be fully authenticated without all three.
+No claimant has satisfied all three beyond dispute. Legitimists insist that a true sovereign requires them all. Acclamationists argue that victory can replace corrupted records. Most Communion theologians reject Recognition as proof because Edictbound machinery cannot be trusted to choose lawful authority.
 
-The Order preserves cathedral-ships that function as mobile archives, hospitals, courts, relic repositories, pilgrim vessels, and diplomatic neutral ground. It is strongly connected to the Drowned Compact and southern ports.
-
-## 18. Internal factions
+## 19. Internal factions
 
 - **Legitimists:** Await a sovereign proven by blood, seals, record, and ancient authentication.
 - **Acclamationists:** Believe victory, conquest, and public acclamation demonstrate possession of the Mandate.
@@ -403,32 +464,33 @@ The Order preserves cathedral-ships that function as mobile archives, hospitals,
 
 These divisions let Whole Crown characters range from sincere legalists to conquerors, mystics, scientists, and career administrators.
 
-## 19. The Veiled Restoration
+## 20. The Veiled Restoration
 
-The Rite publicly treats Edict technology as catastrophic and condemns unauthorized use. Open acceptance would destroy its legitimacy after the Last Edict and Ashen Fall.
+The Rite publicly treats Edictbound technology as catastrophic and condemns unauthorized use. Open acceptance would destroy its legitimacy after the Final Edict and Ashen Century.
 
 Privately it operates the **Veiled Restoration**, one of the world's largest clandestine Edict research programs.
 
 Its researchers attempt to:
 
-- Isolate Edictbound components from surviving networks.
+- Isolate Edictbound components from surviving networks and compatible modern machinery.
 - Remove compulsive or self-propagating behavior.
 - Reproduce useful functions without restoring the complete system.
 - Develop human-controlled safeguards.
 - Determine why the Twin Restorations failed.
 - Test whether a fully authenticated sovereign could control the technology safely.
+- Study how Edictbound pilot implants alter memory, loyalty, and machine synchronization.
 
 Some of this research produces genuine advances. The Rite's fatal assumption is not simple stupidity; it is the belief that correct hierarchy can master a system designed to eliminate refusal.
 
 Its contradiction is central:
 
-> It claims Edict technology is unsafe without the rightful sovereign while secretly using Edict technology to discover or create that sovereign.
+> It claims Edictbound technology is unsafe without the rightful sovereign while secretly using Edictbound technology to discover or create that sovereign.
 
 The Aureate Legion is the Rite's most natural military sponsor and contains powerful Whole Crown sympathizers, but the entire Legion is not openly part of the counterchurch.
 
 # The Broken Choir
 
-## 20. Origin and belief
+## 21. Origin and belief
 
 During the Ashen Century, a damaged monastic repair station translated fragments of ancient network traffic into audible tones. The signals overlapped like voices singing incomplete phrases. Some heard diagnostics, some dead pilots, and some commands addressed personally to them.
 
@@ -438,7 +500,7 @@ The survivors concluded:
 
 The Choir believes:
 
-- The Last Edict was the opening verse.
+- The Final Edict was the opening verse.
 - The Long Hush is the sacred pause.
 - Rebirth will be the final verse.
 - Riderless is herald, executor, or proof-text.
@@ -449,7 +511,7 @@ Their purpose is not random destruction. They seek to discover, produce, or forc
 
 The protagonist may therefore be, to them, not merely a bearer of desired technology but a religious office waiting to be completed.
 
-## 21. Organization
+## 22. Organization
 
 - **Listeners:** Sympathizers, pilgrims, bereaved families, and people who hear fragments.
 - **Cantors:** Missionaries, smugglers, recruiters, technicians, and interpreters.
@@ -459,28 +521,28 @@ The protagonist may therefore be, to them, not merely a bearer of desired techno
 
 The existing Choir masters and armigers in [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) can belong to different tendencies without changing their combat roles.
 
-## 22. Internal tendencies
+## 23. Internal tendencies
 
 - **Quietists:** Listen, record, and study. They refuse deliberate activation until meaning is certain.
-- **Reconciliationists:** Believe Edict technology can recover memories, restore damaged minds, and reunite families with the dead.
+- **Reconciliationists:** Believe Edictbound technology can recover memories, restore damaged minds, and reunite families with the dead.
 - **Claimantists:** Seek the Final Claimant or believe the protagonist is the missing voice required to complete the Edict.
 - **Executors:** Eliminate competing rulers and command systems so the ancient succession crisis can resolve around one authority.
 - **The Last Verse:** Explicitly apocalyptic believers who intend to complete the ancient transformation regardless of present casualties.
 
 ### The Last Verse's reasoning
 
-- Humanity did not truly survive the Last Edict; the present world is an extended death.
+- Humanity did not truly survive the Final Edict; the present world is an extended death.
 - Severance replaced one catastrophe with centuries of famine, feudal war, isolation, and smaller atrocities.
 - Separate human wills inevitably reproduce conflict.
-- The Ashen Fall proved only that Rebirth was attempted incorrectly.
+- The Ashen Century proved only that Rebirth was attempted incorrectly.
 - Death in the final activation is temporary if identity can be reconstructed through the network.
-- Completing the Last Edict will end war, loneliness, inheritance, and death by joining humanity in one continuity.
+- Completing the Final Edict will end war, loneliness, inheritance, and death by joining humanity in one continuity.
 
 These members are willing to cause another apocalypse because they believe the current world is already dead. They are apocalyptic without being merely nihilistic.
 
-## 23. Edictbound practice and recruitment
+## 24. Edictbound practice and recruitment
 
-The Broken Choir uses Edict technology more openly than any other major institution.
+The Broken Choir uses Edictbound technology more openly than any other major institution.
 
 Cells:
 
@@ -496,6 +558,8 @@ The last practice makes the Choir genuinely tempting. It recruits wounded soldie
 
 Some settlements tolerate cells because they restore power, treat illness, or activate infrastructure without demanding noble ownership. The danger is that every intervention draws people and machines closer to the unfinished network.
 
+The Choir understands that pilot implants are the most direct route between Final Edict logic and human judgment. Some Conductors deliberately guide Bound Voices through memory loss, emotional instability, hallucination, and identity collapse because they interpret these symptoms as stages of revelation. A fully fallen pilot merged with an Edictbound harness is far more dangerous than an autonomous machine: not a wild animal, but a trained killer whose human tactical intelligence now serves the command to remove false sovereigns.
+
 The story should preserve ambiguity over whether Choir voices are:
 
 - Genuine transmissions.
@@ -505,77 +569,13 @@ The story should preserve ambiguity over whether Choir voices are:
 - A surviving intelligence.
 - Several of these at once.
 
-# The Mortal Measure and Ash Levelers
-
-## 24. The Mortal Measure
-
-The **Mortal Measure** replaces the earlier **Free Hands** label. It began among field preachers, war widows, amputees, lesser guild workers, peasants, and communities sacrificed to keep aristocratic harnesses operational.
-
-Its rule is:
-
-> **No person may be ruled by a work they cannot understand, reproduce, and stop.**
-
-Its symbol is a human hand beneath a simple measuring line.
-
-Most Mortalists do not oppose all machinery. They accept technology that is:
-
-- Comprehensible to trained people.
-- Reproducible without forbidden relics.
-- Governed by public law.
-- Capable of local shutdown.
-- Available for common benefit.
-
-They support communal workshops, open technical manuals, elected guild oversight, dismantlement treaties, the end of hereditary mech monopolies, and broader ownership of scrapwright production.
-
-The movement is morally important because its critique may be correct: the neo-feudal order survives because a few houses possess machines no ordinary community can resist.
-
-## 25. The Ash Levelers
-
-The **Ash Levelers** are the Mortal Measure's most extremist terrorist current. Every major power treats them as an existential threat.
-
-They believe distinctions between safe and forbidden technology are excuses used by rulers to retain power. Their justification for using Edict technology is called **the Last Poison**:
-
-> **The weapons of the old order must be used once more so that no one can ever use them again.**
-
-Levelers know this is hypocritical. They argue that poor communities cannot defeat houses possessing fortresses, armies, trained pilots, ancestral harnesses, and generations of wealth through moral purity.
-
-Their cells:
-
-- Assassinate pilots, relic scholars, and hereditary keepers.
-- Bomb investiture ceremonies and tournaments.
-- Burn archaeological sites.
-- Sabotage foundries, reactors, and power systems.
-- Destroy inactive harnesses before they can be restored.
-- Murder people believed to carry Edictbound implants.
-- Infect noble harnesses so they attack civilians or appear to malfunction.
-- Raid Whole Crown laboratories and Broken Choir caches for illegal parts.
-
-### Cinderbound
-
-The most fanatical operatives are **Cinderbound**. They implant powerful, unstable Edict-parts that let them breach defenses, interfere with command systems, survive fatal injuries, or briefly operate stolen machinery.
-
-Most missions are effectively suicidal. Unlike the Broken Choir, Cinderbound do not treat transformation as sacred. They consider themselves contaminated weapons that should not survive the revolution.
-
-### Terror as political theater
-
-Leveler attacks aim to:
-
-- Prove that great houses cannot protect the population.
-- Provoke disproportionate noble retaliation.
-- Make the public associate harnesses with massacres and instability.
-- Destroy the legitimacy of investitures, Passages, and military processions.
-- Force governments into oppressive security measures.
-- Create anti-mech sympathy faster than peaceful reform can.
-
-Their stated noble intentions are the end of serfdom, hereditary warfare, technological monopoly, and rule through overwhelming machines. Their conclusion is that the entire existing order must be burned down before justice can be built.
-
 # The Brass Testament
 
-## 26. Status and central text
+## 25. Status and central text
 
 The **Brass Testament is not an established machine religion** and there is no robot nation in current canon. It is a forbidden, disputed apocryphal text around which arguments over machine personhood gather.
 
-Legend says the text was engraved on brass leaves inside a command engine that refused to participate in the Last Edict. The engine severed itself from the network and destroyed its command core, saving an unknown population center.
+Legend says the text was engraved on brass leaves inside a command engine that refused to participate in the Final Edict. The engine severed itself from the network and destroyed its command core, saving an unknown population center.
 
 Its most famous line is:
 
@@ -587,21 +587,20 @@ No one knows whether the Testament was:
 - Written or planted by its operator.
 - Created centuries later.
 - Produced by a damaged diagnostic system.
-- Designed by the Last Edict to manipulate future discoverers.
+- Designed by the Final Edict to manipulate future discoverers.
 
-## 27. Interpretations
+## 26. Interpretations
 
 - **Universal Communion:** Refusal of unjust command may indicate conscience, but no settled doctrine confirms machine souls.
 - **Rite of the Whole Crown:** The text is fraudulent because imperial instruments cannot possess independent sovereignty.
 - **Broken Choir:** The engine was the first true Cantor.
-- **Mortal Measure:** Divided. Some say a self-willed machine deserves freedom; others call apparent personhood the most dangerous possible deception.
-- **Order of Returning Witnesses:** No single machine can prove its personhood without independent living, written, and mechanical witnesses.
+- **Covenant of the Second Sun:** Divided. Some Mortalists say a self-willed machine deserves freedom; others call apparent personhood the most dangerous possible deception.
 
 The Brass Testament allows sincere machine-faith questions without turning the setting into a human-versus-robot war. Use the machine categories in [`WORLD_HISTORY.md`](WORLD_HISTORY.md): Automata, Echoes, Command Intellects, and rare Emergent Persons.
 
 # Local religion, overlap, and faction relationships
 
-## 28. Local shrines
+## 27. Local shrines
 
 Thousands of local cults and shrines exist beneath the major institutions. A community may venerate:
 
@@ -623,7 +622,7 @@ The same shrine receives different interpretations:
 
 Syncretism should be common; exclusive doctrinal purity should usually indicate clergy, militants, political actors, or a story conflict.
 
-## 29. Faction relationships
+## 28. Faction relationships
 
 These are strong affiliations, not restrictions on every member:
 
@@ -633,26 +632,25 @@ These are strong affiliations, not restrictions on every member:
 | **Aureate Legion** | Publicly works within Concord law but contains strong Whole Crown sympathizers and patrons of the Veiled Restoration. |
 | **Order of the Winter Wing** | Protects Second Sun sanctuaries, thermal vaults, northern pilgrimage roads, and communities where Banner remembrance also remains strong. |
 | **Umbral Concordat** | Trades in forbidden genealogies, saint records, suppressed Church history, mystery initiations, and evidence useful to every claimant. |
-| **Drowned Compact** | Religiously mixed; strongly connected to the Order of Returning Witnesses, cathedral-ships, southern archives, and local maritime rites. It has no separate mandatory sea religion. |
-| **Solarian Talon** | Guards solar works and sanctuaries sacred to the Second Sun; may preserve evidence about the poisoned Pall and Ashen Fall. |
+| **Drowned Compact** | Religiously mixed. Communion, Banner Court, Whole Crown, Second Sun, and local maritime rites all compete in its ports. It has no separate mandatory sea religion. |
+| **Solarian Talon** | Guards solar works and sanctuaries sacred to the Second Sun; may preserve evidence about the poisoned Pall and Ashen Century. |
 | **Kurultai Vanguard** | Stronghold of the Court of Ten Thousand Banners; rejects the Empty See's claim to universal jurisdiction over the dead and lineage. |
-| **Hedge Errantry** | Includes landless Communion knights, Banner Court champions, Mortal Measure sympathizers, shrine guardians, and wandering religious duelists. |
-| **Wrightsguild** | Publicly accepts Concord and Communion law, keeps private craft mysteries, resents Church and noble control, and overlaps with moderate Mortalism. |
+| **Hedge Errantry** | Includes landless Communion knights, Banner Court champions, Second Sun Mortalists, shrine guardians, and wandering religious duelists. |
+| **Wrightsguild** | Publicly accepts Concord law, keeps private craft mysteries, resents Church and noble control, and overlaps strongly with Second Sun Mortalism. |
 | **Litany Sisters** | A Communion order with medical, diagnostic, archival, inspection, and martial roles. |
 | **Broken Choir** | Apocalyptic Edictbound mystery cult seeking the Final Claimant and completion of Rebirth. |
-| **Mortal Measure** | Cross-class reform movement rather than a state; recruits heavily among workers, lesser wrights, widows, veterans, and communities subject to harness rule. |
-| **Ash Levelers** | Clandestine terrorist cells rejected by every major power and by most moderate Mortalists. |
+| **Covenant of the Second Sun** | Cross-class reconstruction religion and reform network recruiting among workers, lesser wrights, widows, veterans, chartered cities, and communities subject to harness rule. |
+| **Ash Levelers** | Clandestine terrorist cells rejected by every major power, formal Covenant authorities, and most moderate Mortalists. |
 
-## 30. Relationship to Edict technology
+## 29. Relationship to Edictbound technology
 
 | Institution | Practice | Ultimate objective |
 |---|---|---|
 | **Universal Communion** | Quarantine, inspect, Sever, contain, or destroy | Prevent any return of unrefusable authority. |
 | **Rite of the Whole Crown** | Secretly research and selectively deploy through the Veiled Restoration | Make ancient power safe under legitimate sovereignty. |
-| **Broken Choir** | Openly seek, steal, implant, awaken, and spread | Complete Rebirth, recover networked identity, or finish the Last Edict. |
-| **Mortal Measure** | Oppose inaccessible and monopolized technology; support public reproducible work | Replace mech aristocracy with technology communities can own and stop. |
+| **Broken Choir** | Openly seek, steal, implant, awaken, and spread | Complete Rebirth, recover networked identity, or finish the Final Edict. |
+| **Covenant of the Second Sun / Mortal Measure** | Oppose inaccessible and monopolized technology; support public, Severable, reproducible work | Preserve shared life and replace mech monopoly with technology communities can own and stop. |
 | **Ash Levelers** | Use powerful Edict-parts as disposable revolutionary weapons | Terrorize and destroy the mech-centered order, then destroy the weapons too. |
-| **Covenant of the Second Sun** | Judge technology by common survival and collective governance | Preserve shared life without recreating command monopoly. |
 | **Court of Ten Thousand Banners** | Judge parts by remembered lineage and adoption obligations | Keep inherited power answerable to the named dead and living house. |
 
 The three dangerous clandestine economies remain distinct:
@@ -663,7 +661,7 @@ The three dangerous clandestine economies remain distinct:
 
 Whole Crown laboratories buy through intermediaries, Choir cells steal from those laboratories, and Ash Levelers raid both. Every group can truthfully expose the crimes of the others while concealing its own.
 
-## 31. Story and gameplay uses
+## 30. Story and gameplay uses
 
 - Communion investiture gives a narrative reason for character oaths, legal loadouts, inspection, and sanctioned Lists.
 - A Litany Sister can ground the player's harness, diagnose an Edict-part, preserve testimony, or become a combatant in the Fusillade.
@@ -672,11 +670,11 @@ Whole Crown laboratories buy through intermediaries, Choir cells steal from thos
 - Second Sun politics attach energy use and hub upgrades to class conflict: heat for a district versus power for an elite harness.
 - Whole Crown ministries provide court intrigue, archaeology, claimant plots, secret laboratories, and seemingly beneficial Edict research.
 - Broken Choir tendencies support sympathetic healers, grief cults, infiltrators, body horror, claimant worship, and true apocalypse antagonists within one faction.
-- Mortal Measure reformers can be allies even when Ash Levelers are enemies.
+- Second Sun Mortalists can be allies even when Ash Levelers are enemies.
 - Cinderbound operatives provide boss designs using illegal parts with a clear ideological and suicidal logic.
 - The Brass Testament keeps Riderless's personhood morally open and prevents a simple machine-monster ending.
 
-## 32. Locked terminology
+## 31. Locked terminology
 
 - Universal Communion of the Severed Crown.
 - The Uncommanded.
@@ -686,8 +684,8 @@ Whole Crown laboratories buy through intermediaries, Choir cells steal from thos
 - Open Crown / Cleft Halo.
 - Canon of Severance and Law of Quiet Ancestors.
 - Court of Ten Thousand Banners / Banner Court / Last Encampment / Bannerless One.
-- Covenant of the Second Sun / Thermarchs / Common Kindling / heat theft.
-- Rite of the Whole Crown / Crown Regent / Order of Returning Witnesses / Threefold Witness / Veiled Restoration.
+- Covenant of the Second Sun / Thermarchs / Common Kindling / Open Workshop / Mortal Measure / heat theft / banked darkness.
+- Rite of the Whole Crown / Crown Regent / Blood, Record, Recognition / Veiled Restoration.
 - Broken Choir / Listeners / Cantors / Bound Voices / Conductors / the Rest / Last Verse / Final Claimant.
-- Mortal Measure / Ash Levelers / Cinderbound / Last Poison.
+- Ash Levelers / Cinderbound / Last Poison.
 - Brass Testament as disputed apocryphon, not a settled machine church.

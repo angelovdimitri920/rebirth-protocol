@@ -1,15 +1,17 @@
 # The Armory — Canonical Parts Roster & Naming Reference v2
 
-*Feature-complete roster revision (2026-07-18), with world-canon terminology consolidated 2026-07-21. v1 mapped the source material to archetype families; **v2 is the full catalog**: every body, gun, bomb, pod, and leg part in the source lists (Parts FAQ, parts list w/ stat cards, Weapon Damage Guide) has a themed counterpart here with stats, and — per standing directive — **every gun has a melee counterpart and every bomb a shield counterpart**. Sources are inspiration only: every name is original, all numbers are recalibrated to our scale (which conveniently shares the source's 1000-vigor baseline). Companion docs: [`COMBAT_DOCTRINE.md`](COMBAT_DOCTRINE.md) (how battles work), [`ARENA_ROSTER.md`](ARENA_ROSTER.md) (the Lists), [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) (world), [`WORLD_HISTORY.md`](WORLD_HISTORY.md) (Edict technology), and [`ART_DIRECTION.md`](ART_DIRECTION.md) (look/sound).*
+*Feature-complete roster revision (2026-07-18), with world-canon terminology consolidated 2026-07-21. v1 mapped the source material to archetype families; **v2 is the full catalog**: every body, gun, bomb, pod, and leg part in the source lists (Parts FAQ, parts list w/ stat cards, Weapon Damage Guide) has a themed counterpart here with stats, and — per standing directive — **every gun has a melee counterpart and every bomb a shield counterpart**. Sources are inspiration only: every name is original, all numbers are recalibrated to our scale (which conveniently shares the source's 1000-vigor baseline). Companion docs: [`COMBAT_DOCTRINE.md`](COMBAT_DOCTRINE.md) (how battles work), [`ARENA_ROSTER.md`](ARENA_ROSTER.md) (the Lists), [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) (world), [`WORLD_HISTORY.md`](WORLD_HISTORY.md) (Edictbound technology), and [`ART_DIRECTION.md`](ART_DIRECTION.md) (look/sound).*
 
 ---
 
-## 1. The three tiers (revised)
+## 1. The three gameplay tiers (revised)
+
+These are armory and reward classifications, not a complete historical taxonomy. In world canon, **Edictbound is an infection state that can affect technology from any era**, but the game presents infected parts as a forbidden tier because that is how pilots, inspectors, and inventories treat them.
 
 | Tier | In-fiction meaning | Source analogue | Game identity |
 |---|---|---|---|
 | **Relic-pattern** | Ancestral parts maintained by the Orders. Nobody can build one; every armory knows its pattern-name. | The legal roster | The standard catalog (§4–§10) |
-| **Edictbound** | Firstwork retaining active command logic, interfaces, or propagation behavior from the Last Edict. Banned under the Concord of Ash; coveted anyway. It glows wrong and may alter permissions, memory, machinery, or the pilot. Common terms: **Edict-part**, **illegal part**. | "Illegal" parts (Rahu / Penumbra / Wyrm tier) | Endgame drops & unlocks: stronger, corrupted, each with a real drawback. **Allowed to break frame directives** (the 2-dash cap, etc.) — that is why they are banned. Using one halves your laurels (`COMBAT_DOCTRINE.md` §8) |
+| **Edictbound** | Any part infected with active Final Edict command logic, whether its original manufacture was Firstwork, Restoration, Revival, or modern. Banned under the Concord of Ash; coveted because it retains capabilities Severance removed. It may alter permissions, memory, machinery, implants, or the pilot. Common terms: **Edict-part**, **illegal part**. | "Illegal" parts (Rahu / Penumbra / Wyrm tier) | Endgame drops & unlocks: stronger, corrupted, each with a real drawback. **Allowed to break frame directives** (the 2-dash cap, etc.) because it is not obeying Severed limits. Using one halves your laurels (`COMBAT_DOCTRINE.md` §8) |
 | **Scrapwright** | **New-made, human-designed, human-maintained.** The lowest tier — and the only one people truly *own*. Not a joke: scrapwright work is boring, honest, and dependable. It can't match a relic's edge or an Edictbound part's wrongness, but it takes abuse, repairs cheap, and fits any harness without a fuss. | The "Can" tier, reimagined | The dependable floor: high SOAK/POISE, modest MIGHT, zero gimmicks, and unique **dependability perks** (§1.2). Maintained by the Wrightsguild |
 
 ### 1.1 Naming language (unchanged from v1)
@@ -23,6 +25,12 @@ Every scrapwright part follows the same identity: **worse peaks, better floors.*
 - No gimmick behaviors — straight shots, flat swings, square shields.
 - Each carries one **dependability perk** (see entries): rounds that survive your knockdown, free full repair between fights, sure footing on hazards, an uninterruptible swing, a short toll. Dependability *is* the gimmick.
 - **Fitting**: scrapwright parts have minimal Burden (§2.6) — they fit anything, instantly. Relic parts strain a harness; Edictbound parts torture one.
+
+### 1.3 Revival-pattern harnesses (world canon, not yet a separate gameplay tier)
+
+**Revival-pattern** harnesses are recently reproducible frames derived from Twin Restoration and pre-Ashen blueprints. They enabled the smaller-state coalition's victory in the War of the Open Forges twenty to twenty-five years before the story. Individually they remain below the finest ancestral harnesses, but guild foundries can produce frames and replacement parts in numbers.
+
+For the current catalog, Revival equipment uses scrapwright gameplay rules unless a later content pass establishes a distinct identity. Do not add a fourth tier only for lore. Its present narrative purpose is to destabilize hereditary knight power and explain why mass armies of newly made harnesses may soon exist.
 
 ---
 
@@ -453,11 +461,14 @@ Any armiger may *field* any part (loadout freedom is untouchable). But every pat
 
 ## 16. Edictbound interactions (how the banned tier touches everything)
 
-- **Nature**: these are not simply overpowered relics. Each retains active command logic, interfaces, or propagation behavior from the Last Edict and may seek authority, rewrite permissions, alter memory, or resist shutdown (`WORLD_HISTORY.md` §10).
+- **Nature**: these are not simply overpowered relics. Edictbound is infection by active Final Edict command logic in a part of any age. It may seek authority, rewrite permissions, alter memory, spread into compatible systems, or resist shutdown (`WORLD_HISTORY.md` §13).
 - **Acquisition**: never sold or drafted normally. Found in **sealed reliquary caches** hidden in the world (the source's hidden-pickup pattern — behind the column, inside the broken carriage), claimed from Broken Choir masters, stolen from Veiled Restoration laboratories, taken from Ash Leveler cells, or granted at story beats. Collection is tracked in-fiction as **the Choir's Ledger**.
+- **Dormancy**: any recovered machine component can conceal Final Edict infection even when it appears inert. Certification reduces uncertainty; it never proves a perfect cleansing.
 - **Laurels**: fielding even one Edictbound part halves that fight's laurels (`COMBAT_DOCTRINE.md` §8). Vow events bar them outright; Choir gauntlets *expect* them.
 - **Balance position**: budgeted ~115–130% of relic effectiveness, always with a real drawback in the kit itself (the Martyr's ward, the Stilled Voice's damage, the Moon Door's absences) — the laurel economy prices them, the drawback disciplines them.
 - **Frame rules**: Edictbound parts may break frame directives (dash caps, mend rules) — that is *why* they're banned, and they are the only tier allowed to.
+- **Cumulative risk**: repeated use lets the command root itself more deeply in frame memory, cybernetics, and the pilot. The current combat build represents risk through part drawbacks and laurel loss only. A future campaign/narrative pass must decide how to track short-term memory loss, long-term memory erosion, emotional instability, hallucinations, loss of reality testing, and eventual Final Edict takeover before permanent contamination mechanics are implemented.
+- **Pilot danger**: a fully compromised pilot merged with a harness is more dangerous than an autonomous Edictbound machine. The machine gains human tactical judgment while the pilot loses the ability to refuse the order to remove false sovereigns.
 - **Overload**: Edictbound guns obey the overload rule like any relic (the wrongness does not protect a volley — the Choir Unending is famously overloadable). Only scrapwright rounds persist.
 - **AI usage**: only Broken Choir fighters, empowered Paragons of the Golden Passage, the First Armiger, Riderless, and authored story encounters involving the Whole Crown's Veiled Restoration or Ash Leveler Cinderbound ever field them. A common armiger with an Edictbound arm is a story event, never a random roll.
 - **Faction distinction**: Whole Crown researchers want to master Edict-parts discreetly; the Broken Choir openly seeks, implants, and awakens them; Ash Levelers use them as disposable terror weapons they intend to destroy with themselves. These motives should change dialogue, drawbacks, and presentation even when two encounters use the same mechanical tier.

@@ -96,6 +96,16 @@ namespace RebirthProtocol.Domain
         // the overload rule. Reserved for the scrapwright line — no built
         // gun sets it; Matchlock will when the Pass P wave lands.
         public bool SurvivesKnockdown;
+
+        // Volley capability (ARMORY §4, Pass E): a spread gun fires
+        // ProjectileCount independently-homing streams per trigger-pull,
+        // fanned evenly across SpreadDegrees and centered on the aimed
+        // heading. 1/0 (every gun before Trefoil) is exactly today's
+        // single-shot behavior. DOCTRINE §13 pillar 3 "volley truth": Damage
+        // here is PER STREAM, not a headline volley total assuming every
+        // stream connects — the balance harness measures the real number.
+        public int ProjectileCount = 1;
+        public float SpreadDegrees;
     }
 
     public sealed class MeleeWeaponPart
@@ -112,6 +122,15 @@ namespace RebirthProtocol.Domain
         public float WhiffRecovery; // recovery after a MISS -- the real cooldown
         public float KnockbackSpeed;
 
+        // Volley capability (ARMORY §5, Pass E) for multi-angle melee (Hydra
+        // Flail): each entry is a hit-check center, in degrees relative to
+        // facing, each HitArcDegrees wide; a hit lands if the target falls
+        // within ANY prong. Null/empty (every weapon before Hydra Flail) is
+        // exactly today's single wide-arc-around-facing behavior — still one
+        // hit per swing (MeleeAction.TryRegisterHit's budget is unchanged),
+        // just a more forgiving angle-of-attack, not extra hits.
+        public float[] ProngAngles;
+
         public MeleeTuning ToTuning() => new MeleeTuning
         {
             Damage = Damage,
@@ -121,7 +140,8 @@ namespace RebirthProtocol.Domain
             SwingActiveTime = SwingActiveTime,
             HitRecovery = HitRecovery,
             WhiffRecovery = WhiffRecovery,
-            KnockbackSpeed = KnockbackSpeed
+            KnockbackSpeed = KnockbackSpeed,
+            ProngAngles = ProngAngles
         };
     }
 
@@ -131,18 +151,32 @@ namespace RebirthProtocol.Domain
         Self
     }
 
+    // Volley capability (ARMORY §6, Pass E): how a multi-point bomb's blast
+    // centers are laid out relative to the impact point. Single (every bomb
+    // before this pass) is the existing one-explosion behavior, unchanged.
+    public enum BlastPattern
+    {
+        Single,
+        Line, // a row straddling the impact, along the throw direction (Palisade)
+        Split // two points offset from the impact (Pincer Charge)
+    }
+
     public sealed class BombPart
     {
         public string Id;
         public string Name;
         public string Blurb;
-        public float Damage;
+        public float Damage; // PER BLAST POINT — DOCTRINE §13 pillar 3 "volley truth"
         public float EnduranceDamage;
         public float Cooldown;
         public float BlastRadius;
         public float ArcHeight; // lob apex above the midpoint
         public ReticuleAnchor ReticuleAnchor;
         public float ReticuleRange; // clamp for Target, fixed distance for Self
+
+        public BlastPattern Pattern = BlastPattern.Single;
+        public int BlastPoints = 1; // Line: total points in the row; Split: always 2
+        public float BlastSpacing; // Line: meters between adjacent points; Split: offset from center to each side
     }
 
     // Raise behaviors (ARMORY_REFERENCE §2.3, §7): what raising the shield
@@ -274,20 +308,48 @@ namespace RebirthProtocol.Domain
         {
             new GunPart { Id = "blaster", Name = "Arbalest", Blurb = "The armory's workhorse. Honest damage, honest tracking.", Damage = 35f, EnduranceDamage = 16f, FireInterval = 0.38f, ProjectileSpeed = 32f, HomingTurnRate = 2.2f },
             new GunPart { Id = "needler", Name = "Litany", Blurb = "A recited pressure of weak, hard-curving darts. Death by repetition.", Damage = 14f, EnduranceDamage = 7f, FireInterval = 0.13f, ProjectileSpeed = 36f, HomingTurnRate = 3.4f },
-            new GunPart { Id = "ram-cannon", Name = "Bombard", Blurb = "Siege-shot: slow, straight, brutal. One hit shreds endurance.", Damage = 90f, EnduranceDamage = 48f, FireInterval = 1.15f, ProjectileSpeed = 26f, HomingTurnRate = 0.6f }
+            new GunPart { Id = "ram-cannon", Name = "Bombard", Blurb = "Siege-shot: slow, straight, brutal. One hit shreds endurance.", Damage = 90f, EnduranceDamage = 48f, FireInterval = 1.15f, ProjectileSpeed = 26f, HomingTurnRate = 0.6f },
+            // ARMORY §4: "Three streams in a heraldic fan; better from afar."
+            // Weak homing (SEEK 3, not maxed) so the fan visibly diverges
+            // instead of instantly folding onto one point -- three streams
+            // that gradually converge read as "better from afar" exactly
+            // per its own identity. Damage is PER STREAM (pillar 3).
+            new GunPart { Id = "trefoil", Name = "Trefoil", Blurb = "Three streams cast in a heraldic fan. Wide up close, converges kindly at range.", Damage = 22f, EnduranceDamage = 10f, FireInterval = 0.5f, ProjectileSpeed = 30f, HomingTurnRate = 1.0f, ProjectileCount = 3, SpreadDegrees = 24f }
         };
 
         public static readonly MeleeWeaponPart[] MeleeWeapons =
         {
             new MeleeWeaponPart { Id = "saber", Name = "Oathblade", Blurb = "The knight's standard. Balanced in every line.", Damage = 130f, EnduranceDamage = 55f, HitRange = 3.0f, HitArcDegrees = 70f, SwingActiveTime = 0.18f, HitRecovery = 0.45f, WhiffRecovery = 0.95f, KnockbackSpeed = 10f },
             new MeleeWeaponPart { Id = "warhammer", Name = "Dolorous Maul", Blurb = "The dolorous stroke: massive damage and knockback, ruinous to whiff.", Damage = 210f, EnduranceDamage = 90f, HitRange = 3.4f, HitArcDegrees = 80f, SwingActiveTime = 0.3f, HitRecovery = 0.75f, WhiffRecovery = 1.4f, KnockbackSpeed = 16f },
-            new MeleeWeaponPart { Id = "twin-fang", Name = "Misericorde", Blurb = "The mercy-dagger: fast, light, barely punishable. Finishes what poise-loss starts.", Damage = 85f, EnduranceDamage = 35f, HitRange = 2.6f, HitArcDegrees = 70f, SwingActiveTime = 0.12f, HitRecovery = 0.28f, WhiffRecovery = 0.6f, KnockbackSpeed = 7f }
+            new MeleeWeaponPart { Id = "twin-fang", Name = "Misericorde", Blurb = "The mercy-dagger: fast, light, barely punishable. Finishes what poise-loss starts.", Damage = 85f, EnduranceDamage = 35f, HitRange = 2.6f, HitArcDegrees = 70f, SwingActiveTime = 0.12f, HitRecovery = 0.28f, WhiffRecovery = 0.6f, KnockbackSpeed = 7f },
+            // Trefoil's counterpart (ARMORY §5): "Wide crescent sweep (140°)
+            // — punishes strafing." Longest reach in the roster (REACH 4);
+            // GRACE 2 means a whiff costs more than Oathblade's.
+            new MeleeWeaponPart { Id = "longglaive", Name = "Longglaive", Blurb = "A wide crescent sweep that answers strafing with reach. Whiff it and pay for the width.", Damage = 140f, EnduranceDamage = 58f, HitRange = 3.8f, HitArcDegrees = 140f, SwingActiveTime = 0.22f, HitRecovery = 0.55f, WhiffRecovery = 1.1f, KnockbackSpeed = 11f },
+            // Thornswarm's counterpart (ARMORY §5): "Five heads strike five
+            // angles at once; some always connect." Average reach (REACH 3,
+            // unlike Longglaive) -- its forgiveness is angular, not distance.
+            // 5 overlapping 40°-wide prongs 30° apart span -80..+80 -- wide,
+            // continuous coverage delivered as five named strikes.
+            new MeleeWeaponPart { Id = "hydra-flail", Name = "Hydra Flail", Blurb = "Five heads strike five angles in one motion. Somewhere in front of it, something connects.", Damage = 125f, EnduranceDamage = 55f, HitRange = 3.0f, HitArcDegrees = 40f, SwingActiveTime = 0.2f, HitRecovery = 0.5f, WhiffRecovery = 1.0f, KnockbackSpeed = 10f, ProngAngles = new[] { -60f, -30f, 0f, 30f, 60f } }
         };
 
         public static readonly BombPart[] Bombs =
         {
             new BombPart { Id = "impact", Name = "Censer", Blurb = "The swung vessel of fire. Reticule tracks the enemy -- hold to aim, release to throw.", Damage = 80f, EnduranceDamage = 35f, Cooldown = 5f, BlastRadius = 3.2f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 20f },
-            new BombPart { Id = "quake", Name = "Anathema Charge", Blurb = "The great condemnation: huge blast, heavy endurance crush, long rearm. Fixed just ahead of you -- close-range, high commitment.", Damage = 120f, EnduranceDamage = 70f, Cooldown = 9f, BlastRadius = 4.5f, ArcHeight = 6.5f, ReticuleAnchor = ReticuleAnchor.Self, ReticuleRange = 4f }
+            new BombPart { Id = "quake", Name = "Anathema Charge", Blurb = "The great condemnation: huge blast, heavy endurance crush, long rearm. Fixed just ahead of you -- close-range, high commitment.", Damage = 120f, EnduranceDamage = 70f, Cooldown = 9f, BlastRadius = 4.5f, ArcHeight = 6.5f, ReticuleAnchor = ReticuleAnchor.Self, ReticuleRange = 4f },
+            // ARMORY §6: "A stake-wall of blasts before you; charges die on
+            // it." Self-anchored like Anathema (a placed defensive line, not
+            // a thrown-at-them shot) -- 3 points spaced 2.4m apart, each a
+            // modest 79/55 blast per DOCTRINE pillar 3 (Damage is per point).
+            new BombPart { Id = "palisade", Name = "Palisade", Blurb = "A stake-wall of blasts, planted just ahead of you. Charges die on it.", Damage = 79f, EnduranceDamage = 55f, Cooldown = 8f, BlastRadius = 2.6f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Self, ReticuleRange = 5.5f, Pattern = BlastPattern.Line, BlastPoints = 3, BlastSpacing = 2.4f },
+            // ARMORY §6: "Splits to blast both sides at once — sides afoot,
+            // fore-and-aft aloft." Target-anchored like Censer. The split
+            // axis (BombSystem.BlastPoints) reads the thrower's grounded
+            // state AT RELEASE: perpendicular to the throw line grounded
+            // ("sides"), along it airborne ("fore-and-aft") -- matching the
+            // G/A-differs idiom already used across the gun roster.
+            new BombPart { Id = "pincer-charge", Name = "Pincer Charge", Blurb = "Splits apart to blast both sides at once. Grounded, it opens wide; aloft, it closes the loops fore and aft.", Damage = 42f, EnduranceDamage = 26f, Cooldown = 6f, BlastRadius = 2.4f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, Pattern = BlastPattern.Split, BlastPoints = 2, BlastSpacing = 3.2f }
         };
 
         // Shield toll/raise data per ARMORY_REFERENCE §7 (GUARD front/back,

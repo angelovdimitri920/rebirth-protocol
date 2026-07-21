@@ -91,13 +91,45 @@ namespace RebirthProtocol.Tests.BalanceHarness
                 .ToList()
         };
 
+        // Volley capability (ARMORY §4-6, Pass E, DOCTRINE §13 pillar 3
+        // "volley truth"): each new spread part swapped one at a time
+        // against its plain counterpart, everything else held at the
+        // neutral kit — a flag here points straight at the new part, not
+        // an ambiguous shape/body confound.
+        private static GunPart TrefoilGun => PartsCatalog.Guns.First(g => g.Id == "trefoil");
+        private static MeleeWeaponPart LongglaiveMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "longglaive");
+        private static MeleeWeaponPart HydraFlailMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "hydra-flail");
+        private static BombPart PalisadeBomb => PartsCatalog.Bombs.First(b => b.Id == "palisade");
+        private static BombPart PincerChargeBomb => PartsCatalog.Bombs.First(b => b.Id == "pincer-charge");
+
+        private static Loadout WithGun(GunPart gun) => new Loadout { Body = NeutralBody, Gun = gun, Bomb = Bomb, Legs = Legs, Pod = Pod };
+        private static Loadout WithMelee(MeleeWeaponPart melee) => new Loadout { Body = NeutralBody, Melee = melee, Bomb = Bomb, Legs = Legs, Pod = Pod };
+        private static Loadout WithBomb(BombPart bomb) => new Loadout { Body = NeutralBody, Gun = Gun, Bomb = bomb, Legs = Legs, Pod = Pod };
+
+        public static MatrixSpec VolleyMatrix() => new MatrixSpec
+        {
+            Name = "volley capability (on Bannerman, neutral kit otherwise)",
+            Builds = new List<NamedBuild>
+            {
+                new NamedBuild { Name = "arbalest (baseline gun)", Loadout = WithGun(Gun) },
+                new NamedBuild { Name = "trefoil", Loadout = WithGun(TrefoilGun) },
+                new NamedBuild { Name = "oathblade (baseline melee)", Loadout = WithMelee(Melee) },
+                new NamedBuild { Name = "longglaive", Loadout = WithMelee(LongglaiveMelee) },
+                new NamedBuild { Name = "hydra-flail", Loadout = WithMelee(HydraFlailMelee) },
+                new NamedBuild { Name = "censer (baseline bomb)", Loadout = WithBomb(Bomb) },
+                new NamedBuild { Name = "palisade", Loadout = WithBomb(PalisadeBomb) },
+                new NamedBuild { Name = "pincer-charge", Loadout = WithBomb(PincerChargeBomb) }
+            }
+        };
+
         public static List<MatrixSpec> Select(string roster) => roster switch
         {
             "default" => new List<MatrixSpec> { ShapesMatrix(), BodiesMatrix() },
             "shapes" => new List<MatrixSpec> { ShapesMatrix() },
             "bodies" => new List<MatrixSpec> { BodiesMatrix() },
             "cross" => new List<MatrixSpec> { CrossMatrix() },
-            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross).")
+            "volley" => new List<MatrixSpec> { VolleyMatrix() },
+            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley).")
         };
     }
 }

@@ -143,7 +143,7 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | Name | Source | Bars | Range | Volley | Identity | Melee counterpart |
 |---|---|---|---|---|---|---|
 | **Arbalest** *(built)* | Basic | 3/2/1/2/2 | Med | 88 | Three honest bolts; the workhorse | Oathblade |
-| **Trefoil** | 3-Way | 3/3/3/3/2 | Med-long | 67 | Three streams in a heraldic fan; better from afar | Longglaive |
+| **Trefoil** *(built)* | 3-Way | 3/3/3/3/2 | Med-long | 67 | Three streams in a heraldic fan; better from afar | Longglaive |
 | **Litany** *(built)* | Gatling | 2/3/1/3/3 | Med | 88 | Eight recited rounds; power grows with distance, accuracy shrinks | Misericorde |
 | **Mangonel** | Vertical | 2/3/3/2/4 | Med | 76 | Two straight, two vaulting — the vault clears walls | Estoc |
 | **Longshrift** | Sniper | 3/5/1/1/4 | Med-long | 84–105 | One fast round and a long vulnerable breath after | Tilt Lance |
@@ -204,12 +204,12 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | Name | Counterpart | Bars | Identity |
 |---|---|---|---|
 | **Oathblade** *(built)* | Arbalest | 3/3/3/3/3 | The knight's standard; balanced in every line |
-| **Longglaive** | Trefoil | 3/4/3/2/3 | Wide crescent sweep (140°) — punishes strafing |
+| **Longglaive** *(built)* | Trefoil | 3/4/3/2/3 | Wide crescent sweep (140°) — punishes strafing |
 | **Misericorde** *(built)* | Litany | 2/2/5/5/2 | The mercy-dagger; fast, light, barely punishable |
 | **Estoc** | Mangonel | 3/3/3/3/2 | Narrow thrust that pierces 60% of a raised shield's GUARD |
 | **Tilt Lance** | Longshrift | 5/4/2/1/4 | The joust: damage scales with lunge distance (60→190) |
 | **Knell Maul** | Fetterlock | 2/3/3/3/5 | A bell-hammer that tolls through poise (REND 130) |
-| **Hydra Flail** | Thornswarm | 3/3/3/2/3 | Five heads strike five angles at once; some always connect |
+| **Hydra Flail** *(built)* | Thornswarm | 3/3/3/2/3 | Five heads strike five angles at once; some always connect |
 | **Courser Saber** | Pilgrim | 3/3/4/3/2 | Damage scales with your current speed — never swing standing still |
 | **Wyrmtail** | Dragoon | 4/4/2/2/4 | A heavy sweep that re-tracks mid-lunge; slow, faithful |
 | **Tocsin Mace** | Aspergill | 1/2/5/4/3 | Light stopping taps; rings a foe still for the follow-up |
@@ -263,13 +263,13 @@ Bars = MIGHT/LOFT/BREADTH/LINGER/REND. Dmg = single-blast calibration (ground / 
 | **Oubliette Twin** | Double Mine | 2/3/3/3/1 | 32 ×2 | Sunder | Two forgotten pits for the price of one throw | Caltrop Ward |
 | **Rime Charge** | Freeze | 1/3/2/4/1 | 8 | Fetter | Almost harmless; holds the foe for the real blow | Hoarfrost Ward |
 | **Steeplefall** | Tomahawk | 3/2/4/4/3 | 64–66 | Sweep, Hoist, B+ | Climbs past steeple height, falls straight down | Canopy Ward |
-| **Pincer Charge** | Gemini | 2/3/2/3/2 | 42 ×2 | Sweep, B+ | Splits to blast both sides at once — sides afoot, fore-and-aft aloft | Echo Ward |
+| **Pincer Charge** *(built)* | Gemini | 2/3/2/3/2 | 42 ×2 | Sweep, B+ | Splits to blast both sides at once — sides afoot, fore-and-aft aloft | Echo Ward |
 | **Anathema Charge** *(built)* | Submarine | 5/1/4/5/3 | 88/55 | Sunder, Hoist, Unhorse, B+ | The great condemnation: slow, vast, lingering | Pavise |
 | **Crescent Charge** | Crescent | 3/1/3/4/3 | 52–72 | Hoist, Unhorse, B+ | A tall slow crescent that forbids the sky | Kite Ward |
 | **Antiphon Charge** | Dual | 3/3/3/4/3 | 33–39 ×2 | Sunder, Hoist | Call and response: one blast before the foe, one behind | Echo Ward |
 | **Ascension Charge** | Acrobat | 0/5/4/2/1 | 0 | — | Detonates at your own feet and casts *you* skyward | Springald Ward |
 | **Trine Snare** | Delta | 2/4/1/2/2 | 31/22 ×3 | Sweep | Three points around the foe — moving is wrong, staying is worse | Cheval Ward |
-| **Palisade** *(planned)* | Wall | 4/4/3/4/3 | 79/55 | Sunder, B+ | A stake-wall of blasts before you; charges die on it | Bastille |
+| **Palisade** *(built)* | Wall | 4/4/3/4/3 | 79/55 | Sunder, B+ | A stake-wall of blasts before you; charges die on it | Bastille |
 | **Belfry Burst** | Smash | 4/5/3/4/3 | ~55 | Sunder | Detonates directly overhead — the sky above you is yours | Testudo Ward |
 | **Widening Gyre** | Geo Trap | 4/4/4/4/3 | 76 | Sunder, B+ | Lands small and *blooms* — always wider than it looks | Thorn Ward |
 | **Goliath Charge** | Titan (bomb) | 1/1/5/3/5 | 19 | Unhorse | An enormous, slow, humiliating blast | Cenotaph |

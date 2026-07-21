@@ -20,6 +20,19 @@ namespace RebirthProtocol.Battle
             public float T; // 0..1 along the arc
             public float FlightTime;
             public float ArcHeight;
+
+            // Volley capability (ARMORY §6, Palisade/Pincer Charge): both
+            // captured at RELEASE, never read at detonation. Release()
+            // un-roots the thrower immediately and flight is >=0.5s, so by
+            // impact the thrower may have strafed, dashed, taken knockback,
+            // or died — none of that may retroactively rotate or re-stance
+            // a bomb already in the air (Codex PR #18 finding: the original
+            // code re-derived the throw direction from the owner's CURRENT
+            // position at detonation, silently rotating Line/Split patterns
+            // mid-flight). GroundedAtRelease matches the G/A-differs idiom
+            // used across the gun roster, which also reads at fire time.
+            public bool GroundedAtRelease;
+            public Vector3 ForwardAtRelease;
         }
 
         public float CooldownRemaining { get; private set; }
@@ -154,6 +167,17 @@ namespace RebirthProtocol.Battle
             var end = _reticule.position;
             var dist = Vector3.Distance(start, end);
 
+            // Volley capability: the flattened throw direction, captured
+            // NOW -- see LiveBomb.ForwardAtRelease. Same near-zero fallback
+            // BlastPoints used to fall back on (a Target-anchored throw at
+            // essentially zero range, e.g. Pincer Charge with the enemy
+            // standing on top of the thrower).
+            var throwDirAtRelease = end - start;
+            throwDirAtRelease.y = 0f;
+            var forwardAtRelease = throwDirAtRelease.sqrMagnitude > 0.0001f
+                ? throwDirAtRelease.normalized
+                : _owner.FacingDir;
+
             var shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             DestroyImmediate(shell.GetComponent<Collider>());
             shell.name = "Bomb";
@@ -169,7 +193,9 @@ namespace RebirthProtocol.Battle
                 End = end,
                 T = 0f,
                 FlightTime = Mathf.Max(CombatTuning.Bomb.MinFlightTime, dist / CombatTuning.Bomb.LobSpeed),
-                ArcHeight = part.ArcHeight
+                ArcHeight = part.ArcHeight,
+                GroundedAtRelease = _owner.Grounded,
+                ForwardAtRelease = forwardAtRelease
             });
             return true;
         }
@@ -206,7 +232,7 @@ namespace RebirthProtocol.Battle
                 b.T += dt / b.FlightTime;
                 if (b.T >= 1f)
                 {
-                    Detonate(b.End, player, enemy);
+                    Detonate(b.End, player, enemy, groundedAtRelease: b.GroundedAtRelease, forwardAtRelease: b.ForwardAtRelease);
                     Destroy(b.Tf.gameObject);
                     _live.RemoveAt(i);
                     continue;
@@ -219,12 +245,46 @@ namespace RebirthProtocol.Battle
             }
         }
 
-        private void Detonate(Vector3 at, RoboAvatar player, RoboAvatar enemy, bool isCluster = false)
+        private void Detonate(Vector3 at, RoboAvatar player, RoboAvatar enemy, bool isCluster = false,
+            bool groundedAtRelease = true, Vector3 forwardAtRelease = default)
         {
             var part = _owner.Loadout.Bomb;
             var effects = _owner.Effects;
             var scale = isCluster ? 0.6f : 1f; // mini-blasts are weaker and smaller
 
+            // Volley capability (ARMORY §6, Pass E): Palisade/Pincer Charge
+            // detonate at MULTIPLE points instead of one. A cluster mini-
+            // blast is always single-point regardless of the parent bomb's
+            // own pattern -- letting a multi-point bomb's own Cluster Shell
+            // procs multiply combinatorially would turn one throw into a
+            // small fireworks show, not a mini-blast.
+            var points = isCluster ? SinglePoint(at) : BlastPoints(at, part, groundedAtRelease, forwardAtRelease);
+            foreach (var point in points)
+            {
+                DetonateAt(point, part, effects, scale, player, enemy);
+            }
+
+            // Cluster Shell boon: follow-up mini-blasts scatter around the
+            // main detonation (never off a mini-blast itself, and once per
+            // THROW even for a multi-point bomb, not once per point).
+            // Scatter is drawn from the run's seeded RNG (not
+            // UnityEngine.Random) so RunSeedOverride pins it too.
+            if (!isCluster && effects != null)
+            {
+                for (var i = 0; i < effects.ClusterBlasts; i++)
+                {
+                    _pendingClusters.Add(new PendingCluster
+                    {
+                        At = at + new Vector3(effects.NextFloat(-2.5f, 2.5f), 0f, effects.NextFloat(-2.5f, 2.5f)),
+                        Timer = 0.3f
+                    });
+                }
+            }
+        }
+
+        private void DetonateAt(Vector3 at, BombPart part, RunEffects effects, float scale,
+            RoboAvatar player, RoboAvatar enemy)
+        {
             GameEffects.Fx?.Explosion(at, part.BlastRadius * scale);
             GameAudio.Sfx?.Explosion(at);
 
@@ -262,22 +322,58 @@ namespace RebirthProtocol.Battle
                     crate.DestroyOutright();
                 }
             }
-
-            // Cluster Shell boon: follow-up mini-blasts scatter around the
-            // main detonation (never off a mini-blast itself). Scatter is
-            // drawn from the run's seeded RNG (not UnityEngine.Random) so
-            // RunSeedOverride pins it too.
-            if (!isCluster && effects != null)
-            {
-                for (var i = 0; i < effects.ClusterBlasts; i++)
-                {
-                    _pendingClusters.Add(new PendingCluster
-                    {
-                        At = at + new Vector3(effects.NextFloat(-2.5f, 2.5f), 0f, effects.NextFloat(-2.5f, 2.5f)),
-                        Timer = 0.3f
-                    });
-                }
-            }
         }
+
+        /// Blast centers relative to the impact point `at`, oriented along
+        /// `forward` -- the flattened throw direction CAPTURED AT RELEASE
+        /// (LiveBomb.ForwardAtRelease), never re-derived from the owner's
+        /// position at detonation time. Release() un-roots the thrower
+        /// immediately and flight is >=0.5s, so reading the owner's CURRENT
+        /// position here would let strafing, dashing, knockback, or death
+        /// mid-flight silently rotate a Line/Split pattern after the throw
+        /// already committed (Codex PR #18 finding). Single-pattern bombs
+        /// (every bomb before this pass) are the original one-point
+        /// behavior and never look at `forward` at all.
+        private List<Vector3> BlastPoints(Vector3 at, BombPart part, bool groundedAtRelease, Vector3 forward)
+        {
+            if (part.Pattern == BlastPattern.Single || part.BlastPoints <= 1)
+            {
+                return SinglePoint(at);
+            }
+
+            var points = new List<Vector3>();
+            switch (part.Pattern)
+            {
+                case BlastPattern.Line:
+                    // A row straddling the impact point along the throw
+                    // line -- "a stake-wall of blasts before you" (Palisade).
+                    var half = (part.BlastPoints - 1) * 0.5f;
+                    for (var i = 0; i < part.BlastPoints; i++)
+                    {
+                        points.Add(at + forward * ((i - half) * part.BlastSpacing));
+                    }
+
+                    break;
+
+                case BlastPattern.Split:
+                    // Two points offset from the impact: lateral ("sides")
+                    // if the thrower was grounded at release, fore-and-aft
+                    // if airborne (Pincer Charge, ARMORY §6).
+                    var axis = groundedAtRelease
+                        ? new Vector3(-forward.z, 0f, forward.x) // perpendicular: sides
+                        : forward;                               // along the throw: fore/aft
+                    points.Add(at + axis * part.BlastSpacing);
+                    points.Add(at - axis * part.BlastSpacing);
+                    break;
+
+                default:
+                    points.Add(at);
+                    break;
+            }
+
+            return points;
+        }
+
+        private static List<Vector3> SinglePoint(Vector3 at) => new List<Vector3> { at };
     }
 }

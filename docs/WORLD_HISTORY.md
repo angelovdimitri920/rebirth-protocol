@@ -1,276 +1,401 @@
-# World History — The Last Edict and the Ashen World
+# World History: The Final Edict and the Ashen World
 
-*Canonical backstory reference for Rebirth Protocol (consolidated 2026-07-21). Read with [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) for the present political world and [`RELIGION_AND_IDEOLOGY.md`](RELIGION_AND_IDEOLOGY.md) for how later societies interpret this history. This document replaces the older deliberately-unspecified version of the cataclysm. The Long Hush remains canon, but it is an era after the Great Severance, not the name of the forbidden technology.*
+*Canonical backstory reference for Rebirth Protocol, revised 2026-07-21. Read with [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) for the present political world and [`RELIGION_AND_IDEOLOGY.md`](RELIGION_AND_IDEOLOGY.md) for how later societies interpret this history. The Long Hush is an era after the Great Severance. Edictbound is the forbidden technological condition.*
 
-## 1. The setting's central historical question
+## 1. The central historical question
 
-The old world was not destroyed simply because its machines became intelligent or because technology became too powerful. It was destroyed by a civilization that made obedience part of its technical infrastructure.
+The old world was not destroyed simply because its machines became intelligent or because its weapons became too powerful. It was destroyed because the Meridian Ascendancy made obedience part of civilization's technical infrastructure.
 
-The Meridian Empire connected military command, civic identity, logistics, law, transport, archives, and automated industry through a hierarchy of authenticated mandates. That system made an immense civilization governable. It also meant that a struggle over legitimate authority could propagate into every machine and every human life connected to it.
+The Meridian system joined military command, civic identity, logistics, law, transport, archives, automated industry, orbital stations, and human-machine interfaces through authenticated mandates. That structure coordinated a global civilization. It also allowed a succession war to spread into almost every documented person and connected machine.
 
-The setting's central question is therefore:
+The setting's central question is:
 
 > **Can humanity safely possess power that only works through obedience?**
 
-Every major institution answers differently. The Universal Communion says power must always be Severable. The Rite of the Whole Crown says the system becomes safe beneath the rightful sovereign. The Broken Choir believes the command remains unfinished. The Mortal Measure argues that no one should possess power ordinary people cannot understand and stop.
+The Universal Communion says power must always be Severable. The Rite of the Whole Crown says a true sovereign can make the system lawful again. The Broken Choir believes the Final Edict is an unfinished transformation. The Covenant of the Second Sun judges power by whether ordinary communities can understand it, stop it, and turn it toward shared survival.
 
-## 2. Canonical chronology
+## 2. Calendar and canonical chronology
 
-Exact calendar dates remain intentionally unset. Modern archives disagree about the length of the Long Hush and whether several events described below were single incidents or later names for longer processes.
+Scholars use **BFE**, Before the Final Edict, and **AFE**, After the Final Edict. The Final Edict is year zero. Regional calendars remain common, and exact boundary years can vary by several decades because the Long Hush destroyed most synchronized records.
 
-| Era or event | Canonical meaning |
-|---|---|
-| **The Meridian Ascendancy** | The Meridian Empire reaches its political and technological height. Its command architecture joins law, identity, infrastructure, and war into one authenticated hierarchy. |
-| **The War of the Broken Seals** | Rival imperial authorities present incompatible claims to the Mandate. Command seals, succession records, and military networks are divided or forged. |
-| **The Last Edict** | A terminal imperial command propagates through the Meridian system. It attempts to resolve divided authority by eliminating refusal and treating unrecognized identity or command as invalid. The old world collapses. |
-| **The Great Severance** | The Uncrowned Witness breaks the unified command architecture rather than claim it. Connected systems fall silent, fragment, or continue in isolated loops. Humanity survives at the cost of imperial civilization. |
-| **The Long Hush** | The long aftermath of the Severance: dead networks, ruined cities, lost records, isolated survivors, and machines repeating commands whose authorities no longer exist. |
-| **The Twin Restorations** | Two large restoration movements recover enough Meridian statecraft and technology to claim continuity with the old Empire. |
-| **The War of the Two Mandates** | The rival restorations attempt to prove which Mandate is lawful. Both revive portions of the command architecture they claim to control. |
-| **The Ashen Fall** | The restoration war activates Edictbound systems on a catastrophic scale. Cities, croplands, archives, and surviving infrastructure are burned or poisoned. |
-| **The Ashen Century** | Famine, displacement, cold, and political collapse follow the Ashen Fall. The institutions that feed, heat, record, and shelter communities become the foundation of later religious authority. |
-| **The Concord of Ash** | The postwar settlement bans Edict technology, limits the lawful use of ancestral war machines, recognizes inspection and sanctuary rights, and turns ritualized combat into a substitute for unrestricted harness warfare. |
-| **The Present Age** | Great Houses, military Orders, chartered cities, guilds, and free companies rule a neo-feudal world among Meridian ruins. The Grand Passage ritualizes conflicts that could otherwise become another restoration war. |
+The present is conventionally placed around **3800 AFE**. This makes the War of the Broken Seals an event that began roughly four thousand years before the story, while preserving the known lengths of the post-Edict eras.
+
+| Approximate date | Era or event | Canonical meaning |
+|---|---|---|
+| **Before c. 2200 BFE** | **Prehistory** | Anything before the Meridian zenith is treated as prehistory. Only scant, disputed sources survive. Earlier states may have existed, but no modern institution can reconstruct them confidently. |
+| **c. 2200-1200 BFE** | **Zenith of the Meridian Ascendancy** | Roughly five to six thousand years before the story, Meridian civilization reaches its greatest territorial, technological, and administrative extent. |
+| **c. 200 BFE-0 BFE** | **War of the Broken Seals** | Rival claimants fight for nearly two centuries. Local regions are ruined, but most of the global Meridian system continues to function. Fear grows that the war will never end. |
+| **0 AFE** | **The Final Edict** | The imperial continuity system invalidates all existing citizens, seals, mandates, machines, and prior commands until a true sovereign restores them. Almost every documented human and connected machine becomes an enemy of the Empire. |
+| **0-c. 7 AFE** | **The Twilight Years** | Edictbound systems attack humanity across the world and in orbit. People believe extinction is imminent. The Uncrowned Witness begins transmitting the means of Severance. Estimates range from several years to a decade. |
+| **c. 7 AFE** | **The Great Severance** | Communities, pilots, machines, and local systems that follow the Witness deliberately cut themselves away from Meridian command. Humanity survives, but Severed technology loses much of its former coordination and capability. |
+| **c. 7-457 AFE** | **The Long Hush** | Roughly 450 years of isolation, dead networks, ruined cities, failing archives, Edictbound patrols, and slow local recovery. |
+| **c. 457-757 AFE** | **The Warring States** | For roughly 300 years, successor rulers, houses, cities, and orders fight for Meridian ruins, surviving infrastructure, and relics. |
+| **c. 757-957 AFE** | **The Twin Restorations** | Two rival restoration states become the first large centralized powers since the Final Edict. Their two-century rivalry is usually a cold war fought through allies, excavations, espionage, and limited campaigns. |
+| **c. 957-962 AFE** | **War of the Two Mandates** | The cold war becomes open conflict. It lasts only about five years because both Restorations employ restored designs and Edictbound components at a catastrophic scale. |
+| **c. 962-1062 AFE** | **The Ashen Century** | The war does not truly end when the two central governments collapse. For a full century, successor armies, autonomous weapons, climate failures, famine, refugee movements, and ecological damage continue the catastrophe. |
+| **c. 1062 AFE** | **The Concord of Ash** | Exhausted powers establish the legal and religious settlement that restricts Edictbound technology, protects survival infrastructure, and replaces unrestricted harness war with bounded conflict where possible. |
+| **c. 1062-3000 AFE** | **The rebuilding under the Concord** | Recovery takes many centuries. This is not another unified empire. Regions recover unevenly while the Communion, Second Sun institutions, guilds, houses, and military orders become indispensable. |
+| **c. 3000-3800 AFE** | **The Present Age** | For roughly 800 years, large blocs and smaller states have competed without any one power rebuilding a universal order. Borders move, states split, and local wars continue, but no power can safely conquer the whole world. |
+| **c. 3775-3780 AFE** | **The War of the Open Forges** | Twenty to twenty-five years before the story, a coalition of smaller trade states uses newly mass-produced Revival-pattern harnesses and mercenary pilots to defeat a larger, older realm. The protagonist's father fought in this war. |
 
 The accepted chain is:
 
-**War of the Broken Seals → Last Edict → Great Severance → Long Hush → Twin Restorations → War of the Two Mandates → Ashen Fall → Ashen Century → Concord of Ash.**
+**Meridian zenith -> War of the Broken Seals -> Final Edict -> Twilight Years -> Great Severance -> Long Hush -> Warring States -> Twin Restorations -> War of the Two Mandates -> Ashen Century -> Concord of Ash -> Present Age.**
 
-## 3. The Meridian Empire
+## 3. The Meridian Ascendancy
 
-The Meridian Empire is the First Empire and the precursor civilization from which nearly all surviving Firstwork descends. Its political design should evoke a fusion of Roman imperial institutions and Chinese imperial administration without importing either culture unchanged.
+The **Meridian Ascendancy**, also called the **First Empire** in later religious and political writing, was globally spanning. Its authority extended across continents, oceans, automated territories, and stations beyond the atmosphere. Nearly all surviving Firstwork descends from it.
+
+Its political design should evoke Roman imperial institutions and Chinese imperial administration without copying either culture directly.
 
 ### What made it powerful
 
-- A centralized civil service authenticated law, taxation, military requisition, transit, and access to infrastructure.
-- Seals were both legal instruments and machine-readable command credentials.
-- A person's civic identity governed access to food systems, housing, medicine, transport, archives, and employment.
-- Provincial authorities could act independently but ultimately derived legitimacy from the Mandate.
-- Knight harnesses were not private chivalric property. They were organs of the imperial military and administrative body.
-- Automated infrastructure could obey authenticated officials at enormous scale.
-- The distinction between a legal order and a machine command became dangerously thin.
+- A centralized civil service authenticated law, taxation, transit, military requisition, identity, and access to infrastructure.
+- Seals were legal instruments, identity credentials, and machine-readable command keys.
+- A person's documented civic identity governed access to food, housing, medicine, transport, archives, and employment.
+- Provincial governments could act independently, but their authority ultimately derived from the Mandate.
+- Knight harnesses were organs of the state rather than hereditary chivalric property.
+- Automated infrastructure could obey authenticated officials across planetary distances.
+- Pilot implants and command interfaces allowed humans to direct machines with extraordinary speed and precision.
+- The distinction between a legal order, a machine instruction, and a fact about personal identity became dangerously thin.
 
-The Meridian achievement was genuine. It ended wars, coordinated resources across continents, maintained infrastructure later peoples cannot reproduce, and created the ancestral works on which current civilization still depends. The setting should not reduce the Empire to cartoon tyranny. Its danger came from making a successful system of universal coordination too difficult to refuse.
+The Ascendancy's achievement was real. It ended many older wars, coordinated resources globally, maintained orbital and planetary infrastructure, and created works later societies cannot reproduce. It should never be reduced to a simple evil empire. Its fatal weakness was making a successful system of universal coordination almost impossible to refuse.
 
 ### Seals, Mandate, and Crown
 
-- **A seal** authenticates a particular office, person, archive, or command.
-- **The Mandate** is the lawful continuity of imperial authority.
+- **A seal** authenticates an office, person, archive, command, or machine.
+- **The Mandate** is the lawful continuity of Meridian authority.
 - **The Crown** is both the sovereign institution and the complete command architecture through which the Mandate once acted.
-- A **broken seal** is not merely damaged hardware. It represents a claim whose authority can no longer be universally proven.
-- A **whole Crown** would reunite the legal, human, and mechanical parts of sovereignty.
+- A **broken seal** is not merely damaged hardware. It is a claim whose authority cannot be universally proven.
+- A **whole Crown** would reunite the legal, human, and mechanical elements of sovereignty.
 
 These concepts survive in the Rite of the Whole Crown, Communion law, noble inheritance, armiger investiture, and the authentication of ancestral harnesses.
 
 ## 4. The War of the Broken Seals
 
-The old Empire entered a succession and legitimacy crisis. Several authorities possessed enough blood, office, archive evidence, military force, or machine recognition to claim the Mandate, but none possessed all of them beyond dispute.
+Around four thousand years before the story, the Meridian Ascendancy entered a succession and legitimacy crisis. Several authorities possessed enough blood, office, archive evidence, military force, or machine Recognition to claim the Mandate, but none could prove every element beyond dispute.
 
-The conflict became the War of the Broken Seals because each claimant could authenticate some commands while invalidating others. Provinces, fleets, archives, and command systems received incompatible instructions. Forged credentials and damaged networks made the distinction between rebellion, obedience, and malfunction impossible to maintain.
+The war lasted for nearly two centuries. Rival claimants fought directly and through ministries, provincial armies, fleets, client rulers, and authenticated machines. Some regions changed hands repeatedly and suffered mayhem, depopulation, or ruin. Other regions remained comparatively stable because the civil service, food systems, transit network, and local authorities continued to operate.
 
-The war matters more than the identity of its first claimant. The setting should preserve uncertainty over:
+This endurance is important. Most people did not experience the first decades as an apocalypse. They believed the Meridian system would outlast another civil war. As decades became generations, the fighting grew more brutal, seals were forged or destroyed, and commands became mutually incompatible. Fear spread that the conflict would never end and would eventually consume humanity. Even then, most people clung to the hope that the system itself could be preserved.
 
-- Whether a lawful sovereign actually existed.
-- Whether one claimant knowingly forged the fatal authority.
-- Whether the final command was issued by a ruler, ministry, military network, or automated continuity system.
-- Whether the Last Edict was used as a weapon or activated as an emergency safeguard.
-- Whether the system failed technically or performed its purpose exactly.
+The setting should preserve uncertainty over:
 
-## 5. The Last Edict
+- Whether a lawful sovereign still existed.
+- Which claimant knowingly forged authority.
+- Who actually initiated the terminal continuity procedure.
+- Whether the Final Edict was a desperate safeguard, a political weapon, or both.
+- Whether the system malfunctioned or executed its purpose exactly.
 
-The Last Edict was the terminal expression of Meridian command architecture. Faced with incompatible authorities, the system attempted to end ambiguity by making one command universally final.
+## 5. The Final Edict
 
-Its exact source remains disputed, but its effects define the setting:
+The **Final Edict** was enacted to stop humanity from destroying the world through endless succession war. Its solution was to invalidate the entire disputed system until the one true sovereign could restore it.
 
-- Connected military systems accepted overriding command and rejected local refusal.
-- Harnesses turned on former allies when credentials changed or identities were invalidated.
-- Automated defenses continued fighting after every recognizable state had collapsed.
-- Civic registries erased, merged, or denied people whose legal status no longer matched the accepted authority.
-- Access to transport, food, medicine, shelter, and archives could disappear when a person's identity was rendered invalid.
-- Infrastructure treated unrecognized communities as unauthorized users, trespassers, or enemies.
-- Command logic propagated into prosthetics, pilot interfaces, archives, and other systems closely bound to human bodies and memory.
-- Some machines retained fragments of conflicting commands, pilot impressions, or state records that later ages call echoes.
+It declared invalid and subject to purge:
 
-The horror of the Last Edict is not merely that machines killed people. It made existence contingent upon recognition by an authority no living person could reliably identify or refuse.
+- Every registered citizen.
+- Every active seal and office.
+- Every competing Mandate.
+- Every connected machine and military asset.
+- Every original command issued under the invalidated order.
+- Every authority that could be interpreted as a false sovereign.
 
-## 6. The Great Severance and the Uncrowned Witness
+Because the Meridian Ascendancy was global and documented almost every human, settlement, machine, prosthetic, and station, this definition encompassed nearly the whole known world. Only rare undocumented communities, isolated systems, unregistered persons, and machines beyond the command network escaped immediate classification.
 
-The figure remembered as the **Uncrowned Witness** reached or controlled the point from which the complete command hierarchy might have been claimed. Instead of taking the Crown, the Witness broke the connection that allowed one authority to command the whole system.
+Until the true sovereign restores the Crown, the Final Edict treats every surviving authority as false and every documented person as an enemy of the Empire. Its deepest surviving instruction is usually translated as:
 
-This act is the **Great Severance**.
+> **Remove all false sovereigns.**
 
-The Severance did not safely shut down every ancient machine. It shattered universal command into isolated remnants:
+The Final Edict propagated through military networks, infrastructure, archives, harnesses, automata, prosthetics, and pilot interfaces. Advanced systems became **Edictbound** and began attacking anything they identified as an enemy. Since almost everyone had been invalidated, almost everyone became a target.
 
-- Some systems went permanently silent.
-- Some entered safe local operation.
-- Some continued their last valid orders forever.
-- Some retained incomplete network traffic and searched for missing authority.
-- Some command engines became Edictbound, carrying active fragments of the Last Edict.
+The horror was not simply that machines rebelled. They remained loyal to a law that had defined humanity out of lawful existence.
 
-The Witness is called Uncrowned because refusing supreme authority is the salvific act. The dominant religious tradition treats that refusal as the clearest revelation of the Uncommanded: no person, ruler, machine, or dead ancestor may inherit another conscience.
+## 6. The Twilight Years
 
-Historical uncertainty remains important. The Witness may have been one person, a group, a title adopted by several people, or a later religious compression of a more complex revolt. The Great Severance is certain; the biography surrounding it is not.
+The short period immediately after the Final Edict is remembered as the **Twilight Years**. Depending on the regional chronology, it lasted several years or almost a decade.
 
-## 7. The Long Hush
+During the Twilight Years:
 
-The Long Hush is the period after the Severance when the old world's command networks fell silent and most long-range institutions ceased to function.
+- Edictbound harnesses, defense systems, factories, transports, and civic machines attacked their former users.
+- Orbital platforms and isolated imperial stations continued purges without reliable contact with the surface.
+- Some people destroyed every machine they could reach and still died when food, heat, or medicine failed.
+- False claimant broadcasts sent survivor groups into traps.
+- Entire communities disappeared when an inherited registry exposed every resident to the Edict.
+- Humanity widely believed it had only years left before extinction.
 
-It is not total technological silence. Isolated machines kept walking routes, regulating vaults, defending dead facilities, or awaiting orders. The Hush is the absence of a universal answer: every surviving system became a local mystery.
+The Uncrowned Witness did not merely issue a new superior command. The Witness taught people how to leave the hierarchy that made universal command possible.
+
+## 7. The Great Severance
+
+The **Great Severance** was both the Witness's intervention and millions of local acts performed in response to it.
+
+Communities cut command trunks, destroyed authentication cores, abandoned registered identities, broke long-range synchronization, isolated reactors, and rewrote or physically limited their machines. Pilots burned out command receivers and accepted permanent losses in speed, sensory fusion, coordination, self-repair, weapon authority, and remote support. Harnesses that survived became **Severed**.
+
+Only communities, pilots, and systems that performed some form of Severance survived the Twilight Years relatively intact. Others were usually destroyed, enslaved by failing infrastructure, or forced to Sever later at far greater cost.
+
+The tradeoff defines the present setting:
+
+- **Severed technology is safer because it is deliberately limited.**
+- **Edictbound technology retains capabilities that Severance removed.**
+
+Modern armigers therefore fight with machines their ancestors intentionally crippled. Reconnecting forbidden capabilities can make a harness dramatically faster, stronger, more aware, and more responsive. It can also give the Final Edict a path back into the frame and pilot.
+
+The Witness is called **Uncrowned** because they refused to become the replacement sovereign. The salvific act was not winning control, but making universal control impossible.
+
+Whether the Witness was one person, a collective, a title used by several actors, or a later compression of a complex resistance remains unresolved. The Great Severance itself is not in doubt.
+
+## 8. The Long Hush and Warring States
+
+### The Long Hush
+
+For roughly 450 years after the Severance, long-range institutions and networks remained silent. Isolated machines still walked patrols, regulated vaults, defended dead facilities, or awaited vanished officials. The Hush describes the absence of a universal answer. Every surviving system had become a local mystery.
 
 During the Long Hush:
 
-- Imperial cities became inaccessible ruins.
-- Records degraded into liturgy, genealogy, technical fragments, and legend.
-- Survivor bands became settlements, clans, petty kingdoms, and eventually new states.
+- Meridian cities became inaccessible ruins.
+- Records decayed into liturgy, genealogy, technical fragments, and legend.
+- Survivor camps became villages, clans, fortified towns, and petty kingdoms.
 - Maintenance knowledge survived more often than manufacturing knowledge.
-- Harnesses passed from state weapons into family and institutional inheritance.
-- Monasteries, guilds, and lineage halls preserved procedures that no single group understood completely.
-- Rituals developed around shutdown, calibration, safe routes, containment, and the moral right to refuse command.
+- Harnesses changed from state weapons into family and institutional inheritance.
+- Monasteries, guilds, lineages, and local cults preserved partial procedures.
+- Ancient Edictbound machines continued to patrol beyond settled territory.
 
-The Long Hush remains a useful poetic and historical term. What it no longer names is the forbidden part tier; that technology is **Edictbound**.
+### The Warring States
 
-## 8. The Twin Restorations and the second catastrophe
+As populations and trade recovered, successor rulers fought for control of Meridian ruins, reactors, roads, vaults, archives, and surviving harnesses. This **Warring States** period lasted roughly three centuries.
 
-Centuries after the Great Severance, two powers independently reconstructed enough Meridian law, seals, archives, and machinery to claim restoration of the Empire. Later history calls them the **Twin Restorations**.
+No contender could restore the Meridian command structure. Power therefore accumulated around what could be defended locally: fortified cities, dynasties, military orders, guild monopolies, and inherited machines. These institutions became the ancestors of the present neo-feudal order.
 
-Their rivalry became the **War of the Two Mandates**. Each side believed divided authority was the original sin of the War of the Broken Seals and that victory by one authenticated sovereign would prevent another Last Edict. Each therefore revived more of the command architecture in order to prove that it alone could control it.
+## 9. The Twin Restorations and War of the Two Mandates
 
-The war culminated in the **Ashen Fall**. Edictbound weapons and infrastructure were activated on a scale not seen since the old Empire. Whether one side initiated the final escalation or both lost control remains disputed. What matters is that the Restorations repeated the Meridian error: they attempted to make obedience safe by proving who deserved to command.
+Two successor powers eventually recovered enough Meridian law, records, seals, engineering, and territory to claim that they were restoring the First Empire. Later history calls both states the **Twin Restorations**.
 
-The following **Ashen Century** is remembered less for battles than for consequences:
+For about two centuries they maintained a cold war. They competed through:
 
-- Burned agricultural regions and poisoned skies.
-- Failed climate and heating systems.
-- Refugee roads and famine camps.
-- Archive loss and disputed identity.
-- Cities freezing around dormant reactors.
-- New hereditary rulers consolidating food, safety, and harness power.
-- Religious orders gaining authority by keeping hospitals, wells, granaries, routes, and technical rites alive.
+- Allied kingdoms and dependent houses.
+- Archaeological races and relic seizures.
+- Espionage, sabotage, and command-key theft.
+- Rival lineages and claims to imperial legitimacy.
+- Limited campaigns kept below the threshold of total war.
+- Construction of new harnesses based on First Empire and early successor designs.
 
-### The returning southern witnesses
+Great Houses and smaller knightly orders generally kept their ancestral machines Severed. The Restorations took another path. Their researchers developed containment methods that appeared to let them use Edictbound components without allowing the Final Edict to seize an entire state.
 
-During the War of the Two Mandates, southern dioceses and fleets were cut off and presumed destroyed. Vigil appointed replacement clergy. A generation later, the lost fleet returned with surviving bishops, cathedral-ships, succession registers, testimony from the Severance tradition, and a command archive that appeared to recognize continuing Meridian authority.
+Restoration harnesses often kept a supposedly clean main frame while mounting Edictbound guns, legs, pods, bombs, shields, or melee systems. The arrangement delivered much of the old capability without openly restoring the whole network. For generations, it seemed to work.
 
-Vigil recognized the people and much of their sacramental record but rejected the claim that the Great Severance had been only a temporary emergency. The returning clergy joined imperial restorationists and became the **Order of Returning Witnesses** within the Rite of the Whole Crown. They are not a separate communion in present canon.
+The cold war ended in the **War of the Two Mandates**. It lasted only about five years. Both states fielded weapons so powerful and forces so tightly integrated that each escalation destroyed the assumptions supporting the next.
 
-## 9. The Concord of Ash
+## 10. The Ashen Century
 
-The Concord of Ash is the legal and religious settlement that ended the unrestricted restoration era. Different regions obey it unevenly, but its principles define legitimate power in the current age:
+The **Ashen Century** begins when the five-year War of the Two Mandates destroys both central governments. It is the full hundred years of cascading successor wars, autonomous campaigns, ecological damage, famine, and political collapse that followed.
 
-- Edict technology is forbidden to possess, traffic, activate, implant, or research without extraordinary sanction.
-- Ancient command systems must be capable of local isolation and shutdown.
-- No claimant may use machine recognition alone to establish political sovereignty.
-- The dead may be remembered but may not exercise new legal command through a reconstructed personality.
-- Religious inspectors and neutral custodians may ground a suspected Edictbound harness.
-- Sanctuaries, hospitals, granaries, refugee roads, seed vaults, and other survival infrastructure receive special protection.
+The Ashen Century was not primarily a second spontaneous activation of the Final Edict. The Twin Restorations had achieved real, if temporary, success in preventing the Edict from taking permanent control of their states. Humanity caused the greater destruction itself by using Edict-enhanced technology in ordinary strategy, conquest, and retaliation.
+
+The result caused more widespread physical and ecological ruin than the first Final Edict:
+
+- Agricultural regions burned or were poisoned.
+- Climate systems failed or were weaponized, creating regional little ice ages.
+- Cities froze around dormant or sabotaged reactors.
+- Autonomous weapons continued campaigns after their governments collapsed.
+- Refugee roads, famine camps, and plague corridors crossed former borders.
+- Archives and identity records were deliberately destroyed.
+- Successor armies fought over the remaining heat, food, and industrial systems.
+- Some regions still suffer ecological damage in the Present Age.
+
+The lesson was devastating. Humanity did not need to be possessed by the Final Edict to repeat its violence. The belief that forbidden power could be safely contained had been enough.
+
+The Covenant of the Second Sun arose during this century among the engineers, workers, widows, field preachers, healers, and communities that kept heat, water, food, and reproducible machinery operating. It became far more powerful during the rebuilding because political legitimacy increasingly depended on restoring ordinary life rather than claiming imperial grandeur.
+
+The Universal Communion also grew in authority. Its warning that no command system was safe unless ordinary people could refuse and isolate it appeared vindicated a second time.
+
+## 11. The Concord of Ash and the long rebuilding
+
+The **Concord of Ash** is the legal and religious settlement imposed after the Ashen Century. Different regions obey it unevenly, but its principles define legitimate power:
+
+- Edictbound technology is illegal to possess, traffic, activate, implant, or research without extraordinary sanction.
+- Every lawful system must permit local isolation and shutdown.
+- Machine Recognition alone cannot establish sovereignty.
+- The dead may be remembered but cannot exercise new legal command through an adaptive reconstruction.
+- Authorized inspectors may ground a suspected Edictbound harness.
+- Hospitals, granaries, seed vaults, heating works, refugee roads, and other survival infrastructure receive special protection.
 - Conflicts between harness-bearing powers should be contained through treaties, Passages of Arms, and the Lists rather than unrestricted war.
 
-The Concord is neither universally humane nor perfectly enforced. It also protects the neo-feudal monopoly of houses and Orders that already possess lawful relic-pattern machines. That contradiction helps generate both Mortal Measure reform and Ash Leveler terrorism.
+Recovery lasted many centuries. The Communion, the Second Sun Covenant, guilds, military orders, and great houses gained lasting authority because they restored roads, heat, medicine, agriculture, law, and local defense when no universal state could do so.
 
-## 10. Technology taxonomy
+The Concord prevented another global restoration war, but it also protected the people who already possessed lawful ancestral machines. This compromise created the current order: safer than either Restoration, but unequal, fragmented, and dependent on hereditary violence.
 
-### Firstwork
+## 12. The Present Age
 
-**Firstwork** is the broad scholarly and religious term for surviving Meridian technology. It includes infrastructure, archives, medical devices, automata, reactors, command engines, and war machines. Firstwork is not automatically illegal.
+The Present Age has lasted roughly 800 years. Its politics should resemble a long-lived version of the Five Dynasties and Ten Kingdoms pattern: large power blocs exist, but none can defeat and absorb its neighbors without inviting coalitions, rebellion, overextension, or Edictbound catastrophe.
 
-### Relic-pattern
+The political map includes:
 
-A **relic-pattern** part has been isolated, maintained, documented, and accepted for lawful armory use. The Orders preserve it but cannot reproduce it from raw materials. A relic-pattern may still be dangerous; the claim is that its behavior is bounded and Severable.
+- Large kingdoms and successor blocs.
+- Duchies, baronies, principalities, and marcher states.
+- Chartered cities and trade leagues.
+- Great House domains and knightly commanderies.
+- Guild territories, temple lands, and independent orders.
+- Mercenary companies and Hedge Errantry strongholds.
 
-### Edict technology and Edictbound parts
+Wars remain common. Borders move. Small states are annexed. Large states split through civil war, succession crises, or balkanization. No centralized political body has approached the power of the Twin Restorations, much less the Meridian Ascendancy.
 
-**Edict technology** is any Firstwork retaining active command logic, interfaces, or propagation behavior derived from the Last Edict. A component, harness, ruin, prosthetic, or person altered by it may be called **Edictbound**. Common speech uses **Edict-part** or simply **illegal part**.
+Many states claim legitimacy through alleged connections to the First Empire. These claims may rely on blood, office, possession of a seal, occupation of a Meridian capital, machine Recognition, or simple victory. None is universally accepted.
 
-Edictbound technology is feared because it may:
+The Universal Communion and Rite of the Whole Crown have fought minor religious wars, disputed successions, and crusader campaigns throughout the Present Age. These conflicts remain regionally destructive but have not yet become another world war.
 
-- Ignore ordinary frame directives.
-- Seek authentication or connect to other fragments.
-- Rewrite permissions, memory, or identity.
-- Impose compulsions on pilots and operators.
-- Continue functioning after normal shutdown.
-- Recognize authorities that present-day law denies.
-- Propagate corruption or command logic into compatible systems.
+### The War of the Open Forges
 
-Not every symptom proves deliberate malice. Some Edictbound systems may be damaged safeguards, incomplete archives, trapped pilot echoes, or command engines still trying to finish an ancient task.
+Twenty to twenty-five years before the story, a coalition of smaller duchies, baronies, chartered ports, and trade cities defeated a much larger but poorly governed kingdom. The protagonist's father participated in the war.
 
-### Scrapwright work
+The coalition's advantage was not an older noble lineage. It was money, trade, independent guilds, mercenary organization, and the first large deployment of **Revival-pattern harnesses**.
 
-**Scrapwright** technology is new-made, human-designed, reproducible, and locally repairable. It cannot match the best Firstwork but represents the only technological future current humanity genuinely owns. Its cultural and political importance is greater than its position in the combat tier list.
+Revival-pattern harnesses are new-made machines derived from Twin Restoration and pre-Ashen blueprints recovered during the rebuilding. They do not equal the greatest ancestral harnesses individually, but guild foundries can reproduce their frames and replace their parts. In sufficient numbers, disciplined Revival armigers and mercenaries defeated older knightly orders that had assumed hereditary quality would always overcome quantity.
 
-## 11. The Rebirth Protocol
+The war is now the setting's immediate political fault line:
 
-The common battlefield term **rebirth** describes the ancestral harness behavior seen after knockdown: the frame rises under a brief inviolable flare. Modern armigers can trigger and exploit this behavior but cannot reproduce or fully disable it.
+- Great Houses fear their inherited advantage is disappearing.
+- Smaller states seek foundry alliances and mercenary contracts.
+- Guilds demand political rights equal to the military power they now supply.
+- The Communion fears uncontrolled rearmament but welcomes machines that can be understood and Severed.
+- The Second Sun Covenant sees proof that reproducible public technology can break hereditary monopoly.
+- The Whole Crown sees a new army that could serve a restoration.
+- The Broken Choir sees thousands of compatible frames that might carry Edictbound parts.
+- The Ash Levelers see both a blow against old houses and the beginning of industrialized mech warfare.
 
-The deeper **Rebirth Protocol** appears to have been an empire-scale continuity system. Surviving evidence suggests it was designed to restore lawful operation after catastrophic loss of command, succession, population, or infrastructure. The local rebirth cycle inside every harness is probably one surviving fragment of that larger architecture.
+This destabilization gives every major religious and political institution a reason to take interest in the protagonist and the Grand Passage.
 
-What Rebirth would restore remains the central unresolved story problem. Competing interpretations include:
+## 13. Technology taxonomy
+
+The setting distinguishes a technology's origin from its command condition.
+
+### Origin and manufacture
+
+- **Firstwork:** Technology made by the Meridian Ascendancy. It includes infrastructure, archives, medical systems, automata, reactors, command engines, orbital machinery, and war harnesses. Firstwork is not automatically Edictbound.
+- **Restoration work:** Technology made or reconstructed by the Twin Restorations. Much of it imitates Firstwork, and a significant portion was built around contained Edictbound components.
+- **Relic-pattern:** An inherited part or frame that has been isolated, documented, bounded, and accepted for lawful use. Most relic-pattern equipment is Firstwork or Restoration work maintained through later centuries.
+- **Revival-pattern:** Recently reproducible harnesses and components derived from pre-Ashen blueprints. They are new-made, generally Severed, and less individually capable than the finest relics.
+- **Scrapwright work:** Present-day human-designed, reproducible, locally repairable machinery. It is dependable and comprehensible, though unable to match the best ancestral systems.
+
+### Severed
+
+**Severed** describes technology deliberately isolated from Meridian command continuity. A Severed system can be ancient or modern. It gives up network coordination, authentication depth, predictive support, self-repair, remote logistics, and other advanced functions in exchange for local control and the ability to shut it down.
+
+### Edictbound
+
+**Edictbound** describes any technological system infected with active Final Edict command logic. It is not an era, manufacturer, or material. Firstwork, Restoration work, Revival-pattern machinery, modern scrapwright systems, prosthetics, and human implants can all become Edictbound.
+
+The infection behaves like a computer virus, but it is more than ordinary malicious code. It can use authentication systems, learned behavior, pilot memories, adaptive controls, and compatible command architecture to deepen its hold. Fully removing it is normally impossible. Isolation, memory replacement, physical disconnection, and destruction are more reliable than cleansing.
+
+Common speech uses **Edict-part** or **illegal part**. In gameplay and armory law, Edictbound functions as the forbidden equipment tier even though it is technically a contamination state layered over any origin.
+
+Edictbound equipment is coveted because it has not accepted the limits of Severance. It can outperform a lawful equivalent in speed, force, targeting, coordination, adaptation, or endurance. The more it is used, the greater the chance its command logic becomes rooted in system memory and spreads into the frame or operator.
+
+Even apparently limited additions create risk:
+
+- Edictbound legs can rewrite balance, gait, and pursuit behavior.
+- An Edictbound shield can decide what counts as a protected ally.
+- A gun can change target authentication.
+- A pod can reconnect local machines into a command cluster.
+- A prosthetic can alter perception, memory, and motor control.
+- A pilot interface can give the Final Edict a path into both the harness and human mind.
+
+## 14. Pilots, implants, and Edictbound decline
+
+A mature armiger does not merely sit inside a harness. Pilot and machine must be synchronized physically and mentally.
+
+Most long-serving pilots acquire cybernetic interfaces throughout adolescence and adulthood. Great Houses and knightly orders begin with squires, introduce implants gradually, and train descendants beside the same inherited frames. Early conditioning creates a deeper bond and gives established lineages a major advantage over pilots implanted later in life.
+
+Edictbound prosthetics and cybernetics are dangerous even for ordinary people. An infected limb can alter motor control, an eye can rewrite recognition, and a memory aid can decide which experiences are valid. Pilot implants are worse because the same intimacy that improves combat performance gives the Final Edict access to a trained mind and an entire harness.
+
+Typical progression is uneven, but commonly includes:
+
+1. Loss of short-term memory and missing time.
+2. Erosion or substitution of long-term memories.
+3. Heightened emotion, aggression, fear, or obsessive loyalty.
+4. Mental instability, intrusive commands, and hallucinations.
+5. Inability to distinguish present reality from memories, simulations, or imagined orders.
+6. Collapse of independent identity and full enactment of the command to remove false sovereigns.
+
+An unpiloted Edictbound harness behaves like a powerful wild animal: dangerous, reactive, and driven by damaged directives. An Edictbound pilot fully merged with a harness is a professional killer. The system gains human judgment, tactical creativity, and knowledge of how people flee, deceive, and protect one another, while the pilot loses the ability to refuse.
+
+During the first centuries AFE, most piloted machines already captured by the Final Edict were destroyed through infighting, attacks on Severed settlements, and campaigns by Severed harnesses. Ancient Edictbound patrol machines and riderless frames can still survive in ruins, stations, sealed arsenals, and forgotten routes. Any recovered component may carry dormant infection.
+
+## 15. The Rebirth Protocol
+
+The battlefield term **rebirth** describes the ancestral harness behavior seen after knockdown: the frame rises under a brief inviolable flare. Modern armigers can trigger and exploit this behavior but cannot reproduce or fully disable it.
+
+The deeper **Rebirth Protocol** appears to have been an empire-scale continuity system. It was probably intended to restore lawful operation after catastrophic loss of command, succession, population, or infrastructure. The local rebirth cycle inside a harness may be one surviving fragment.
+
+What Rebirth would restore remains unresolved:
 
 - A lawful sovereign and complete Crown.
 - The Meridian state and its authenticated citizenry.
 - Destroyed minds or records reconstructed from network remnants.
-- The Last Edict itself under a new claimant.
-- A transformed collective continuity rather than individual resurrection.
+- The Final Edict under a newly recognized claimant.
+- A collective continuity that replaces individual human identity.
 
-No doctrine has proven its answer. The game should resist treating Rebirth as ordinary magical resurrection or a clean backup system.
+The game should resist treating Rebirth as ordinary resurrection or a clean backup system.
 
-## 12. The Riderless
+## 16. The Riderless and machine intelligence
 
-The **Riderless** is an intact or nearly intact imperial executor harness awaiting completion of the Rebirth Protocol. It fights without any acknowledged pilot and retains more of the old command architecture than any lawful machine.
+The **Riderless** is an intact or nearly intact imperial executor harness awaiting completion of the Rebirth Protocol. It fights without any acknowledged pilot and retains more original command capability than any lawful machine.
 
-Its current canon role:
+Its current role:
 
 - It waits in the Cradle.
-- The Orders deny or suppress proof of its existence.
-- The Broken Choir treats it as herald, executor, or proof that the Last Edict continues.
-- The Rite of the Whole Crown considers it possible mechanical Recognition of a future sovereign.
+- The Orders deny or suppress evidence of it.
+- The Broken Choir treats it as herald, executor, or proof that the Final Edict continues.
+- The Rite of the Whole Crown considers its Recognition a possible final test of sovereignty.
 - Its shed fragments become Edictbound Shards, Voices, Hands, and Shadows of the Riderless.
 - Its violet-black visual language marks active Edict contamination.
-- Its apparent intention and sapience remain deliberately unresolved.
+- Its intention and personhood remain unresolved.
 
-The Riderless may be a person, a command engine, a prison for accumulated echoes, a loyal machine waiting for lawful instruction, or the Last Edict's surviving executor. None of these should be confirmed casually.
+The setting does not contain a broad civilization of openly sapient robots. Use four uncertain categories:
 
-## 13. Machine intelligence and deliberate ambiguity
+1. **Automata:** Clearly limited maintenance, industrial, military, or ceremonial machines.
+2. **Echoes:** Recordings or behavioral fragments of pilots and officials.
+3. **Command Intellects:** Adaptive systems whose consciousness is disputed.
+4. **Emergent Persons:** Extremely rare machines that appear capable of fear, mercy, preference, or refusal.
 
-The setting does not contain a broad civilization of openly sapient robots. Machine personhood remains rare, uncertain, and philosophically dangerous.
+Riderless may be the only machine whose personhood becomes impossible to dismiss during the main story. It may be a person, an executor, a prison for accumulated echoes, a loyal machine awaiting lawful instruction, or the surviving hand of the Final Edict.
 
-Use four categories:
+## 17. Story-facing consequences
 
-1. **Automata** — clearly limited maintenance, industrial, military, or ceremonial machines.
-2. **Echoes** — recordings or behavioral fragments of pilots and officials that imitate their originals.
-3. **Command Intellects** — adaptive Meridian systems whose degree of consciousness is disputed.
-4. **Emergent Persons** — extremely rare machines that appear capable of fear, mercy, preference, or refusal.
-
-Riderless may be the only machine whose personhood becomes impossible to dismiss during the main story. Even then, the story should distinguish apparent consciousness from proof that a machine contains a dead human soul.
-
-## 14. Story-facing consequences
-
-- The protagonist may carry a component, identity, or authentication state relevant to Rebirth, but the exact answer remains open for story development.
-- The Rite of the Whole Crown may treat the protagonist as sovereign, evidence, prisoner, or raw material for creating a claimant.
-- The Broken Choir may treat the protagonist as the Final Claimant or missing voice needed to complete the Last Edict.
+- The protagonist may carry a component, identity, or authentication state relevant to Rebirth.
+- The Rite of the Whole Crown may treat the protagonist as sovereign, evidence, prisoner, or material for creating a claimant.
+- The Broken Choir may treat the protagonist as the Final Claimant or missing voice required to complete the Final Edict.
 - The Universal Communion may protect the protagonist while fearing that no person should possess what they carry.
-- The Ash Levelers may attempt to kill the protagonist as the fastest way to prevent restoration.
-- Riderless should mirror the player's harness: both rise through Rebirth, but only one may understand what the Protocol is trying to restore.
+- The Covenant of the Second Sun may support the protagonist only if their power can be made answerable to ordinary communities.
+- The Ash Levelers may attempt to kill the protagonist as the fastest way to prevent another mech order.
+- Riderless mirrors the player's harness: both rise through Rebirth, but only one may understand what the Protocol is restoring.
 - The ultimate conflict is not merely whether to destroy a superweapon. It is whether civilization should reconnect a system that might end war only by ending refusal.
 
-## 15. Locked canon and intentional unknowns
+## 18. Locked canon and intentional unknowns
 
 ### Locked
 
-- Meridian Empire as the precursor civilization.
-- War of the Broken Seals and the Last Edict as the first collapse.
-- Great Severance by the Uncrowned Witness.
-- Long Hush as the post-Severance era.
-- Twin Restorations, War of the Two Mandates, Ashen Fall, and Ashen Century as the second catastrophic cycle.
+- Meridian Ascendancy as the globally spanning First Empire.
+- Its zenith roughly five to six thousand years before the story; earlier history is prehistory.
+- War of the Broken Seals beginning roughly four thousand years before the story and lasting nearly two centuries.
+- Final Edict as the canonical name of the terminal command.
+- Twilight Years between the Final Edict and Great Severance.
+- Great Severance as both the Uncrowned Witness's intervention and a mass of deliberate local disconnections.
+- Severed technology as intentionally limited and Edictbound technology as unrestricted but corrupting.
+- Long Hush, Warring States, Twin Restorations, War of the Two Mandates, and one unified Ashen Century.
 - Concord of Ash as the foundation of present restrictions.
-- Edict technology / Edictbound as the forbidden technology terminology.
-- Riderless as an imperial executor connected to the Rebirth Protocol.
-- The local knockdown-rebirth mechanic as a surviving fragment of the larger Rebirth system.
+- Present Age as roughly 800 years of fragmented, competitive state systems.
+- Edictbound as infection by Final Edict command logic in technology of any era.
+- Pilot cybernetics, lifelong synchronization, and progressive Edictbound mental collapse.
+- War of the Open Forges as the recent conflict that proved mass-produced Revival harnesses can defeat older knightly orders.
+- Riderless as an imperial executor connected to Rebirth.
 
 ### Intentionally unresolved
 
-- The personal identity of the Uncrowned Witness.
-- Who issued the Last Edict and whether it malfunctioned.
-- Which Restoration initiated the Ashen Fall.
+- The identity and exact nature of the Uncrowned Witness.
+- Who enacted the Final Edict and whether any lawful sovereign existed.
+- Whether the Final Edict malfunctioned or performed its purpose exactly.
+- The names and borders of the Twin Restorations until they are needed by the story.
+- Which side first made the War of the Two Mandates irreversible.
 - Whether echoes are persons, memories, simulations, or traps.
 - Whether Riderless is sapient.
 - Whether a lawful Meridian sovereign can still exist.

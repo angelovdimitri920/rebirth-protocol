@@ -42,6 +42,9 @@ namespace RebirthProtocol.Domain
         // weapons like Hydra Flail. Null = the default single arc around
         // facing (every weapon before it). See MeleeWeaponPart.ProngAngles.
         public float[] ProngAngles;
+
+        // Fetter capability (Pass F): mirrors MeleeWeaponPart.FetterSeconds.
+        public float FetterSeconds;
     }
 
     // Melee with a gap-closer (GAME_DESIGN.md §3.1): high commitment,

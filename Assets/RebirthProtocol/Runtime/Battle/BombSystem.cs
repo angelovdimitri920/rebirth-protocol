@@ -210,7 +210,7 @@ namespace RebirthProtocol.Battle
         public void Tick(float dt, RoboAvatar player, RoboAvatar enemy)
         {
             CooldownRemaining -= dt;
-            if (Aiming && _owner.Health.State is HealthState.KnockedDown or HealthState.Dead)
+            if (Aiming && (_owner.Health.State is HealthState.KnockedDown or HealthState.Dead || _owner.Fetter.IsFettered))
             {
                 CancelAim();
             }
@@ -300,6 +300,16 @@ namespace RebirthProtocol.Battle
                         part.EnduranceDamage * scale,
                         toRobo.sqrMagnitude > 0.0001f ? toRobo.normalized : Vector3.forward,
                         isBlast: true); // AoE: the Quiet Bell's muffle reads this
+                    if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
+                    {
+                        // Fetter capability (Rime Charge, Pass F): flat
+                        // duration, not scaled by the cluster-mini-blast
+                        // damage scale -- a mini-blast either fetters for the
+                        // full duration or (Damage=0-ish sources aside) not
+                        // at all, never a partial hold.
+                        robo.ApplyFetter(part.FetterSeconds);
+                    }
+
                     if (effects != null && robo != _owner
                         && result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
                     {

@@ -122,6 +122,41 @@ namespace RebirthProtocol.Tests.BalanceHarness
             }
         };
 
+        // Fetter capability (ARMORY §4-9, Pass F, DOCTRINE §13 pillar 9
+        // "Fetter chains" watchlist entry): each new Fetter-carrying part
+        // swapped one at a time against its plain counterpart, same
+        // one-axis-at-a-time shape as VolleyMatrix — a flag here points
+        // straight at the new part (or, for a mirror match, at the fetter-
+        // immunity rule itself if a lock ever proved degenerate).
+        private static GunPart FetterlockGun => PartsCatalog.Guns.First(g => g.Id == "fetterlock");
+        private static MeleeWeaponPart KnellMaulMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "knell-maul");
+        private static MeleeWeaponPart TocsinMaceMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "tocsin-mace");
+        private static BombPart RimeChargeBomb => PartsCatalog.Bombs.First(b => b.Id == "rime-charge");
+        private static ShieldPart HoarfrostWardShield => PartsCatalog.Shields.First(s => s.Id == "hoarfrost-ward");
+        private static PodPart WinterwatchPod => PartsCatalog.Pods.First(p => p.Id == "winterwatch");
+
+        private static Loadout WithShield(ShieldPart shield) => new Loadout { Body = NeutralBody, Gun = Gun, Shield = shield, Legs = Legs, Pod = Pod };
+        private static Loadout WithPod(PodPart pod) => new Loadout { Body = NeutralBody, Gun = Gun, Bomb = Bomb, Legs = Legs, Pod = pod };
+
+        public static MatrixSpec FetterMatrix() => new MatrixSpec
+        {
+            Name = "fetter capability (on Bannerman, neutral kit otherwise)",
+            Builds = new List<NamedBuild>
+            {
+                new NamedBuild { Name = "arbalest (baseline gun)", Loadout = WithGun(Gun) },
+                new NamedBuild { Name = "fetterlock", Loadout = WithGun(FetterlockGun) },
+                new NamedBuild { Name = "oathblade (baseline melee)", Loadout = WithMelee(Melee) },
+                new NamedBuild { Name = "knell-maul", Loadout = WithMelee(KnellMaulMelee) },
+                new NamedBuild { Name = "tocsin-mace", Loadout = WithMelee(TocsinMaceMelee) },
+                new NamedBuild { Name = "censer (baseline bomb)", Loadout = WithBomb(Bomb) },
+                new NamedBuild { Name = "rime-charge", Loadout = WithBomb(RimeChargeBomb) },
+                new NamedBuild { Name = "kite-ward (baseline shield)", Loadout = WithShield(Shield) },
+                new NamedBuild { Name = "hoarfrost-ward", Loadout = WithShield(HoarfrostWardShield) },
+                new NamedBuild { Name = "iron-squire (baseline pod)", Loadout = WithPod(Pod) },
+                new NamedBuild { Name = "winterwatch", Loadout = WithPod(WinterwatchPod) }
+            }
+        };
+
         public static List<MatrixSpec> Select(string roster) => roster switch
         {
             "default" => new List<MatrixSpec> { ShapesMatrix(), BodiesMatrix() },
@@ -129,7 +164,8 @@ namespace RebirthProtocol.Tests.BalanceHarness
             "bodies" => new List<MatrixSpec> { BodiesMatrix() },
             "cross" => new List<MatrixSpec> { CrossMatrix() },
             "volley" => new List<MatrixSpec> { VolleyMatrix() },
-            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley).")
+            "fetter" => new List<MatrixSpec> { FetterMatrix() },
+            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter).")
         };
     }
 }

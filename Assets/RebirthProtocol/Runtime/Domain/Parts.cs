@@ -106,6 +106,12 @@ namespace RebirthProtocol.Domain
         // stream connects — the balance harness measures the real number.
         public int ProjectileCount = 1;
         public float SpreadDegrees;
+
+        // Fetter capability (ARMORY_REFERENCE; DOCTRINE §13 pillar 9, Pass
+        // F): a hit from this gun also applies the Fetter status for this
+        // many seconds. 0 (every gun before Fetterlock) applies nothing --
+        // RoboAvatar.ApplyFetter is a no-op below/at zero.
+        public float FetterSeconds;
     }
 
     public sealed class MeleeWeaponPart
@@ -131,6 +137,12 @@ namespace RebirthProtocol.Domain
         // just a more forgiving angle-of-attack, not extra hits.
         public float[] ProngAngles;
 
+        // Fetter capability (ARMORY_REFERENCE; DOCTRINE §13 pillar 9, Pass
+        // F): a connecting swing also applies Fetter for this many seconds,
+        // flat regardless of combo stage. 0 (every weapon before Knell
+        // Maul/Tocsin Mace) applies nothing.
+        public float FetterSeconds;
+
         public MeleeTuning ToTuning() => new MeleeTuning
         {
             Damage = Damage,
@@ -141,7 +153,8 @@ namespace RebirthProtocol.Domain
             HitRecovery = HitRecovery,
             WhiffRecovery = WhiffRecovery,
             KnockbackSpeed = KnockbackSpeed,
-            ProngAngles = ProngAngles
+            ProngAngles = ProngAngles,
+            FetterSeconds = FetterSeconds
         };
     }
 
@@ -177,6 +190,12 @@ namespace RebirthProtocol.Domain
         public BlastPattern Pattern = BlastPattern.Single;
         public int BlastPoints = 1; // Line: total points in the row; Split: always 2
         public float BlastSpacing; // Line: meters between adjacent points; Split: offset from center to each side
+
+        // Fetter capability (ARMORY_REFERENCE; DOCTRINE §13 pillar 9, Pass
+        // F): every robo the blast actually hits also gets Fetter for this
+        // many seconds -- flat, not scaled by the cluster-mini-blast
+        // damage scale. 0 (every bomb before Rime Charge) applies nothing.
+        public float FetterSeconds;
     }
 
     // Raise behaviors (ARMORY_REFERENCE §2.3, §7): what raising the shield
@@ -212,6 +231,13 @@ namespace RebirthProtocol.Domain
         public ShieldAirRaise AirRaise;
         public float MarchSpeedMult; // ground speed while raised, March only
         public float BlastMuffleSeconds; // Quiet Bell: all-sides blast guard window after raising
+
+        // Fetter capability (ARMORY_REFERENCE; DOCTRINE §13 pillar 9, Pass
+        // F): a melee attacker who gets PARRIED by this shield (Shielded or
+        // GuardBreak) is fettered for this many seconds -- the parry punish,
+        // shorter than a dedicated Fetter weapon's own hold. 0 (every
+        // shield before Hoarfrost Ward) applies nothing.
+        public float ParryFetterSeconds;
     }
 
     public sealed class PodPart
@@ -225,6 +251,17 @@ namespace RebirthProtocol.Domain
         public float EnergyMax; // pods run on their own pool (§2.1)
         public float EnergyPerShot;
         public float EnergyRegenPerSec;
+
+        // Fetter capability (ARMORY_REFERENCE; DOCTRINE §13 pillar 9, Pass
+        // F): Winterwatch's "patient rime-ward that fetters whoever comes
+        // near" is a proximity payload, not a normal ranged auto-fire --
+        // ProximityRange > 0 swaps the pod's fire-range check from
+        // CombatTuning.Pod.FireRange down to this tight radius (reusing the
+        // existing fire pipeline, not a new aura/tick system), and
+        // FetterSeconds carries on the shot the same way a gun's does. Both
+        // 0 (every pod before Winterwatch) is today's unchanged behavior.
+        public float ProximityRange;
+        public float FetterSeconds;
     }
 
     public sealed class LegsPart
@@ -314,7 +351,14 @@ namespace RebirthProtocol.Domain
             // instead of instantly folding onto one point -- three streams
             // that gradually converge read as "better from afar" exactly
             // per its own identity. Damage is PER STREAM (pillar 3).
-            new GunPart { Id = "trefoil", Name = "Trefoil", Blurb = "Three streams cast in a heraldic fan. Wide up close, converges kindly at range.", Damage = 22f, EnduranceDamage = 10f, FireInterval = 0.5f, ProjectileSpeed = 30f, HomingTurnRate = 1.0f, ProjectileCount = 3, SpreadDegrees = 24f }
+            new GunPart { Id = "trefoil", Name = "Trefoil", Blurb = "Three streams cast in a heraldic fan. Wide up close, converges kindly at range.", Damage = 22f, EnduranceDamage = 10f, FireInterval = 0.5f, ProjectileSpeed = 30f, HomingTurnRate = 1.0f, ProjectileCount = 3, SpreadDegrees = 24f },
+            // Fetter capability (ARMORY §4, Pass F): "Two shackle-rounds;
+            // near-guaranteed down up close." Bars 2/5/1/5/4 (MIGHT/BOLT/
+            // SEEK/CADENCE/REND) -- low raw damage but max CADENCE (fast
+            // FireInterval), high REND (heavy EnduranceDamage), low SEEK
+            // (weak homing). The shackle payload is the 1s Fetter itself,
+            // not the per-shot damage.
+            new GunPart { Id = "fetterlock", Name = "Fetterlock", Blurb = "Two shackle-rounds fired short and fast. Near-guaranteed down up close.", Damage = 18f, EnduranceDamage = 40f, FireInterval = 0.24f, ProjectileSpeed = 40f, HomingTurnRate = 0.8f, FetterSeconds = 1.0f }
         };
 
         public static readonly MeleeWeaponPart[] MeleeWeapons =
@@ -331,7 +375,19 @@ namespace RebirthProtocol.Domain
             // unlike Longglaive) -- its forgiveness is angular, not distance.
             // 5 overlapping 40°-wide prongs 30° apart span -80..+80 -- wide,
             // continuous coverage delivered as five named strikes.
-            new MeleeWeaponPart { Id = "hydra-flail", Name = "Hydra Flail", Blurb = "Five heads strike five angles in one motion. Somewhere in front of it, something connects.", Damage = 125f, EnduranceDamage = 55f, HitRange = 3.0f, HitArcDegrees = 40f, SwingActiveTime = 0.2f, HitRecovery = 0.5f, WhiffRecovery = 1.0f, KnockbackSpeed = 10f, ProngAngles = new[] { -60f, -30f, 0f, 30f, 60f } }
+            new MeleeWeaponPart { Id = "hydra-flail", Name = "Hydra Flail", Blurb = "Five heads strike five angles in one motion. Somewhere in front of it, something connects.", Damage = 125f, EnduranceDamage = 55f, HitRange = 3.0f, HitArcDegrees = 40f, SwingActiveTime = 0.2f, HitRecovery = 0.5f, WhiffRecovery = 1.0f, KnockbackSpeed = 10f, ProngAngles = new[] { -60f, -30f, 0f, 30f, 60f } },
+            // Fetter capability (ARMORY §5, Pass F): Fetterlock's counterpart.
+            // "A bell-hammer that tolls through poise (REND 130)" -- REND
+            // 130 is a literal EnduranceDamage callout in the doc. Bars
+            // 2/3/3/3/5 (MIGHT/REACH/TEMPO/GRACE/REND): below-average damage,
+            // average reach/tempo/grace, maxed REND.
+            new MeleeWeaponPart { Id = "knell-maul", Name = "Knell Maul", Blurb = "A bell-hammer that tolls through poise. Fetters whatever it rings.", Damage = 85f, EnduranceDamage = 130f, HitRange = 3.0f, HitArcDegrees = 70f, SwingActiveTime = 0.18f, HitRecovery = 0.45f, WhiffRecovery = 0.95f, KnockbackSpeed = 10f, FetterSeconds = 0.8f },
+            // Fetter capability (ARMORY §5, Pass F): Aspergill's counterpart.
+            // "Light stopping taps; rings a foe still for the follow-up."
+            // Bars 1/2/5/4/3: lowest MIGHT and REACH, near-max TEMPO (fast
+            // swing) and GRACE (cheap recovery) -- a quick tap, not a
+            // committed swing.
+            new MeleeWeaponPart { Id = "tocsin-mace", Name = "Tocsin Mace", Blurb = "Light stopping taps that ring a foe still for the follow-up.", Damage = 55f, EnduranceDamage = 30f, HitRange = 2.4f, HitArcDegrees = 70f, SwingActiveTime = 0.10f, HitRecovery = 0.30f, WhiffRecovery = 0.5f, KnockbackSpeed = 6f, FetterSeconds = 0.7f }
         };
 
         public static readonly BombPart[] Bombs =
@@ -349,7 +405,12 @@ namespace RebirthProtocol.Domain
             // state AT RELEASE: perpendicular to the throw line grounded
             // ("sides"), along it airborne ("fore-and-aft") -- matching the
             // G/A-differs idiom already used across the gun roster.
-            new BombPart { Id = "pincer-charge", Name = "Pincer Charge", Blurb = "Splits apart to blast both sides at once. Grounded, it opens wide; aloft, it closes the loops fore and aft.", Damage = 42f, EnduranceDamage = 26f, Cooldown = 6f, BlastRadius = 2.4f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, Pattern = BlastPattern.Split, BlastPoints = 2, BlastSpacing = 3.2f }
+            new BombPart { Id = "pincer-charge", Name = "Pincer Charge", Blurb = "Splits apart to blast both sides at once. Grounded, it opens wide; aloft, it closes the loops fore and aft.", Damage = 42f, EnduranceDamage = 26f, Cooldown = 6f, BlastRadius = 2.4f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, Pattern = BlastPattern.Split, BlastPoints = 2, BlastSpacing = 3.2f },
+            // Fetter capability (ARMORY §6, Pass F): "Almost harmless; holds
+            // the foe for the real blow." Bars 1/3/2/4/1 (MIGHT/LOFT/BREADTH/
+            // LINGER/REND), Dmg 8 -- both directly from the doc. The Fetter
+            // hold is the actual payload, not the pittance blast.
+            new BombPart { Id = "rime-charge", Name = "Rime Charge", Blurb = "Almost harmless on its own -- it holds the foe still for the real blow.", Damage = 8f, EnduranceDamage = 10f, Cooldown = 6f, BlastRadius = 2.6f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, FetterSeconds = 1.2f }
         };
 
         // Shield toll/raise data per ARMORY_REFERENCE §7 (GUARD front/back,
@@ -360,13 +421,33 @@ namespace RebirthProtocol.Domain
             new ShieldPart { Id = "bastion", Name = "Pavise", Blurb = "The great standing wall-shield: bigger buffer, blocks ~92% up front, mends slowly, long toll. Raised midair it slams you to the ground.", ShieldHp = 260f, RegenPerSec = 6f, RegenDelay = 3.5f, FrontBlockPercent = 0.92f, BackBlockPercent = 0.4f, MeleeParryEnduranceDamage = 32f, TollSeconds = 6f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.Drop },
             new ShieldPart { Id = "targe", Name = "Targe", Blurb = "The only shield you can advance behind: march at 40% speed while raised. Thin plate, quick mend, the shortest toll.", ShieldHp = 110f, RegenPerSec = 30f, RegenDelay = 1.5f, FrontBlockPercent = 0.60f, BackBlockPercent = 0.15f, MeleeParryEnduranceDamage = 16f, TollSeconds = 1.5f, GroundRaise = ShieldGroundRaise.March, AirRaise = ShieldAirRaise.None, MarchSpeedMult = 0.4f },
             new ShieldPart { Id = "kite-ward", Name = "Kite Ward", Blurb = "The knight's standard; balanced in every line. Hold to raise -- rooted while up.", ShieldHp = 200f, RegenPerSec = 14f, RegenDelay = 2.5f, FrontBlockPercent = 0.80f, BackBlockPercent = 0.30f, MeleeParryEnduranceDamage = 24f, TollSeconds = 3.5f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.None },
-            new ShieldPart { Id = "quiet-bell", Name = "Quiet Bell", Blurb = "A dome of hush: for a breath after raising, blasts and through-wall harm are met with the full guard from every side.", ShieldHp = 150f, RegenPerSec = 16f, RegenDelay = 2.5f, FrontBlockPercent = 0.65f, BackBlockPercent = 0.35f, MeleeParryEnduranceDamage = 18f, TollSeconds = 4f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.None, BlastMuffleSeconds = 1.5f }
+            new ShieldPart { Id = "quiet-bell", Name = "Quiet Bell", Blurb = "A dome of hush: for a breath after raising, blasts and through-wall harm are met with the full guard from every side.", ShieldHp = 150f, RegenPerSec = 16f, RegenDelay = 2.5f, FrontBlockPercent = 0.65f, BackBlockPercent = 0.35f, MeleeParryEnduranceDamage = 18f, TollSeconds = 4f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.None, BlastMuffleSeconds = 1.5f },
+            // Fetter capability (ARMORY §7, Pass F): Rime Charge's
+            // counterpart. "Melee against it leaves the attacker rimed and
+            // slowed." GUARD 70/25%, SOAK 170, MEND 15/s, TOLL 4, RIPOSTE
+            // 22 -- all straight from the doc. ParryFetterSeconds is
+            // deliberately shorter than a dedicated Fetter weapon's own
+            // hold (0.6s vs Fetterlock/Rime's ~1-1.2s): this is a parry
+            // punish, not a primary lock tool.
+            new ShieldPart { Id = "hoarfrost-ward", Name = "Hoarfrost Ward", Blurb = "Melee against it leaves the attacker rimed and slowed.", ShieldHp = 170f, RegenPerSec = 15f, RegenDelay = 2.5f, FrontBlockPercent = 0.70f, BackBlockPercent = 0.25f, MeleeParryEnduranceDamage = 22f, TollSeconds = 4f, GroundRaise = ShieldGroundRaise.Root, AirRaise = ShieldAirRaise.None, ParryFetterSeconds = 0.6f }
         };
 
         public static readonly PodPart[] Pods =
         {
             new PodPart { Id = "sentry", Name = "Iron Squire", Blurb = "The loyal retainer: steady chip fire while you reposition.", Damage = 8f, EnduranceDamage = 5f, FireInterval = 0.8f, EnergyMax = 100f, EnergyPerShot = 12f, EnergyRegenPerSec = 9f },
-            new PodPart { Id = "hornet", Name = "Kestrel", Blurb = "The cast hawk: fast stooping bursts, then an empty glove.", Damage = 6f, EnduranceDamage = 8f, FireInterval = 0.35f, EnergyMax = 80f, EnergyPerShot = 16f, EnergyRegenPerSec = 7f }
+            new PodPart { Id = "hornet", Name = "Kestrel", Blurb = "The cast hawk: fast stooping bursts, then an empty glove.", Damage = 6f, EnduranceDamage = 8f, FireInterval = 0.35f, EnergyMax = 80f, EnergyPerShot = 16f, EnergyRegenPerSec = 7f },
+            // Fetter capability (ARMORY §8, Pass F): "A patient rime-ward
+            // that fetters whoever comes near." Bars 1/2/3/4/4 (MIGHT/HASTE/
+            // SEEK/BREADTH/LINGER) -- lowest MIGHT (near-harmless chip) and
+            // below-average HASTE (patient, doesn't chase). ProximityRange
+            // is far tighter than the normal 22m pod FireRange -- it waits
+            // for the target to close, not the other way round. The Aloft/
+            // Afoot G/A split named in the doc isn't mechanically
+            // differentiated in this pass (scoping call, TASK_LADDER Pass F
+            // handoff): one uniform proximity behavior regardless of
+            // grounded state, matching the built-Kestrel/Iron-Squire
+            // precedent of a single PodPart entry per weapon identity.
+            new PodPart { Id = "winterwatch", Name = "Winterwatch", Blurb = "A patient rime-ward that fetters whoever comes near.", Damage = 4f, EnduranceDamage = 6f, FireInterval = 1.1f, EnergyMax = 90f, EnergyPerShot = 14f, EnergyRegenPerSec = 8f, ProximityRange = 6f, FetterSeconds = 1.0f }
         };
 
         public static readonly LegsPart[] Legs =

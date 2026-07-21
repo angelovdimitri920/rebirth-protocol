@@ -130,8 +130,13 @@ namespace RebirthProtocol.Battle
 
             _fireCooldown -= dt;
             var targetAlive = target != null && target.Health.State != HealthState.Dead;
+            // Fetter capability (Winterwatch, Pass F): ProximityRange > 0
+            // swaps the normal 22m auto-fire range for a much tighter
+            // radius -- "a patient rime-ward" waits for the target to come
+            // near instead of chasing it down at range.
+            var fireRange = part.ProximityRange > 0f ? part.ProximityRange : CombatTuning.Pod.FireRange;
             var inRange = targetAlive
-                && Vector3.Distance(_body.position, target.Position) <= CombatTuning.Pod.FireRange;
+                && Vector3.Distance(_body.position, target.Position) <= fireRange;
 
             if (targetAlive && inRange && _fireCooldown <= 0f && Energy >= part.EnergyPerShot)
             {
@@ -143,7 +148,8 @@ namespace RebirthProtocol.Battle
                     : target.Position + Vector3.up * 1.0f;
                 _projectiles.Spawn(_owner, target, _body.position, aim,
                     part.Damage * _owner.Stats.AtkMult, part.EnduranceDamage,
-                    CombatTuning.Pod.ProjectileSpeed, CombatTuning.Pod.HomingTurnRate, HitSource.Pod);
+                    CombatTuning.Pod.ProjectileSpeed, CombatTuning.Pod.HomingTurnRate, HitSource.Pod,
+                    fetterSeconds: part.FetterSeconds);
             }
         }
     }

@@ -4,23 +4,39 @@
 
 ## Logline
 
-Centuries after the Last Edict turned the Meridian Empire's command architecture against its own civilization, humanity has rebuilt into warring neo-feudal states around inherited knight harnesses. Nobody alive can build a Firstwork harness from nothing. Everybody who matters knows that reconnecting the old authority could end war — or finish the apocalypse.
+Millennia after the Final Edict turned the Meridian Ascendancy's command architecture against its own civilization, humanity has rebuilt into warring neo-feudal states around inherited knight harnesses. Nobody alive can build a Firstwork harness from nothing. Everybody who matters knows that reconnecting the old authority could end war or finish the apocalypse.
 
-## The Cataclysm: the Last Edict
+## The Cataclysm: the Final Edict
 
-The old world's end now has a canonical historical shape. During the **War of the Broken Seals**, rival authorities divided the Meridian Empire's Mandate. The terminal command remembered as the **Last Edict** attempted to end conflicting authority by eliminating refusal and invalidating people, machines, and communities it could not recognize. The **Uncrowned Witness** refused to inherit that absolute power and caused the **Great Severance**, breaking the unified network at the cost of imperial civilization.
+The old world's end has a canonical historical shape. During the nearly two-century **War of the Broken Seals**, rival authorities divided the Meridian Mandate. The **Final Edict** invalidated every existing citizen, seal, mandate, machine, and prior command until a true sovereign could restore the system. Because the Ascendancy documented almost everyone, nearly all humanity became an enemy of the Empire.
 
-The **Long Hush** is the period after the Severance, when some machines went silent and others continued isolated commands whose authorities no longer existed. It remains a poetic and historical term, not the name of illegal technology.
+During the short **Twilight Years**, Edictbound systems attacked the people they had once served. The **Uncrowned Witness** taught communities, pilots, and machines to perform the **Great Severance**. They survived by deliberately cutting themselves away from Meridian command and accepting permanent limits on their technology.
 
-Humanity later repeated the old error. The **Twin Restorations** fought the **War of the Two Mandates**, revived Edictbound systems, and caused the **Ashen Fall** and **Ashen Century**. The **Concord of Ash** ended that era and established the restrictions, inspection rights, sanctuaries, and ritualized harness warfare that shape the present world.
+The **Long Hush** lasted roughly 450 years, followed by three centuries of Warring States. Humanity later repeated the old error. The **Twin Restorations** contained and exploited Edictbound parts for two centuries, then destroyed one another in the five-year **War of the Two Mandates** and the wider **Ashen Century**. That century of human-directed warfare caused more physical and ecological ruin than the original Final Edict.
+
+The **Concord of Ash** ended that era and established the restrictions, inspection rights, sanctuaries, and ritualized harness warfare that shape the present world.
 
 The chronology and its deliberate unknowns are locked in [`WORLD_HISTORY.md`](WORLD_HISTORY.md).
 
 ## The Long Recovery
 
-Humanity's recovery passed through survivor bands, tribes, clans, petty kingdoms, two failed imperial restorations, and a century of ash. It has stabilized into countries, Great Houses, chartered military Orders, religious jurisdictions, guilds, free companies, and mobile confederations, all fielding harnesses as the deciding weapon of statecraft.
+Humanity's recovery passed through survivor bands, tribes, clans, petty kingdoms, Warring States, two failed imperial restorations, a century of ash, and many centuries of rebuilding. It has stabilized into countries, Great Houses, chartered military Orders, religious jurisdictions, guilds, free companies, and mobile confederations, all fielding harnesses as the deciding weapon of statecraft.
 
 This is not medieval stasis by accident. Losing Meridian industry forced society toward durable local forms: lineage, oath, monastery, commandery, guild, and fortified city. These institutions could organize enough people to maintain inherited machines and survival infrastructure when universal systems could no longer be trusted.
+
+The Present Age has lasted roughly 800 years. Its political structure resembles the Five Dynasties and Ten Kingdoms pattern at a global scale. Large blocs dominate their regions but depend on smaller countries, cities, orders, and houses that constantly bargain among them. No large power can conquer its neighbors without provoking coalitions, internal revolt, overextension, or forbidden escalation.
+
+Wars still occur, borders move, small states are annexed, and large realms split through succession crises or balkanization. There has been no universal political body since the Twin Restorations. Many sovereigns claim Meridian legitimacy through blood, seals, ancient offices, recovered capitals, or machine Recognition, but none is accepted throughout the world.
+
+Minor religious wars between the Universal Communion and the Rite of the Whole Crown, including crusader campaigns and disputed successions, belong in the background of this period.
+
+### The War of the Open Forges
+
+Twenty to twenty-five years before the story, a coalition of smaller duchies, baronies, chartered ports, and trade cities defeated a larger but poorly governed kingdom. The protagonist's father served in the war.
+
+The coalition's trade wealth and independent guilds let it mass-produce **Revival-pattern harnesses** from recovered pre-Ashen blueprints. These new machines were individually inferior to the finest ancestral frames, but replaceable parts, paid mercenaries, and numbers allowed them to defeat older knightly orders.
+
+The result threatens the status quo. Great Houses fear the end of their military monopoly. Small states race to secure guild contracts. The Communion, Second Sun Covenant, Whole Crown, Broken Choir, and Ash Levelers all see different dangers and opportunities in an age when harness power may become reproducible.
 
 ## Lost Technology & Low Culture, High Tech
 
@@ -29,7 +45,9 @@ Nobody left alive can build a Firstwork harness from raw materials. What survive
 - **The great Orders** hold the best-preserved ancestral chassis, generations of accumulated maintenance lore, and enough resources to keep their machines close to factory condition — polished, matched armor, coherent silhouettes.
 - **Everyone else** — lesser houses, mercenary free companies, warlord levies — fields whatever survived and could be dragged home: mismatched plating, welded-on scavenged limbs, jury-rigged weapon mounts. This is the in-fiction *reason* for a literal `Used Future` art direction, not just a palette choice: every non-Order mech should visibly be a patchwork of salvage, while Order-issue chassis read as clean, coherent, and deliberately superior.
 
-The lawful armory distinguishes three kinds of technology: **relic-pattern** Firstwork accepted as bounded and Severable; forbidden **Edictbound** technology that retains active command logic from the Last Edict; and **scrapwright** work that present humanity can understand, reproduce, and repair. See [`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) and [`WORLD_HISTORY.md`](WORLD_HISTORY.md).
+Technology has both an origin and a command condition. **Relic-pattern** parts are inherited works accepted as bounded and Severed. **Revival-pattern** and **scrapwright** machines are reproducible new work. **Edictbound** is not an era or manufacturer: it is infection by active Final Edict command logic and can affect Firstwork, Restoration work, Revival machinery, modern parts, prosthetics, or pilot implants. See [`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) and [`WORLD_HISTORY.md`](WORLD_HISTORY.md).
+
+Severed machines are deliberately limited. Edictbound systems retain forbidden coordination, adaptation, speed, and authority and can outperform lawful equivalents, but repeated use lets the command take root in frame memory and human implants. An autonomous Edictbound harness is a dangerous wild animal. A fully compromised pilot merged with one is a trained killer serving the order to remove false sovereigns.
 
 The knockdown → rebirth invincibility cycle (`GAME_DESIGN.md` §2.2) is a local fragment of the larger **Rebirth Protocol**, an empire-scale continuity system intended to restore lawful operation after catastrophic loss. Modern armigers can trigger the harness behavior but cannot reproduce it or prove what completing Rebirth would restore. **Riderless** is an intact imperial executor still awaiting that completion.
 
@@ -61,11 +79,11 @@ These are strong historical relationships, not restrictions on individual charac
 | **Aureate Legion** | Contains powerful Rite of the Whole Crown sympathizers and secret patrons of the Veiled Restoration. |
 | **Order of the Winter Wing** | Protects Covenant of the Second Sun sanctuaries, thermal vaults, and northern pilgrimage roads. |
 | **Umbral Concordat** | Trades in forbidden genealogies, witness records, mystery initiations, and suppressed religious history. |
-| **Drowned Compact** | Religiously mixed; strongly connected to the Whole Crown's Order of Returning Witnesses and its cathedral-ships. |
-| **Solarian Talon** | Guards solar infrastructure sacred to the Second Sun and may preserve evidence about the Ashen Fall. |
+| **Drowned Compact** | Religiously mixed; Communion, Banner Court, Whole Crown, Second Sun, and local maritime rites compete in its ports. |
+| **Solarian Talon** | Guards solar infrastructure sacred to the Second Sun and may preserve evidence about the Ashen Century. |
 | **Kurultai Vanguard** | Stronghold of the Court of Ten Thousand Banners and its ancestor-centered lineage law. |
-| **Hedge Errantry** | Includes landless Communion knights, Banner Court champions, Mortalists, and wandering shrine guardians. |
-| **Wrightsguild** | Publicly accepts the Concord, privately guards craft mysteries, and overlaps with moderate Mortal Measure reform. |
+| **Hedge Errantry** | Includes landless Communion knights, Banner Court champions, Second Sun Mortalists, and wandering shrine guardians. |
+| **Wrightsguild** | Publicly accepts the Concord, privately guards craft mysteries, and overlaps strongly with the Second Sun's Mortal Measure. |
 | **Litany Sisters** | Technical, medical, and martial religious order within the Universal Communion. |
 | **Broken Choir** | Seeks the Final Claimant and completion of Rebirth through open Edictbound use and bodily implantation. |
 
@@ -96,16 +114,19 @@ Closest tonal reference points — not sources to copy, just calibration:
 - **Harness** — a war-mech (a knight's full plate was literally called "a harness"). 10–14 m tall; the pilot rides in the chest, the head is a sensor-helm (`ART_DIRECTION.md` §1).
 - **Armiger** — a knighted pilot, one entitled to bear ancestral arms.
 - **Firstwork** — the broad scholarly and religious term for surviving Meridian technology. It is not automatically illegal.
-- **The Last Edict** — the terminal Meridian command that attempted to end divided authority by eliminating refusal.
-- **Great Severance** — the Uncrowned Witness's destruction of universal command continuity.
-- **Long Hush** — the post-Severance era of silent networks, isolated survivors, and machines continuing orphaned orders.
-- **Ashen Fall / Ashen Century** — the Edictbound catastrophe caused by the Twin Restorations and its century of famine, cold, displacement, and collapse.
-- **Concord of Ash** — the settlement that bans Edict technology, protects survival infrastructure, and makes sanctioned Passages preferable to unrestricted harness war.
+- **The Final Edict** — the terminal Meridian command that attempted to end divided authority by eliminating refusal.
+- **Twilight Years** — the years between the Final Edict and Great Severance when humanity expected extinction.
+- **Great Severance** — the Uncrowned Witness's intervention and the local disconnections that saved humanity by limiting its machines.
+- **Long Hush** — roughly 450 years of silent networks, isolated survivors, and Edictbound patrols after the Severance.
+- **Ashen Century** — the hundred years of human-directed successor war, famine, cold, displacement, ecological damage, and collapse after the War of the Two Mandates.
+- **Concord of Ash** — the settlement that bans Edictbound technology, protects survival infrastructure, and makes sanctioned Passages preferable to unrestricted harness war.
 - **The Lists** — the consecrated dueling grounds ([`ARENA_ROSTER.md`](ARENA_ROSTER.md)).
 - **A Passage of Arms** — a roguelite run: the medieval term for holding ground against all comers. The circuit of sanctioned Passages is **the Grand Passage**.
 - **Lasthold** — the hub city, seat of the Grand Passage: the Herald's hall, the hangar and test-yard, the Wrightsguild works, and the stewardship shops. The walkable shell of the JRPG-structured game (`GAME_DESIGN.md` §26).
 - **Laurels** — victory honors (the future scoring layer: gold/silver/bronze by speed and remaining vigor, from the source's trophy system).
-- **Relic-pattern / Edictbound / Scrapwright** — the three armory tiers ([`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) §1): lawful isolated Firstwork; parts retaining active Last Edict command logic; and new-made human work. Common speech calls the middle tier **Edict-parts** or **illegal parts**. Scrapwright work is the boring, dependable floor — tough, cheap to repair, easy to fit, and the only tier humanity truly owns.
+- **Relic-pattern / Revival-pattern / Scrapwright** — inherited lawful work, reproducible harnesses derived from recovered pre-Ashen blueprints, and ordinary new-made human work.
+- **Severed / Edictbound** — command conditions rather than manufacturers. Severed systems accept permanent limits for local safety. Edictbound systems carry active Final Edict infection and may come from any technological era. Common speech calls infected components **Edict-parts** or **illegal parts**.
+- **War of the Open Forges** — the recent war in which smaller trade states used mass-produced Revival harnesses and mercenaries to defeat a larger hereditary power.
 - **Rebirth Protocol** — an empire-scale continuity system whose local harness fragment produces the knockdown → rebirth flare.
 - **Spoils of War** — the victor's claim on the loser's arms (built: the run's spoils draft).
 
@@ -186,7 +207,7 @@ Mapped from the source's commander cast, filtered through the Orders. Doctrine n
 
 ### The Broken Choir (antagonists)
 
-The named fighters below are the circuit-facing edge of a much larger apocalyptic movement. The Choir openly steals, studies, implants, and fields Edict technology. Its Quietists, Reconciliationists, Claimantists, Executors, and Last Verse apocalyptic wing are defined in [`RELIGION_AND_IDEOLOGY.md`](RELIGION_AND_IDEOLOGY.md). Individual masters need not share the same interpretation of Rebirth.
+The named fighters below are the circuit-facing edge of a much larger apocalyptic movement. The Choir openly steals, studies, implants, and fields Edictbound technology. Its Quietists, Reconciliationists, Claimantists, Executors, and Last Verse apocalyptic wing are defined in [`RELIGION_AND_IDEOLOGY.md`](RELIGION_AND_IDEOLOGY.md). Individual masters need not share the same interpretation of Rebirth.
 
 - **Obron the Manifold** — the Choir's master. The Manifold Shadow (five vanish dashes), the Waxing Moon, the Eclipse Gait. Courteous, unhurried, five places at once.
 - **Eliset of the Stilled Voice** — fights with the Stilled Voice and the Raven's Step; her duels end in silence. Fields twin loyalties the Choir doesn't know about.
@@ -207,4 +228,4 @@ The named fighters below are the circuit-facing edge of a much larger apocalypti
 - Anything built from here on should default toward the Order names/table above rather than the old 1:1 historical-culture labels, and should distinguish Order-tier mechs (coherent, well-kept) from everyone-else-tier mechs (visibly patchwork/salvaged) as a deliberate visual language, not just incidental variety.
 - `docs/GAME_DESIGN.md` §16 logs this pivot; `prompts/MASTER_BUILD_PROMPT_UNITY.md`'s required reading has been updated to point here.
 - **2026-07-18 theming pass**: the catalog display names now follow this setting ([`ARMORY_REFERENCE.md`](ARMORY_REFERENCE.md) — the canonical parts/naming roster), arenas have a themed roster ([`ARENA_ROSTER.md`](ARENA_ROSTER.md)), and art/audio/VFX direction is canonized in [`ART_DIRECTION.md`](ART_DIRECTION.md). The faction table above remains the standing Order canon; the mecha-knight focus (Knights in Powered Armor — Escaflowne, Imperial Knights, Knight's & Magic, Break Blade) is now an explicit design pillar via `ART_DIRECTION.md`, extending the Touchstones list.
-- **2026-07-21 canon consolidation**: [`WORLD_HISTORY.md`](WORLD_HISTORY.md) replaces the unspecified-cataclysm placeholder with the Last Edict chronology; [`RELIGION_AND_IDEOLOGY.md`](RELIGION_AND_IDEOLOGY.md) locks the religious institutions and their subfactions; **Edictbound** supersedes **Hushforged** as the illegal part tier. The Long Hush remains the name of the post-Severance era.
+- **2026-07-21 canon consolidation**: [`WORLD_HISTORY.md`](WORLD_HISTORY.md) replaces the unspecified-cataclysm placeholder with the Final Edict chronology; [`RELIGION_AND_IDEOLOGY.md`](RELIGION_AND_IDEOLOGY.md) locks the religious institutions and their subfactions; **Edictbound** is the canonical illegal technological condition. The Long Hush remains the name of the post-Severance era.

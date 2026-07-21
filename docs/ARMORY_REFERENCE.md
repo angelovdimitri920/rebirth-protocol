@@ -1,20 +1,22 @@
 # The Armory — Canonical Parts Roster & Naming Reference v2
 
-*Feature-complete revision (2026-07-18, second pass). v1 mapped the source material to archetype families; **v2 is the full catalog**: every body, gun, bomb, pod, and leg part in the source lists (Parts FAQ, parts list w/ stat cards, Weapon Damage Guide) has a themed counterpart here with stats, and — per standing directive — **every gun has a melee counterpart and every bomb a shield counterpart**. Sources are inspiration only: every name is original, all numbers are recalibrated to our scale (which conveniently shares the source's 1000-vigor baseline). Companion docs: [`COMBAT_DOCTRINE.md`](COMBAT_DOCTRINE.md) (how battles work), [`ARENA_ROSTER.md`](ARENA_ROSTER.md) (the Lists), [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) (world), [`ART_DIRECTION.md`](ART_DIRECTION.md) (look/sound).*
+*Feature-complete roster revision (2026-07-18), with world-canon terminology consolidated 2026-07-21. v1 mapped the source material to archetype families; **v2 is the full catalog**: every body, gun, bomb, pod, and leg part in the source lists (Parts FAQ, parts list w/ stat cards, Weapon Damage Guide) has a themed counterpart here with stats, and — per standing directive — **every gun has a melee counterpart and every bomb a shield counterpart**. Sources are inspiration only: every name is original, all numbers are recalibrated to our scale (which conveniently shares the source's 1000-vigor baseline). Companion docs: [`COMBAT_DOCTRINE.md`](COMBAT_DOCTRINE.md) (how battles work), [`ARENA_ROSTER.md`](ARENA_ROSTER.md) (the Lists), [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) (world), [`WORLD_HISTORY.md`](WORLD_HISTORY.md) (Edictbound technology), and [`ART_DIRECTION.md`](ART_DIRECTION.md) (look/sound).*
 
 ---
 
-## 1. The three tiers (revised)
+## 1. The three gameplay tiers (revised)
+
+These are armory and reward classifications, not a complete historical taxonomy. In world canon, **Edictbound is an infection state that can affect technology from any era**, but the game presents infected parts as a forbidden tier because that is how pilots, inspectors, and inventories treat them.
 
 | Tier | In-fiction meaning | Source analogue | Game identity |
 |---|---|---|---|
 | **Relic-pattern** | Ancestral parts maintained by the Orders. Nobody can build one; every armory knows its pattern-name. | The legal roster | The standard catalog (§4–§10) |
-| **Hushforged** | Parts touched by whatever caused the Long Hush — merged with something no one understands. Banned by every Order; coveted anyway. They glow wrong. | "Illegal" parts (Rahu / Penumbra / Wyrm tier) | Endgame drops & unlocks: stronger, corrupted, each with a real drawback. **Allowed to break frame directives** (the 2-dash cap, etc.) — that's *why* they're banned. Using one halves your laurels (`COMBAT_DOCTRINE.md` §8) |
-| **Scrapwright** | **New-made, human-designed, human-maintained.** The lowest tier — and the only one people truly *own*. Not a joke: scrapwright work is boring, honest, and dependable. It can't match a relic's edge or a Hushforged part's wrongness, but it takes abuse, repairs cheap, and fits any harness without a fuss. | The "Can" tier, reimagined | The dependable floor: high SOAK/POISE, modest MIGHT, zero gimmicks, and unique **dependability perks** (§1.2). Maintained by the Wrightsguild |
+| **Edictbound** | Any part infected with active Final Edict command logic, whether its original manufacture was Firstwork, Restoration, Revival, or modern. Banned under the Concord of Ash; coveted because it retains capabilities Severance removed. It may alter permissions, memory, machinery, implants, or the pilot. Common terms: **Edict-part**, **illegal part**. | "Illegal" parts (Rahu / Penumbra / Wyrm tier) | Endgame drops & unlocks: stronger, corrupted, each with a real drawback. **Allowed to break frame directives** (the 2-dash cap, etc.) because it is not obeying Severed limits. Using one halves your laurels (`COMBAT_DOCTRINE.md` §8) |
+| **Scrapwright** | **New-made, human-designed, human-maintained.** The lowest tier — and the only one people truly *own*. Not a joke: scrapwright work is boring, honest, and dependable. It can't match a relic's edge or an Edictbound part's wrongness, but it takes abuse, repairs cheap, and fits any harness without a fuss. | The "Can" tier, reimagined | The dependable floor: high SOAK/POISE, modest MIGHT, zero gimmicks, and unique **dependability perks** (§1.2). Maintained by the Wrightsguild |
 
 ### 1.1 Naming language (unchanged from v1)
 
-No Earth-culture names. Relic-patterns use plain feudal armory words plus at most one epithet, drawn from slot vocabularies: guns = archery/siege/liturgy; melee = knightly arms and votive words; bombs = siege charges and ritual objects; shields = historical shield types; pods = retainers, hounds, and falconry; legs = "<X> Greaves" (mounts, birds, gaits); bodies = pattern-names evoking their keeper Order. Mirrored left/right parts are single entries with **Dexter/Sinister** variants (the heraldic terms). Hushforged names are hushed epithets (*the Grieving Wall*); scrapwright names are plain workshop words (*Matchlock*, *Boilerplate*).
+No Earth-culture names. Relic-patterns use plain feudal armory words plus at most one epithet, drawn from slot vocabularies: guns = archery/siege/liturgy; melee = knightly arms and votive words; bombs = siege charges and ritual objects; shields = historical shield types; pods = retainers, hounds, and falconry; legs = "<X> Greaves" (mounts, birds, gaits); bodies = pattern-names evoking their keeper Order. Mirrored left/right parts are single entries with **Dexter/Sinister** variants (the heraldic terms). Edictbound catalog names remain hushed, personal epithets (*the Grieving Wall*) because the part behaves less like a reproducible pattern and more like a singular affliction; scrapwright names are plain workshop words (*Matchlock*, *Boilerplate*).
 
 ### 1.2 Scrapwright design rules (new)
 
@@ -22,7 +24,13 @@ Every scrapwright part follows the same identity: **worse peaks, better floors.*
 - Stats lean toward POISE/SOAK/reliability; MIGHT and refinement stats sit a notch below relic equivalents.
 - No gimmick behaviors — straight shots, flat swings, square shields.
 - Each carries one **dependability perk** (see entries): rounds that survive your knockdown, free full repair between fights, sure footing on hazards, an uninterruptible swing, a short toll. Dependability *is* the gimmick.
-- **Fitting**: scrapwright parts have minimal Burden (§2.6) — they fit anything, instantly. Relic parts strain a harness; Hushforged parts torture one.
+- **Fitting**: scrapwright parts have minimal Burden (§2.6) — they fit anything, instantly. Relic parts strain a harness; Edictbound parts torture one.
+
+### 1.3 Revival-pattern harnesses (world canon, not yet a separate gameplay tier)
+
+**Revival-pattern** harnesses are recently reproducible frames derived from Twin Restoration and pre-Ashen blueprints. They enabled the smaller-state coalition's victory in the War of the Open Forges twenty to twenty-five years before the story. Individually they remain below the finest ancestral harnesses, but guild foundries can produce frames and replacement parts in numbers.
+
+For the current catalog, Revival equipment uses scrapwright gameplay rules unless a later content pass establishes a distinct identity. Do not add a fourth tier only for lore. Its present narrative purpose is to destabilize hereditary knight power and explain why mass armies of newly made harnesses may soon exist.
 
 ---
 
@@ -31,11 +39,11 @@ Every scrapwright part follows the same identity: **worse peaks, better floors.*
 Carried from v1, with two new systems:
 
 1. **Arm pairings** (built): right arm gun XOR melee; left arm bomb XOR shield. Four doctrines — gun/bomb, gun/shield, melee/bomb, melee/shield — all must stay viable, hence counterpart parity throughout this doc.
-2. **Air-dash cap** (applied): no relic body grants more than 2 air dashes; extra dashes come from legs only. Hushforged bodies may break this.
+2. **Air-dash cap** (applied): no relic body grants more than 2 air dashes; extra dashes come from legs only. Edictbound bodies may break this.
 3. **Shield toll + raise behavior** (built, Pass B): lowering/breaking a shield starts its toll; raise behaviors are Root / March / Air-hold / Air-drop (§7).
-4. **Damage formula** (built): weapon MIGHT × attacker offense mult × defender ward mult. Offense mults cluster (95–105%, Hushforged outliers to 150%); ward mults spread (85–138%). Per-garniture ward mults are in §4.
+4. **Damage formula** (built): weapon MIGHT × attacker offense mult × defender ward mult. Offense mults cluster (95–105%, Edictbound outliers to 150%); ward mults spread (85–138%). Per-garniture ward mults are in §4.
 5. **Tempers v2** (to build): the source's 11 blast letters distill into **six directions plus one modifier**. Direction: **Sunder** (diagonal launch — default), **Sweep** (hard sideways), **Hoist** (straight up), **Hook** (pull toward owner), **Fetter** (stun in place), **Unhorse** (guaranteed knockdown). Modifier: **Branded** (the blast lingers as a standing blaze). A bomb/pod entry lists which tempers it may be fitted with; Branded may combine with Sunder/Sweep/Hoist.
-6. **Burden & Fitting** (future system): every part has a Burden cost; every chassis a Fitting limit. Relic parts are moderate, Hushforged heavy, scrapwright near-zero. This is the mechanical home of "scrapwright is much easier to fit" and a future build-constraint lever — flagged, not scheduled.
+6. **Burden & Fitting** (future system): every part has a Burden cost; every chassis a Fitting limit. Relic parts are moderate, Edictbound heavy, scrapwright near-zero. This is the mechanical home of "scrapwright is much easier to fit" and a future build-constraint lever — flagged, not scheduled.
 7. **Garnitures** (new, from the source's Normal/Armor/Speed styles): a chassis pattern comes in up to three garnitures — real medieval term for a harness's exchangeable fittings. **Field** (the baseline), **War** (armored lean), **Chase** (swift/keen lean). One mesh per pattern; garnitures are stat trims + small cosmetic deltas (plate density, crest length), which is how 25 bodies stay affordable.
 
 Stat bars are 0.5–5.0. Slot bar sets: Body **POISE/WARD/GAIT/WING/MIGHT** · Gun **MIGHT/BOLT/SEEK/CADENCE/REND** · Melee **MIGHT/REACH/TEMPO/GRACE/REND** · Bomb **MIGHT/LOFT/BREADTH/LINGER/REND** · Pod **MIGHT/HASTE/SEEK/BREADTH/LINGER** · Shield **GUARD/SOAK/MEND/TOLL/RIPOSTE**. "Volley" columns give total damage if every round of one trigger-pull lands, on the shared 1000-vigor scale — calibration targets, not final tuning.
@@ -113,7 +121,7 @@ Heavy *and* airborne: two continuous jumps, superb air control, slow everything 
 ### Cockatrice — masterless pattern *(new; single garniture)*
 A found relic no Order will claim: stealth-glide (one long cloaked glide-dash), superb jump, and a bouncing repeatable pounce charge. POISE 2.5 / WARD 2.5 / GAIT 1.5 / WING 3.5 / MIGHT 2.5 · Off 100% · Ward% 111.
 
-### Hushforged bodies
+### Edictbound bodies
 | Name | Source basis | What it breaks | Drawback |
 |---|---|---|---|
 | **the Martyr** | Ray Legend | Off **150%** — nothing hits harder | Ward% **170** — nothing dies faster; its charge stumbles backward |
@@ -128,7 +136,7 @@ The Wrightsguild's pattern: over-built, under-glamored. POISE 4.0 / WARD 3.5 / G
 
 ---
 
-## 4. Guns — 38 relic patterns (+10 Hushforged, +1 scrapwright)
+## 4. Guns — 38 relic patterns (+10 Edictbound, +1 scrapwright)
 
 Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium range (melee-range or far values noted when the weapon's identity lives there). G/A = ground/air behavior differs.
 
@@ -173,7 +181,7 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Cinquefoil (D/S)** | L/R 5-Way | 2/4/1/4/3 | Med-long | 158–273 | Five streams fanning from the named side; reversed aloft | Quintain Sweep (D/S) |
 | **Annulet** | Halo | 3/3/4/3/3 | Med-long | 69–85 | A great ring that climbs, then hunts (G); halts before you aloft | Roundelay |
 
-### Hushforged guns
+### Edictbound guns
 | Name | Source | Identity | Drawback |
 |---|---|---|---|
 | **the Stilled Voice** | Wave Laser | Rounds that *still* a harness for long seconds | Almost no damage; the silence spreads to the wielder's vox |
@@ -189,7 +197,7 @@ Bars 3/1/1/2/2 · Med · 88/volley but rounds shrink in flight (22 far). Three p
 
 ---
 
-## 5. Melee — 38 relic patterns (+10 Hushforged, +1 scrapwright)
+## 5. Melee — 38 relic patterns (+10 Edictbound, +1 scrapwright)
 
 Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun (§4); the pairing rule keeps every ranged answer matched by a blade answer.
 
@@ -233,7 +241,7 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | **Quintain Sweep (D/S)** | Cinquefoil | 2/4/4/3/3 | A five-point fan combo sweeping from the named side |
 | **Roundelay** | Annulet | 3/3/3/2/3 | A full-circle spin — the answer to being surrounded |
 
-### Hushforged melee
+### Edictbound melee
 **the Hushed Edge** (↔ Stilled Voice — wounds don't hurt until seconds later, and neither do its costs), **the Saltire's Kiss** (↔ Burning Saltire — twin crossed cuts that strike both flanks), **the Verse Eternal** (↔ Choir Unending — the combo string that does not end while stamina holds), **the Wyrm's Tooth** (↔ Elder Wyrm — bites re-track like living things), **the Twinned Talon** (↔ Twin Stoop — every swing is two), **the Horned Moon / the Hollow Moon** (↔ Waxing/Waning — mirrored crescent arts), **Hand of the Riderless, First/Second/Third** (↔ the Voices — the Third simply *takes* what it touches).
 
 ### Scrapwright melee — **Felling Axe**
@@ -241,7 +249,7 @@ Bars 3/3/2/3/3. A woodsman's arc, nothing more. **Perk:** the swing cannot be in
 
 ---
 
-## 6. Bombs — 18 relic shapes (+4 Hushforged, +1 scrapwright)
+## 6. Bombs — 18 relic shapes (+4 Edictbound, +1 scrapwright)
 
 Bars = MIGHT/LOFT/BREADTH/LINGER/REND. Dmg = single-blast calibration (ground / air where the source differs). Tempers list what the shape may be fitted with (§2.5); **B+** marks Branded-compatible.
 
@@ -266,7 +274,7 @@ Bars = MIGHT/LOFT/BREADTH/LINGER/REND. Dmg = single-blast calibration (ground / 
 | **Widening Gyre** | Geo Trap | 4/4/4/4/3 | 76 | Sunder, B+ | Lands small and *blooms* — always wider than it looks | Thorn Ward |
 | **Goliath Charge** | Titan (bomb) | 1/1/5/3/5 | 19 | Unhorse | An enormous, slow, humiliating blast | Cenotaph |
 
-### Hushforged bombs
+### Edictbound bombs
 **the Threefold Grief** (Treble — three grown blasts, corner a foe and there is no out), **the Wyvern's Egg** (Wyvern — a long-flying egg that hatches ruin), **Moontide, Waxing / Waning** (Waxing/Waning Arc — curving tides with grown blasts), **the Ruin Cross** (Grand Cross — four enormous blasts in a cross about you, 76 each; stand still when you loose it).
 
 ### Scrapwright bomb — **Powder Keg**
@@ -274,7 +282,7 @@ Bars 3/3/3/2/3 · 60. An honest keg of black powder. **Perk:** the shortest toll
 
 ---
 
-## 7. Shields — 17 relic patterns (+4 Hushforged, +1 scrapwright)
+## 7. Shields — 17 relic patterns (+4 Edictbound, +1 scrapwright)
 
 Every bomb shape has its shield counterpart (§6, last column). GUARD = front block% (back% second). TOLL = seconds after lowering/break. Raise: Root / March / Air-hold / Air-drop (§2).
 
@@ -298,7 +306,7 @@ Every bomb shape has its shield counterpart (§6, last column). GUARD = front bl
 | **Testudo Ward** | **100/100%** for 0.8 s | 120 | 10/s | 8 | 12 | Root, Air-drop | The full shell: a heartbeat of true invulnerability, then a long toll |
 | **Thorn Ward** | 75/25% | 180 | 12/s | 4.5 | 24 | Root | Returns a fifth of blocked harm as a pulse of thorns |
 
-### Hushforged shields
+### Edictbound shields
 **the Grieving Wall** (blocks *everything*, and weeps your own vigor as payment), **the Eggshell** (absorbs one killing blow per List, then is gone), **the Moon Door** (cycles: perfectly there, then perfectly not), **the Ruin Aegis** (hoards blocked harm and returns it all as a cross of ruin).
 
 ### Scrapwright shield — **Boilerplate**
@@ -306,7 +314,7 @@ GUARD 80/30% · SOAK 300 · MEND 4/s · TOLL 5 · RIPOSTE 20 · Root. A riveted 
 
 ---
 
-## 8. Pods — 24 relic patterns (+6 Hushforged, +1 scrapwright)
+## 8. Pods — 24 relic patterns (+6 Edictbound, +1 scrapwright)
 
 Retainers, hounds, hawks, and wards on their own energy. Bars = MIGHT/HASTE/SEEK/BREADTH/LINGER. Tempers as marked.
 
@@ -337,7 +345,7 @@ Retainers, hounds, hawks, and wards on their own energy. Bars = MIGHT/HASTE/SEEK
 | **Goliath Ward** | Titan (pod) | 1/1/1/5/5 | The enormous, slow, ceremonial blast, in retainer form |
 | **Herald** *(ours)* | — | 1/3/4/1/3 | Circles the foe crying their position: marked targets take +10% |
 
-### Hushforged pods
+### Edictbound pods
 **the Coursing Shade** (Cheetah — three loosed at once, faster than sight, B+), **the Pale Weaver** (Wolf Spider — a leaping ambush-spinner), **the Drowned Chorister** (Orca — three far-ranging hunters that sing as they close), **Shadow of the Riderless, First/Second/Third** (Penumbra — tireless seekers; the Third looses three that do not stop).
 
 ### Scrapwright pod — **Watchdog**
@@ -345,7 +353,7 @@ Bars 2/2/3/2/5. Sits where you put it and barks steadily. **Perk:** never wander
 
 ---
 
-## 9. Legs — 12 relic patterns (+4 Hushforged, +1 scrapwright)
+## 9. Legs — 12 relic patterns (+4 Edictbound, +1 scrapwright)
 
 | Name | Source | Trait |
 |---|---|---|
@@ -362,7 +370,7 @@ Bars 2/2/3/2/5. Sits where you put it and barks steadily. **Perk:** never wander
 | **Charger Greaves** | Booster | Dash builds to great speed from a slow start |
 | **Gryphon Greaves** *(built)* | *(ours)* | **+1 air dash** — the only relic road past the 2-dash cap; clean landings, slow afoot |
 
-### Hushforged legs
+### Edictbound legs
 **the Swallow's Road** (ground speed half again over Courser), **the Raven's Step** (jump height *and* dash speed), **the Eclipse Gait** (sharp aerial turning that borders on wrong, high jumps), **the Stride of the Riderless** (Ultimate — everything, all of it, at once).
 
 ### Scrapwright legs — **Cartwright Greaves**
@@ -383,7 +391,7 @@ Volley/multi-projectile · shield toll + raise behaviors + March/plant/reflect/b
 ## 12. Rollout passes (revised)
 
 - **A (done):** naming canon + renames + dash cap. **A2 (done):** feature-complete roster + doctrine doc.
-- **B (done, 2026-07-18):** shield toll/raise on built shields; Targe, Kite Ward, Quiet Bell (`GAME_DESIGN.md` §27). **C:** volley tech → Trefoil, Palisade, Pincer, Longglaive, Hydra Flail. **D:** Fetter → Fetterlock, Rime, Winterwatch, Knell Maul, Tocsin Mace, Hoarfrost Ward. **E:** pulls/piercing → Grapnel, Hookbill, Estoc, Auger, Sawtooth Espadon. **F:** scaling/delay → Pilgrim, Tilt Lance, Courser Saber, Vigil, Penitent Flail, Beacon, Crowbeak Pick. **G:** trajectory suite → Mangonel, Evenfall, Skysword, Steeplefall, Oxbow, Oubliette(s), Falconet, Volant Falx. **H:** remaining guns/melee pairs + shields (Argent Mirror, Bastille, Cenotaph, Pallium, Echo, Springald, Cheval, Testudo, Thorn, Canopy, Caltrop). **I:** pod suite + legs wave + garnitures + charges + Casting. **J:** scrapwright line (Plowshare through Cartwright) + dependability perks. **K:** the three planned chassis + Harrier + Cockatrice. **L:** tempers + Branded. **M:** Hushforged tier (own design pass: drawbacks first).
+- **B (done, 2026-07-18):** shield toll/raise on built shields; Targe, Kite Ward, Quiet Bell (`GAME_DESIGN.md` §27). **C:** volley tech → Trefoil, Palisade, Pincer, Longglaive, Hydra Flail. **D:** Fetter → Fetterlock, Rime, Winterwatch, Knell Maul, Tocsin Mace, Hoarfrost Ward. **E:** pulls/piercing → Grapnel, Hookbill, Estoc, Auger, Sawtooth Espadon. **F:** scaling/delay → Pilgrim, Tilt Lance, Courser Saber, Vigil, Penitent Flail, Beacon, Crowbeak Pick. **G:** trajectory suite → Mangonel, Evenfall, Skysword, Steeplefall, Oxbow, Oubliette(s), Falconet, Volant Falx. **H:** remaining guns/melee pairs + shields (Argent Mirror, Bastille, Cenotaph, Pallium, Echo, Springald, Cheval, Testudo, Thorn, Canopy, Caltrop). **I:** pod suite + legs wave + garnitures + charges + Casting. **J:** scrapwright line (Plowshare through Cartwright) + dependability perks. **K:** the three planned chassis + Harrier + Cockatrice. **L:** tempers + Branded. **M:** Edictbound tier (own design pass: drawbacks first).
 
 Each pass: EditMode tests for domain logic, built-player smoke check, and a `GAME_DESIGN.md` log entry.
 
@@ -447,18 +455,23 @@ Any armiger may *field* any part (loadout freedom is untouchable). But every pat
 - **The Litany Sisters**: guns Litany, Aspergill, Versicle, Processional (D/S) (+ melee) · bombs Peal Charge (all), Antiphon Charge (+ shield Quiet Bell) · pods Bellman & Twin.
 - **The Wrightsguild**: the entire scrapwright line (Plowshare, Matchlock, Felling Axe, Powder Keg, Boilerplate, Watchdog, Cartwright) · gun Auger (+ Sawtooth Espadon) — the one relic art they were ever granted.
 - **The Circuit itself**: the Herald pod (the Herald's own device); the Cockatrice and the Alaunt run masterless — stewarded by no one, coveted by everyone.
-- **The Broken Choir**: stewards nothing; *traffics* everything Hushforged (§16).
+- **The Broken Choir**: stewards nothing; *traffics* everything Edictbound (§16).
 
 ---
 
-## 16. Hushforged interactions (how the banned tier touches everything)
+## 16. Edictbound interactions (how the banned tier touches everything)
 
-- **Acquisition**: never sold, never drafted normally. Found in **sealed reliquary caches** hidden in the world (the source's hidden-pickup pattern — behind the column, inside the broken carriage), claimed from Broken Choir masters, or granted at story beats. Collection is tracked in-fiction as **the Choir's Ledger**.
-- **Laurels**: fielding even one Hushforged part halves that fight's laurels (`COMBAT_DOCTRINE.md` §8). Vow events bar them outright; Choir gauntlets *expect* them.
+- **Nature**: these are not simply overpowered relics. Edictbound is infection by active Final Edict command logic in a part of any age. It may seek authority, rewrite permissions, alter memory, spread into compatible systems, or resist shutdown (`WORLD_HISTORY.md` §13).
+- **Acquisition**: never sold or drafted normally. Found in **sealed reliquary caches** hidden in the world (the source's hidden-pickup pattern — behind the column, inside the broken carriage), claimed from Broken Choir masters, stolen from Veiled Restoration laboratories, taken from Ash Leveler cells, or granted at story beats. Collection is tracked in-fiction as **the Choir's Ledger**.
+- **Dormancy**: any recovered machine component can conceal Final Edict infection even when it appears inert. Certification reduces uncertainty; it never proves a perfect cleansing.
+- **Laurels**: fielding even one Edictbound part halves that fight's laurels (`COMBAT_DOCTRINE.md` §8). Vow events bar them outright; Choir gauntlets *expect* them.
 - **Balance position**: budgeted ~115–130% of relic effectiveness, always with a real drawback in the kit itself (the Martyr's ward, the Stilled Voice's damage, the Moon Door's absences) — the laurel economy prices them, the drawback disciplines them.
-- **Frame rules**: Hushforged parts may break frame directives (dash caps, mend rules) — that is *why* they're banned, and they are the only tier allowed to.
-- **Overload**: Hushforged guns obey the overload rule like any relic (the wrongness does not protect a volley — the Choir Unending is famously overloadable). Only scrapwright rounds persist.
-- **AI usage**: only Broken Choir fighters, the empowered Paragons of the Golden Passage, the First Armiger, and the Riderless ever field them. A common armiger with a Hushforged arm is a story event, never a random roll.
+- **Frame rules**: Edictbound parts may break frame directives (dash caps, mend rules) — that is *why* they're banned, and they are the only tier allowed to.
+- **Cumulative risk**: repeated use lets the command root itself more deeply in frame memory, cybernetics, and the pilot. The current combat build represents risk through part drawbacks and laurel loss only. A future campaign/narrative pass must decide how to track short-term memory loss, long-term memory erosion, emotional instability, hallucinations, loss of reality testing, and eventual Final Edict takeover before permanent contamination mechanics are implemented.
+- **Pilot danger**: a fully compromised pilot merged with a harness is more dangerous than an autonomous Edictbound machine. The machine gains human tactical judgment while the pilot loses the ability to refuse the order to remove false sovereigns.
+- **Overload**: Edictbound guns obey the overload rule like any relic (the wrongness does not protect a volley — the Choir Unending is famously overloadable). Only scrapwright rounds persist.
+- **AI usage**: only Broken Choir fighters, empowered Paragons of the Golden Passage, the First Armiger, Riderless, and authored story encounters involving the Whole Crown's Veiled Restoration or Ash Leveler Cinderbound ever field them. A common armiger with an Edictbound arm is a story event, never a random roll.
+- **Faction distinction**: Whole Crown researchers want to master Edict-parts discreetly; the Broken Choir openly seeks, implants, and awakens them; Ash Levelers use them as disposable terror weapons they intend to destroy with themselves. These motives should change dialogue, drawbacks, and presentation even when two encounters use the same mechanical tier.
 - **Presentation**: violet-black glow, organic wrongness, a whisper-line per part (`ART_DIRECTION.md` §5/§7).
 
 ---
@@ -479,4 +492,4 @@ Verification table: every named part in the source lists and its counterpart her
 
 **Blast letters → tempers** — F (sideways)→Sweep · H (slow sideways)→Sweep (gentle) · G (upward)→Hoist · C (slow upward)→Hoist (gentle) · K (always down)→Unhorse · S (stun)→Fetter · T (pull)→Hook · X (diagonal)→Sunder · B (sideways, lingering)→Branded Sweep · D (diagonal, lingering)→Branded Sunder · P (upward, lingering)→Branded Hoist. All eleven letters covered; "gentle" is a strength grade, not a seventh temper.
 
-*Ledger verified against the Parts FAQ, the stat-card parts list, and the Weapon Damage Guide, 2026-07-18: no source part is unmapped. Our own additions beyond the source (Bombard, Dolorous Maul, Kestrel, Gryphon Greaves, Herald, the Hushforged shields, and the scrapwright line) stand as native patterns.*
+*Ledger verified against the Parts FAQ, the stat-card parts list, and the Weapon Damage Guide, 2026-07-18: no source part is unmapped. Our own additions beyond the source (Bombard, Dolorous Maul, Kestrel, Gryphon Greaves, Herald, the Edictbound shields, and the scrapwright line) stand as native patterns.*

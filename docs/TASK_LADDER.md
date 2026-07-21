@@ -34,7 +34,7 @@ Ordered so infrastructure precedes content, and every content wave lands on a va
 | **M** ⚑ | Garnitures & new chassis | Field/War/Chase stat trims for the built 4; **Harrier, Freelance, Sunplume, Skyanvil, Cockatrice** stats (primitive meshes fine); multi-jump capability | ARMORY §3 |
 | **N** | Tempers + Branded | Shared `ImpactType` through knockback/knockdown resolution; retrofit bombs/pods | ARMORY §2.5 |
 | **O** ⚑ | The Casting, laurels, AI Classes | Fight-opening ritual; laurels scoring + mercy rule with the run layer; the Class C/B/A/S parameter framework on the AI | DOCTRINE §1, §7–§8, §12 |
-| **P** | Scrapwright + Hushforged | The dependable line with perks; then the banned tier with drawbacks (own design review before build) | ARMORY §1.2, §16 |
+| **P** | Scrapwright + Edictbound | The dependable line with perks; then the banned tier with drawbacks (own design review before build) | ARMORY §1.2, §16 |
 | **Q** | Arena batches 2+ | Landmark Lists, overlays as true rolls, moving systems, terrain | ARENA §5.2–5.6 |
 | **R** | Lasthold shell | The JRPG hub — last, once combat content deserves a world around it | GAME_DESIGN §26 |
 

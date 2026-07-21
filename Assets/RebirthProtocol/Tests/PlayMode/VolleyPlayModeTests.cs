@@ -324,6 +324,131 @@ namespace RebirthProtocol.Tests.PlayMode
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator PalisadeKeepsItsThrowOrientationEvenIfTheOwnerMovesAfterRelease()
+        {
+            // Codex PR #18 finding: the original BlastPoints re-derived the
+            // throw direction from _owner.Position AT DETONATION, not at
+            // release. Release() un-roots the thrower immediately and
+            // flight is >=0.5s, so strafing after the throw silently
+            // rotated the Line pattern. This test moves Player sideways
+            // right after Release() and confirms the Line's outer point
+            // STILL lands where the ORIGINAL throw would have put it.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(bomb: Bomb("palisade")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, new Vector3(0f, 0f, 0f));
+                duel.Player.SetFacing(Mathf.PI); // FacingDir = -Z, clear of Depot's crate at (0,0.8,10)
+                Teleport(duel.Enemy, new Vector3(14f, 0f, -14f)); // parked clear during aim/throw
+                yield return null;
+
+                duel.PlayerBomb.StartAim(duel.Enemy);
+                yield return null;
+                duel.PlayerBomb.UpdateAim(duel.Enemy);
+                duel.PlayerBomb.Release(); // captures End ~(0,_,-5.5) and ForwardAtRelease = -Z
+
+                // The critical step: move the THROWER sideways right after
+                // release, well before the ~0.5s flight lands. If the bug
+                // were present, BlastPoints would recompute "forward" from
+                // Player's NEW position toward the still-fixed impact
+                // point, producing a very different (diagonal) orientation
+                // that would miss the probe below.
+                Teleport(duel.Player, new Vector3(8f, 0f, 0f));
+
+                // Same probe as the release-time-orientation test: only
+                // reachable via the Line pattern's outer point if "forward"
+                // stayed -Z (the ORIGINAL throw), not whatever direction
+                // Player's new position at (8,0,0) would imply.
+                Teleport(duel.Enemy, new Vector3(0f, 0f, -10.5f));
+
+                var hpBefore = duel.Enemy.Health.Hp;
+                for (var i = 0; i < 240; i++)
+                {
+                    yield return null;
+                    if (duel.Enemy.Health.Hp < hpBefore)
+                    {
+                        break;
+                    }
+                }
+
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore),
+                    "the Line pattern must keep the orientation captured at release, not the thrower's post-throw position");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator PincerChargeSplitsForeAndAftWhenThrownAirborne()
+        {
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(bomb: Bomb("pincer-charge")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, new Vector3(0f, 0f, 0f));
+                duel.Player.SetFacing(Mathf.PI); // forward = -Z, clear of every Depot crate
+                Teleport(duel.Enemy, new Vector3(0f, 0f, -4f)); // within the 18m target range
+
+                // Thrust until airborne -- ARMORY §6: "sides afoot, fore-
+                // and-aft aloft," so the split axis must follow the
+                // thrower's stance AT RELEASE, not just default to grounded.
+                duel.Player.Intent = new RoboIntent { ThrustHeld = true };
+                for (var i = 0; i < 60 && duel.Player.Grounded; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Grounded, Is.False, "thrust must lift off before release");
+                duel.PlayerBomb.StartAim(duel.Enemy);
+                yield return null;
+                duel.PlayerBomb.UpdateAim(duel.Enemy);
+                duel.PlayerBomb.Release(); // captures GroundedAtRelease = false, impact ~(0,_,-4)
+
+                // Airborne split axis is ALONG the throw line (fore/aft),
+                // not perpendicular. The far point sits at -4 + (-3.2) =
+                // -7.2 -- clear of every Depot crate, and far enough from
+                // the (0,0,-4) impact and the (0,0,0) origin that a LATERAL
+                // (grounded-branch) split would clearly miss it too, so
+                // this is a genuine fore/aft-vs-lateral discriminator, not
+                // just a distance check.
+                Teleport(duel.Enemy, new Vector3(0f, 0f, -7.2f));
+
+                var hpBefore = duel.Enemy.Health.Hp;
+                for (var i = 0; i < 240; i++)
+                {
+                    yield return null;
+                    if (duel.Enemy.Health.Hp < hpBefore)
+                    {
+                        break;
+                    }
+                }
+
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore),
+                    "an airborne release splits fore-and-aft (along the throw line)");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
         /// Positions `target` at `distance` from `origin`, offset `angleDeg`
         /// from origin's own +Z (world) so a caller who then calls
         /// `origin.SetFacing(0f)` gets a known angle-off-facing.

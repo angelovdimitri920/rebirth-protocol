@@ -1,4 +1,4 @@
-# Art Direction — Mecha Knights of the Long Hush v1
+# Art Direction — Mecha Knights After the Last Edict v2
 
 *Canonical art, animation, VFX, and audio direction for Rebirth Protocol (2026-07-18). Builds on [`SETTING_AND_FACTIONS.md`](SETTING_AND_FACTIONS.md) (world), [`ROBOT_SHELL_DESIGN.md`](ROBOT_SHELL_DESIGN.md) (silhouette-first rule, still in force), and [`KNIGHT_ROBOT_ASSET.md`](KNIGHT_ROBOT_ASSET.md) (the Cobalt Knight, the calibration standard for everything here). Research basis: the Knights in Powered Armor trope family and a survey of how giant-knight media actually designs and fights its machines — Vision of Escaflowne (Guymelefs), Knight's & Magic (Silhouette Knights), Break Blade (Golems), Warhammer 40k Imperial Knights, BattleTech, Armored Core 6, Gundam Iron-Blooded Orphans.*
 
@@ -34,7 +34,7 @@ What each touchstone actually contributes, kept as one-line design lessons:
 - **Armored Core 6** — stagger/punish rhythm, boost economy, shield-arms as active tools. Lesson: **mechanical honesty — every visual flourish must telegraph a real gameplay state.** (Already our combat skeleton.)
 - **Gundam: Iron-Blooded Orphans** — no beam-spam: maces, lances, and momentum; brutal, low-tech-reading melee on high-tech frames. Lesson: **kinetic melee reads medieval all by itself when the animation carries momentum.**
 - **Panzer World Galient (1984)** — the earliest full statement of our exact premise: legendary "panzers" preserved underground for millennia beneath a medieval world, excavated and ridden to war ([overview](https://en.wikipedia.org/wiki/Panzer_World_Galient)). Lesson: **the machine as excavated inheritance — presentation should always whisper "this was dug up, not built."**
-- **Aura Battler Dunbine (1983)** — mecha in a medieval fantasy that feel *summoned* rather than engineered: organic shells, metaphysical wrongness ([overview](https://tvtropes.org/pmwiki/pmwiki.php/Anime/AuraBattlerDunbine)). Lesson: **reserve the organic/wrong register for one thing only — for us, the Hushforged tier and the Riderless.**
+- **Aura Battler Dunbine (1983)** — mecha in a medieval fantasy that feel *summoned* rather than engineered: organic shells, metaphysical wrongness ([overview](https://tvtropes.org/pmwiki/pmwiki.php/Anime/AuraBattlerDunbine)). Lesson: **reserve the organic/wrong register for one thing only — for us, the Edictbound tier and the Riderless.**
 - **Imperial Knight heraldry, deepened** — house liveries vary per Knight but **no two liveries are identical**; battle honours and oaths are painted *onto* the machine ([heraldry reference](https://warhammer40k.fandom.com/wiki/Imperial_Knight_Heraldry)). **Freeblades** — knights who forsake their house — spurn house heraldry for a **single colour, a personal device, and a motto**, often with memento-mori marks ([Freeblade reference](https://warhammer40k.fandom.com/wiki/Freeblade)). Lessons: individual harnesses within an Order should carry small personal deltas (honour-marks, oath-scripts) on the shared livery; and the **Hedge Errantry's entire visual identity is the Freeblade rule** — one flat colour, one painted personal device, one motto, nothing else.
 - **The Five Star Stories (Mortar Headds)** — knight-mecha as **heirloom works of art**: frescoed armor plates, machines that serve for *centuries* and pass from bearer to successor, "headliner" and "knight" as synonyms, dressed differently for parade and for war ([primer](https://www.mahq.net/fss-primer/), [Mortar Headd reference](http://www.gearsonline.net/series/fivestarstories/mh/)). Lessons: **celebrated individual harnesses carry proper names and recorded lineages of bearers** (the run's rivals should occasionally fly a *named* machine older than their Order's founding — a story hook and a spoils flex in one); and our garniture system doubles as FSS's parade-vs-war dressing, so tourney presentation is already in the design.
 - **Code Geass (Knightmare Frames)** — the knightly *institution* layered onto agile mecha: Arthurian-named frames, a Round Table of personally-titled champion knights ([reference](https://codegeass.fandom.com/wiki/Knightmare_Frame)). Lesson: **rank as title, not number** — our Class C→S armiger ladder should surface in-fiction as spoken titles (squire-errant up to Paragon of the Passage), and champion rivals may bear singular titles the way the source's champions do.
@@ -56,9 +56,23 @@ Each Order gets a livery triplet — **field / metal / accent** — plus a devic
 | The Hedge Errantry | *One flat colour per knight* (never a table colour) | Bare steel | — | A personal device + painted motto, per knight |
 | The Wrightsguild | Oxide grey | Riveted iron | Safety ochre | A hammer-and-compass stencil |
 | The Litany Sisters | Slate | Pewter | Candle gold | A single unbroken ring of script |
-| The Broken Choir | Ash black | Tarnished silver | Violet-black (Hushforged glow) | A shattered ring of script |
+| The Broken Choir | Ash black | Tarnished silver | Violet-black (Edictbound glow) | A shattered ring of script |
 
 **Rules:** field colors never repeat across Orders; the Umbral Concordat is the *only* no-glow faction (already canon for the Duskmantle); non-Order/mercenary harnesses wear chipped, mismatched liveries with painted-over devices — you should be able to read a mech's *history of ownership* in its overpainting.
+
+### Religious and ideological marks
+
+These marks can cross Order liveries because belief and military allegiance overlap rather than map one-to-one:
+
+- **Universal Communion:** Open Crown or Cleft Halo; circles and halos always retain a visible gap. Rust Cross investiture marks often place the open crown behind the commandery cross.
+- **Court of Ten Thousand Banners:** lineage banners, saddle-rolls of bearer names, and component adoption ribbons. A captured part should visibly retain or overpaint the previous lineage's name.
+- **Covenant of the Second Sun:** a radiant inner circle within a dark outer housing, most often on reactor, solar, greenhouse, or thermal-service plate rather than a war crest.
+- **Rite of the Whole Crown:** closed circles, perfect command rings, symmetrical seals, and complete crowns. Its visual opposition to Communion gaps should read instantly.
+- **Broken Choir:** concentric violet-black rings broken inward, as though the fracture is pulling toward a missing center.
+- **Mortal Measure:** a human hand beneath a simple measuring line; moderate marks are painted workshop signs, while Ash Levelers cut or burn the mark into captured plate.
+- **Cinderbound:** deliberately incomplete personal markings and obvious disposable Edictbound grafts; they do not expect the transformed body or harness to survive.
+
+Religious symbols should not replace Order heraldry unless a character has renounced their military allegiance. Layer them as oath marks, cockpit seals, relic tags, pilgrim ribbons, inspection chalk, or battle honors.
 
 ## 5. Materials: the used-future split, formalized
 
@@ -67,7 +81,7 @@ Four material registers, in strict order of finish quality:
 1. **Order-pristine** (relic-pattern in Order hands): clean coherent plate, livery enamel, gold trim, soft godlight glow in the seams. The Cobalt Knight is the standard.
 2. **Free-company patchwork**: same ancestral bones, generations of mismatched replacement plates, welded seams, rope and strapping, hand-painted devices. Silhouette stays clean (gameplay legibility first); *surface* carries the poverty.
 3. **Scrapwright work** (revised 2026-07-18 — *dependable, not comic*): visibly new-made and proud of it — thick uniform boiler-plate, exposed rivets in honest rows, stenciled Wrightsguild marks, oil-and-steam venting instead of godlight, everything over-built and square. It should read like beloved farm machinery or a working locomotive standing among cathedral relics: outclassed, unashamed, and clearly the only thing on the field its owner could fix with their own hands.
-4. **Hushforged**: ancestral geometry gone *wrong* — asymmetric growths, seams that glow violet-black, surfaces that read slightly organic. Used sparingly; it should be alarming precisely because everything else obeys the rules.
+4. **Edictbound**: ancestral geometry gone *wrong* — asymmetric growths, seams that glow violet-black, surfaces that read slightly organic. Used sparingly; it should be alarming precisely because everything else obeys the rules.
 
 ## 6. Fight choreography
 
@@ -85,7 +99,7 @@ The combat sim is built; this is how presentation should read on top of it:
 Hard constraint carried forward from §22 of the design log: **world-space effects are opaque, scale-animated primitives** (URP strips unreferenced transparent variants from player builds); screen-space transparency lives on the UI shader only.
 
 - **Godlight (ancestral tech): warm gold-white.** Muzzle flashes, dash trails, rebirth flare, seam glows. Muzzle flashes bloom in a four-petal rose-window cross rather than a star.
-- **Hushforged: violet-black**, reserved exclusively for that tier and the Riderless — the player should learn the color means *wrong*.
+- **Edictbound: violet-black**, reserved exclusively for that tier and the Riderless — the player should learn the color means *wrong*.
 - **Explosions ring like bells**: keep the built layered explosion, add one expanding torus "toll ring" on big blasts (bomb detonations, guard-breaks) — an opaque ring primitive, build-safe.
 - **Impact sparks read as forge-sparks** (brief orange-gold debris) — the world's violence is smithing, not electronics.
 - **Fetter (when built) is a shackle ring** — a flat heraldic-fetterlock circle at the victim's feet.

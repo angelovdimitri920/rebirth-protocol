@@ -82,7 +82,7 @@ Repeated defeat against one foe unlocks lowering their vigor — 75%, then 50%, 
 
 - Score = **speed of victory + remaining vigor** (both harnesses' vigor in team modes), against a posted **task score** per event; thresholds award **bronze / silver / gold laurels**.
 - **−10% per defeat-and-rematch** on that fight.
-- **Hushforged penalty**: fielding even one Hushforged part **halves the fight's laurels** — victory, but dishonored. (The economy that makes the banned tier a real choice.)
+- **Edictbound penalty**: fielding even one Edictbound part **halves the fight's laurels** — victory, but dishonored. (The economy that makes the banned tier a real choice.)
 - Laurels gate the circuit's crown events (Bronze Ordeal → Silver Melee → Golden Passage) and feed armiger **Class ranks** (C through S — Class S are the Paragons of the Passage).
 
 ## 9. AI design notes [source observations → build targets]
@@ -158,22 +158,22 @@ Class maps to the circuit ladder (`SETTING_AND_FACTIONS.md`): early events run C
 - **Rivals = archetype + Class + signature-part bias + home List + personality quirk** (e.g., Roald: Predator doctrine, Class A, Petronel bias, stalk-rebirth etiquette, punishes downed foes — the one legal cruelty).
 - **Observed source behaviors as acceptance tests**: the Spammer roots itself mid-volley and must be overloadable; the teleporter panic-vanishes when pressured from two threats at once (Duskmantle AI dumps both dashes under multi-threat); tag AI switches at its thresholds; untargeted Ordeal foes fight timidly; nobody attacks *through* a rebirth flare except stalk-etiquette personalities, who wait at arm's length for it to gutter.
 - **AI never drafts boons** [built rule, kept]; enemy strength scales by loadout, Class, and the power mult.
-- **Hushforged AI**: Choir and endgame only (`ARMORY_REFERENCE.md` §16).
+- **Edictbound AI**: Choir and endgame only (`ARMORY_REFERENCE.md` §16).
 
 ## 13. The balance framework
 
 Ten pillars, applied at design time and validated in simulation:
 
 1. **Commitment buys damage.** Recovery, toll, range-band narrowness, and aim time are the currencies that purchase MIGHT. Nothing gets a headline number without a payment (`ARMORY_REFERENCE.md` §13 profiles are the ledger).
-2. **Bodies swing survivability, not damage.** Offense mults cluster 95–105% (Hushforged excepted); ward mults spread 85–138%. Garnitures re-trim within the pattern, never past the class envelope.
+2. **Bodies swing survivability, not damage.** Offense mults cluster 95–105% (Edictbound excepted); ward mults spread 85–138%. Garnitures re-trim within the pattern, never past the class envelope.
 3. **Volley truth.** Balance to *realistic connect rates*, not all-hit totals — Sparrowstorm's 540 is fiction against anything moving; its real number is a third of that. Sim harness measures actual landed damage per archetype matchup.
 4. **Counterpart parity.** Each gun and its melee twin must clear comparable effectiveness *under their own doctrines* (Longshrift at long band ≈ Tilt Lance landing its lunge). Audit pairwise whenever either is tuned.
 5. **Doctrine viability.** The four loadout shapes (gun/bomb, gun/shield, melee/bomb, melee/shield) and four schools each keep a top-tier build at all times. If a patch orphans a school, the patch is wrong.
-6. **Tier economy.** Scrapwright ≈ 85% relic effectiveness + dependability perks (the floor is playable, never optimal); relic = 100%; Hushforged ≈ 115–130% minus a real drawback minus half laurels. The three tiers must *stay* ordered — a relic outclassed by a scrapwright part is a bug.
+6. **Tier economy.** Scrapwright ≈ 85% relic effectiveness + dependability perks (the floor is playable, never optimal); relic = 100%; Edictbound ≈ 115–130% minus a real drawback minus half laurels. The three tiers must *stay* ordered — a relic outclassed by a scrapwright part is a bug.
 7. **Temper budget.** A temper is worth ~10–15% effective damage; Unhorse and Fetter are the expensive ones and pay in MIGHT or toll. Branded pays in REND.
 8. **Pacing targets.** A duel between equal builds lands in **60–120 s** with **2–5 knockdowns**. REND tuning holds the knockdown count; MIGHT tuning holds the clock. Fights outside the band flag themselves in the sim harness.
 9. **The degenerate watchlist** (checked every content pass): Fetter chains (rule: 2 s fetter-immunity after a fetter ends) · Yoke + Culverin grounding loops · Rearguard-kite forever (pod energy pacing is the leash) · Cenotaph turtling (chip + toll answer it) · Testudo cycling (the 8 s toll is load-bearing — never shorten it casually) · tag heal-floor abuse (the 150 floor never rises) · Ascension Charge escape loops (boost cost on use).
-10. **Laurels are soft balance.** Anything legal-but-degenerate costs style before it costs errata: rematch decay, Hushforged halving, and task scores tuned so honor and optimality mostly point the same way.
+10. **Laurels are soft balance.** Anything legal-but-degenerate costs style before it costs errata: rematch decay, Edictbound halving, and task scores tuned so honor and optimality mostly point the same way.
 
 **Validation harness** (to build alongside the AI framework): seeded AI-vs-AI batch runs across a matchup matrix — 4 schools × 4 schools × arena sample — reporting win rate, TTK, knockdown count. Flag any pairing outside 40–60% win rate or outside the pacing band. Deterministic seeds make regressions bisectable; this is the balance CI for every parts pass in `ARMORY_REFERENCE.md` §12.
 

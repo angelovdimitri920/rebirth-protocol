@@ -8,8 +8,8 @@ A 3D arena mecha roguelite — Custom Robo's build-and-battle loop, crossed with
 
 - `docs/GAME_DESIGN.md` — the living design document. Source of truth for mechanics, differentiators, tech stack, and the staged roadmap. Keep it updated as decisions get made; don't let it go stale.
 - `docs/SETTING_AND_FACTIONS.md` — canonical present-day world, factions, Orders, characters, and lexicon.
-- `docs/WORLD_HISTORY.md` — canonical Meridian Empire, Last Edict, Great Severance, Long Hush, Ashen history, Edictbound technology, Rebirth Protocol, and Riderless backstory.
-- `docs/RELIGION_AND_IDEOLOGY.md` — canonical religions, religious orders, schisms, ideological movements, subfactions, and their relationship to Edict technology.
+- `docs/WORLD_HISTORY.md` — canonical Meridian Ascendancy, BFE/AFE timeline, Final Edict, Great Severance, Long Hush, Ashen Century, Present Age, Edictbound infection, Rebirth Protocol, and Riderless backstory.
+- `docs/RELIGION_AND_IDEOLOGY.md` — canonical religions, religious orders, schisms, ideological movements, subfactions, and their relationship to Edictbound technology.
 - `prompts/MASTER_BUILD_PROMPT.md` — the prompt used to kick off full development with Claude Code / Fable 5.
 - `CLAUDE.md` — project instructions Claude Code reads automatically at session start.
 - `src/` — the actual Three.js project (created once development begins: `npm create vite@latest . -- --template vanilla-ts`).

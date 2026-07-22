@@ -57,6 +57,7 @@ namespace RebirthProtocol.Battle
         public Loadout Loadout { get; private set; }
         public RoboStats Stats { get; private set; }
         public CombatantHealth Health { get; private set; }
+        public FetterState Fetter { get; private set; }
         public BoostGauge Boost { get; private set; }
         public GunCycle Gun { get; private set; }
         public MeleeAction Melee { get; private set; }
@@ -119,6 +120,7 @@ namespace RebirthProtocol.Battle
             || _actionLock > 0f
             || Health.State == HealthState.KnockedDown
             || Health.State == HealthState.Dead
+            || Fetter.IsFettered
             || _externalMove.HasValue;
 
         /// I-frames: vanish-dashes, and the charge's strike window (unless
@@ -152,6 +154,22 @@ namespace RebirthProtocol.Battle
             // fallen pilot before TickMelee/TickCharge next get a look.
             Health.KnockedDown += CancelMelee;
             Health.KnockedDown += CancelCharge;
+            // Fetter (ARMORY_REFERENCE; DOCTRINE §13 pillar 9): a full
+            // immobilize distinct from knockdown. Landing mid-melee/charge
+            // cancels it the same way a knockdown would; a knockdown from a
+            // different hit supersedes an active fetter outright (no
+            // immunity window tacked on -- FetterState.Cancel, not a normal
+            // expiry).
+            Fetter = new FetterState();
+            Fetter.Fettered += CancelMelee;
+            Fetter.Fettered += CancelCharge;
+            // Codex PR #21 finding: a dash caught mid-flight was neither
+            // cancelled nor decremented (it fell into the generic "drift to
+            // a stop" branch instead of its own, since Fetter is checked
+            // ahead of _dashTimer in TickMotor's branch order), so gravity
+            // stayed suspended and the dash silently resumed once Immune.
+            Fetter.Fettered += CancelDash;
+            Health.KnockedDown += Fetter.Cancel;
             Shield = loadout.HasShield ? new ShieldRig(loadout.Shield) : null;
 
             _cc = gameObject.AddComponent<CharacterController>();
@@ -269,6 +287,22 @@ namespace RebirthProtocol.Battle
             _knockback = dir.normalized * speed;
         }
 
+        /// The single entry point every Fetter-carrying hit (gun/melee/bomb/
+        /// pod on-hit, or a shield's parry punish) calls to try to take this
+        /// robo down. FetterState.TryApply owns the free/fettered/immune
+        /// gate; this just adds the "can't be fettered while already
+        /// downed" rule the other hit sources get for free via
+        /// Health.State checks.
+        public void ApplyFetter(float seconds)
+        {
+            if (seconds <= 0f || Health.State != HealthState.Active)
+            {
+                return;
+            }
+
+            Fetter.TryApply(seconds);
+        }
+
         public void SetFacing(float yaw)
         {
             _facing = yaw;
@@ -319,7 +353,7 @@ namespace RebirthProtocol.Battle
                 _projectiles.Spawn(this, targetAlive ? target : null, muzzle, shotAim,
                     damage, part.EnduranceDamage, part.ProjectileSpeed,
                     targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun,
-                    part.SurvivesKnockdown);
+                    part.SurvivesKnockdown, part.FetterSeconds);
             }
         }
 
@@ -492,6 +526,10 @@ namespace RebirthProtocol.Battle
             {
                 GameAudio.Sfx?.MeleeHit(target.Position);
                 target.ApplyKnockback(dir, Melee.Tuning.KnockbackSpeed * Melee.ComboKnockbackMult);
+                // Fetter (Knell Maul, Tocsin Mace): applied flat per landed
+                // swing, not scaled by combo multiplier -- a bigger finisher
+                // hit isn't a longer hold, just more damage.
+                target.ApplyFetter(Melee.Tuning.FetterSeconds);
                 if (Effects != null)
                 {
                     Effects.OnHit(HitSource.Melee);
@@ -515,6 +553,12 @@ namespace RebirthProtocol.Battle
                 {
                     GameAudio.Sfx?.Knockdown(Position);
                 }
+
+                // Hoarfrost Ward: "melee against it leaves the attacker
+                // rimed and slowed" -- fetters the ATTACKER (this), not the
+                // shield-bearer. No-ops if the parry drain above just
+                // knocked the attacker down (ApplyFetter's own Active gate).
+                ApplyFetter(target.Loadout.Shield.ParryFetterSeconds);
             }
         }
 
@@ -652,6 +696,20 @@ namespace RebirthProtocol.Battle
             _actionLock = 0f;
         }
 
+        /// A dash caught mid-flight by Fetter is cancelled outright, not
+        /// paused: zeroing _dashTimer immediately routes TickMotor's
+        /// movement resolution into the "drift to a stop" branch (same
+        /// decay knockdown already uses) instead of the dash branch, which
+        /// also un-suspends gravity (gated on _dashTimer <= 0f) and stops a
+        /// vanish-dash's intangibility (Intangible reads _dashTimer too).
+        /// Without this, a fettered mid-dash robo hung frozen in the air
+        /// and the dash silently resumed once the fetter's immunity window
+        /// began (Codex PR #21 finding).
+        private void CancelDash()
+        {
+            _dashTimer = 0f;
+        }
+
         private void FaceFlatToward(RoboAvatar target)
         {
             var to = target.Position - Position;
@@ -686,7 +744,10 @@ namespace RebirthProtocol.Battle
             // about Charge.Busy and could raise a shield through a charge's
             // required vulnerable windows.
             var held = Intent.ShieldHeld && !Melee.Busy && !Charge.Busy;
-            Shield?.Tick(dt, held, Health.State == HealthState.Active);
+            // Fettered forces the shield down the same way knockdown does
+            // (fed through canAct, not `held`, mirroring how Health.State
+            // already gates this): immobilize means immobilize.
+            Shield?.Tick(dt, held, Health.State == HealthState.Active && !Fetter.IsFettered);
         }
 
         // --- Motor: port of Robo.update ---
@@ -695,6 +756,7 @@ namespace RebirthProtocol.Battle
         {
             var prevHealthState = Health.State;
             Health.Tick(dt);
+            Fetter.Tick(dt);
             if (Intent.MashPressed)
             {
                 if (Health.State == HealthState.KnockedDown)
@@ -723,7 +785,11 @@ namespace RebirthProtocol.Battle
             // otherwise still execute one more step of a stale lunge/charge
             // move here. Downed takes priority over any pending external
             // move, whatever caused it (Codex PR #14 second-pass finding).
-            if (downed && _externalMove.HasValue)
+            // Fetter joins the same backstop: it cancels melee/charge
+            // synchronously via the Fettered event (Init), same pattern as
+            // KnockedDown, but this is cheap belt-and-suspenders insurance
+            // against the exact class of bug that pattern was built to fix.
+            if ((downed || Fetter.IsFettered) && _externalMove.HasValue)
             {
                 Melee.Cancel();
                 Charge.Cancel();
@@ -747,7 +813,7 @@ namespace RebirthProtocol.Battle
                 horiz = _externalMove.Value;
                 _velocity.y = _externalMove.Value.y;
             }
-            else if (downed || Boost.LandingRecovery > 0f || _actionLock > 0f)
+            else if (downed || Fetter.IsFettered || Boost.LandingRecovery > 0f || _actionLock > 0f)
             {
                 // No control: drift to a stop.
                 _velocity.x *= CombatTuning.Move.NoControlDamping;
@@ -836,7 +902,7 @@ namespace RebirthProtocol.Battle
             _knockback *= Mathf.Max(0f, 1f - CombatTuning.Move.KnockbackDecayRate * dt);
 
             // --- Boost: thrust / dash ---
-            var canBoost = !downed && Boost.CanBoost && _actionLock <= 0f && !_externalMove.HasValue;
+            var canBoost = !downed && !Fetter.IsFettered && Boost.CanBoost && _actionLock <= 0f && !_externalMove.HasValue;
 
             if (canBoost && Intent.ThrustHeld && _dashTimer <= 0f)
             {
@@ -923,7 +989,10 @@ namespace RebirthProtocol.Battle
             }
 
             // --- Facing (frozen mid-swing/recovery: commitment is punishable) ---
-            if (!downed && !_externalMove.HasValue && _actionLock <= 0f)
+            // Fetter joins the same freeze (Codex PR #21 finding: a
+            // fettered robo could still be turned to track input, which
+            // doesn't read as "immobilize").
+            if (!downed && !Fetter.IsFettered && !_externalMove.HasValue && _actionLock <= 0f)
             {
                 var target = Intent.HasFaceYaw
                     ? Intent.FaceYaw

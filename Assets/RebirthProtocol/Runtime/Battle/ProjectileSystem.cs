@@ -22,6 +22,10 @@ namespace RebirthProtocol.Battle
             public float HomingTurnRate;
             public HitSource Source;
             public bool SurvivesKnockdown;
+
+            // Fetter capability (Pass F): carried through from the firing
+            // GunPart/PodPart and applied to the victim on a landed hit.
+            public float FetterSeconds;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
@@ -29,7 +33,7 @@ namespace RebirthProtocol.Battle
 
         public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
             float damage, float enduranceDamage, float speed, float homingTurnRate,
-            HitSource source = HitSource.None, bool survivesKnockdown = false)
+            HitSource source = HitSource.None, bool survivesKnockdown = false, float fetterSeconds = 0f)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             // Immediate, not deferred: a deferred Destroy leaves the sphere
@@ -55,7 +59,8 @@ namespace RebirthProtocol.Battle
                 EnduranceDamage = enduranceDamage,
                 HomingTurnRate = homingTurnRate,
                 Source = source,
-                SurvivesKnockdown = survivesKnockdown
+                SurvivesKnockdown = survivesKnockdown,
+                FetterSeconds = fetterSeconds
             });
         }
 
@@ -157,6 +162,15 @@ namespace RebirthProtocol.Battle
         private void ApplyAvatarHit(Projectile p, RoboAvatar victim)
         {
             var result = victim.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
+            if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
+            {
+                // Fetter capability (Fetterlock/Winterwatch, Pass F): a
+                // landed gun or pod round carrying a fetter payload applies
+                // it here, covering both hit sources through the one place
+                // they both resolve.
+                victim.ApplyFetter(p.FetterSeconds);
+            }
+
             var effects = p.Owner != null ? p.Owner.Effects : null;
             if (effects == null || p.Source == HitSource.None
                 || result is ReceiveResult.Invulnerable or ReceiveResult.Evaded)

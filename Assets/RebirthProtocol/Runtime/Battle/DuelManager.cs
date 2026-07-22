@@ -66,6 +66,12 @@ namespace RebirthProtocol.Battle
         /// StartAim/UpdateAim/Release without going through PlayerBrain.
         public BombSystem PlayerBomb => _playerBomb;
         public BombSystem EnemyBomb => _enemyBomb;
+
+        /// Same precedent as PlayerBomb/EnemyBomb: direct pod access so a
+        /// test can drive Toggle() (Winterwatch's proximity-fetter payload)
+        /// without going through a brain.
+        public PodSystem PlayerPod => _playerPod;
+        public PodSystem EnemyPod => _enemyPod;
         public int FightNumber => _run.FightIndex + 1;
         public string RivalTitle => $"{_rival.PilotName} · {_rival.OrderName}";
 

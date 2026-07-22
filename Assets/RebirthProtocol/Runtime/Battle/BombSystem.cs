@@ -157,6 +157,22 @@ namespace RebirthProtocol.Battle
                 return false;
             }
 
+            // Codex PR #21 finding: Tick()'s own ControlLocked-driven
+            // CancelAim() runs too late to catch this. DuelManager.Update
+            // ticks brains BEFORE BombSystem.Tick each frame, so a fetter
+            // that lands mid-frame (e.g. from _projectiles.Tick, which also
+            // runs after brains) isn't reflected until the FOLLOWING
+            // frame's Tick call -- but a brain calling Release() at the top
+            // of that following frame runs before Tick gets there, slipping
+            // a throw out under a fetter/knockdown that's already active.
+            // Same gate StartAim already uses, checked at the point of
+            // action instead of relying solely on the next Tick.
+            if (_owner.ControlLocked)
+            {
+                CancelAim();
+                return false;
+            }
+
             Aiming = false;
             _reticule.gameObject.SetActive(false);
             GameAudio.Sfx?.BombThrow(_owner.Position);
@@ -210,7 +226,7 @@ namespace RebirthProtocol.Battle
         public void Tick(float dt, RoboAvatar player, RoboAvatar enemy)
         {
             CooldownRemaining -= dt;
-            if (Aiming && _owner.Health.State is HealthState.KnockedDown or HealthState.Dead)
+            if (Aiming && (_owner.Health.State is HealthState.KnockedDown or HealthState.Dead || _owner.Fetter.IsFettered))
             {
                 CancelAim();
             }
@@ -300,6 +316,16 @@ namespace RebirthProtocol.Battle
                         part.EnduranceDamage * scale,
                         toRobo.sqrMagnitude > 0.0001f ? toRobo.normalized : Vector3.forward,
                         isBlast: true); // AoE: the Quiet Bell's muffle reads this
+                    if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
+                    {
+                        // Fetter capability (Rime Charge, Pass F): flat
+                        // duration, not scaled by the cluster-mini-blast
+                        // damage scale -- a mini-blast either fetters for the
+                        // full duration or (Damage=0-ish sources aside) not
+                        // at all, never a partial hold.
+                        robo.ApplyFetter(part.FetterSeconds);
+                    }
+
                     if (effects != null && robo != _owner
                         && result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
                     {

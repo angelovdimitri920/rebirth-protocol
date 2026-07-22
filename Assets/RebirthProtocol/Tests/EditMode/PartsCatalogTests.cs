@@ -111,5 +111,25 @@ namespace RebirthProtocol.Tests.EditMode
                     $"{gun.Name} must not claim the scrapwright exemption");
             }
         }
+
+        [Test]
+        public void EveryMeleeWeaponsLungeStopsWithinItsOwnHitRange()
+        {
+            // Codex PR #21 finding: MeleeTuning's shared default
+            // LungeReachDistance (2.6) predates every weapon's own
+            // HitRange and can exceed a shorter blade's real reach
+            // (Tocsin Mace: HitRange 2.4) -- the gap-closer would decide
+            // "close enough to stop" at a distance the swing's own hit-
+            // range check then rejected, a repeatable whiff. This is the
+            // general invariant MeleeWeaponPart.ToTuning() must uphold for
+            // every current AND future weapon, not just a Tocsin-specific
+            // regression check.
+            foreach (var melee in PartsCatalog.MeleeWeapons)
+            {
+                var tuning = melee.ToTuning();
+                Assert.That(tuning.LungeReachDistance, Is.LessThan(melee.HitRange),
+                    $"{melee.Name}: the lunge must stop strictly inside its own HitRange, with room to spare");
+            }
+        }
     }
 }

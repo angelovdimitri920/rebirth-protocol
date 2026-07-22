@@ -164,7 +164,7 @@ namespace RebirthProtocol.Tests.EditMode
         public void CatalogCarriesTheFiveShieldsWithTheirTollsAndRaises()
         {
             var shields = PartsCatalog.Shields;
-            Assert.That(shields.Length, Is.EqualTo(5));
+            Assert.That(shields.Length, Is.EqualTo(6));
 
             var wardVeil = shields[0];
             Assert.That(wardVeil.Id, Is.EqualTo("aegis")); // frozen pre-canon id
@@ -207,6 +207,16 @@ namespace RebirthProtocol.Tests.EditMode
             Assert.That(quietBell.MeleeParryEnduranceDamage, Is.EqualTo(18f));
             Assert.That(quietBell.TollSeconds, Is.EqualTo(4f));
             Assert.That(quietBell.BlastMuffleSeconds, Is.GreaterThan(0f), "the Quiet Bell's dome is its special");
+
+            var hoarfrostWard = shields[5];
+            Assert.That(hoarfrostWard.Id, Is.EqualTo("hoarfrost-ward"));
+            Assert.That(hoarfrostWard.ShieldHp, Is.EqualTo(170f));
+            Assert.That(hoarfrostWard.RegenPerSec, Is.EqualTo(15f));
+            Assert.That(hoarfrostWard.FrontBlockPercent, Is.EqualTo(0.70f));
+            Assert.That(hoarfrostWard.BackBlockPercent, Is.EqualTo(0.25f));
+            Assert.That(hoarfrostWard.MeleeParryEnduranceDamage, Is.EqualTo(22f));
+            Assert.That(hoarfrostWard.TollSeconds, Is.EqualTo(4f));
+            Assert.That(hoarfrostWard.ParryFetterSeconds, Is.GreaterThan(0f), "the Hoarfrost Ward's dome is its special");
 
             foreach (var shield in shields)
             {

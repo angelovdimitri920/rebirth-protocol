@@ -157,6 +157,46 @@ namespace RebirthProtocol.Tests.BalanceHarness
             }
         };
 
+        // Pull/pierce capability (ARMORY §4-5, Pass G): each new part
+        // swapped one at a time against its plain counterpart, same
+        // one-axis-at-a-time shape as Volley/Fetter. Pulls interact with
+        // knockback and positioning, exactly the kind of displacement that
+        // could produce a degenerate approach/lock loop the harness would
+        // catch — Estoc's guard-pierce is measured on the gun/SHIELD shape
+        // (Grapnel is the neutral bomb-arm counterpart's opponent) so a
+        // raised shield actually exists for it to pierce.
+        private static GunPart GrapnelGun => PartsCatalog.Guns.First(g => g.Id == "grapnel");
+        private static GunPart AugerGun => PartsCatalog.Guns.First(g => g.Id == "auger");
+        private static MeleeWeaponPart HookbillMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "hookbill");
+        private static MeleeWeaponPart EstocMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "estoc");
+        private static MeleeWeaponPart SawtoothEspadonMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "sawtooth-espadon");
+
+        // A melee-vs-shield shape so Estoc's guard-pierce has a raised
+        // shield to bite: attacker melee-arm, defender kept on the same kit
+        // via the runner's mirror pairing. The runner fights every build
+        // against every other, so pairing a melee-shield loadout in surfaces
+        // the pierce against a live shield-user.
+        private static Loadout WithMeleeAndShield(MeleeWeaponPart melee) =>
+            new Loadout { Body = NeutralBody, Melee = melee, Shield = Shield, Legs = Legs, Pod = Pod };
+
+        public static MatrixSpec PullsMatrix() => new MatrixSpec
+        {
+            Name = "pull/pierce capability (on Bannerman, neutral kit otherwise)",
+            Builds = new List<NamedBuild>
+            {
+                new NamedBuild { Name = "arbalest (baseline gun)", Loadout = WithGun(Gun) },
+                new NamedBuild { Name = "grapnel", Loadout = WithGun(GrapnelGun) },
+                new NamedBuild { Name = "auger", Loadout = WithGun(AugerGun) },
+                new NamedBuild { Name = "oathblade (baseline melee)", Loadout = WithMelee(Melee) },
+                new NamedBuild { Name = "hookbill", Loadout = WithMelee(HookbillMelee) },
+                new NamedBuild { Name = "sawtooth-espadon", Loadout = WithMelee(SawtoothEspadonMelee) },
+                // Estoc + its counterpart shape carry shields so the pierce
+                // is actually exercised against a raised guard.
+                new NamedBuild { Name = "oathblade/shield (baseline pierce ctrl)", Loadout = WithMeleeAndShield(Melee) },
+                new NamedBuild { Name = "estoc/shield", Loadout = WithMeleeAndShield(EstocMelee) }
+            }
+        };
+
         public static List<MatrixSpec> Select(string roster) => roster switch
         {
             "default" => new List<MatrixSpec> { ShapesMatrix(), BodiesMatrix() },
@@ -165,7 +205,8 @@ namespace RebirthProtocol.Tests.BalanceHarness
             "cross" => new List<MatrixSpec> { CrossMatrix() },
             "volley" => new List<MatrixSpec> { VolleyMatrix() },
             "fetter" => new List<MatrixSpec> { FetterMatrix() },
-            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter).")
+            "pulls" => new List<MatrixSpec> { PullsMatrix() },
+            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter|pulls).")
         };
     }
 }

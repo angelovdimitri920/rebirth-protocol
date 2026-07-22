@@ -164,9 +164,9 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Falconet** | Glider | 3/2/5/3/1 | Long | 56 G / 113 A | Aloft, its rounds glide wide loops and return for a second pass | Volant Falx |
 | **Rookery** *(planned)* | Homing Star | 3/3/4/2/2 | Med-long | 256 | One casting breaks into seven homing rooks | Iron Rosary |
 | **Vigil** *(planned)* | Trap | 3/3/2/4/1 | Med-long | 228 | Rounds keep watch, near-invisible, then strike (G); straight aloft | Penitent Flail |
-| **Auger** | Drill | 3/5/2/3/4 | Short | 107 | A grinding stream that drags the victim up its own thread | Sawtooth Espadon |
+| **Auger** *(built)* | Drill | 3/5/2/3/4 | Short | 107 | A grinding stream that drags the victim up its own thread | Sawtooth Espadon |
 | **Goliath Shot** | Titan (gun) | 1/1/1/2/3 | Med | 42 | An enormous, slow, mostly-ceremonial round | Goliath Blade |
-| **Grapnel** *(planned)* | Claw | 1/3/5/4/1 | Med | 19 | Barbed lines that haul the target off their aim | Hookbill |
+| **Grapnel** *(built)* | Claw | 1/3/5/4/1 | Med | 19 | Barbed lines that haul the target off their aim | Hookbill |
 | **Gauntlet** | Knuckle | 5/5/1/5/5 | Pt-blank | 152 | A fired fist; hoists afoot, hurls away aloft | Cestus |
 | **Spur Volley** | Afterburner | 4/4/2/2/3 | Med-long | 126 | Rounds that gather speed; pushes afoot, draws in aloft | Cavalcade |
 | **Quillon Bolt** | Blade | 1/3/1/5/1 | Sh-med | 20–42 | No recovery at all — fill the space between other threats | Fencer's Foil |
@@ -206,7 +206,7 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | **Oathblade** *(built)* | Arbalest | 3/3/3/3/3 | The knight's standard; balanced in every line |
 | **Longglaive** *(built)* | Trefoil | 3/4/3/2/3 | Wide crescent sweep (140°) — punishes strafing |
 | **Misericorde** *(built)* | Litany | 2/2/5/5/2 | The mercy-dagger; fast, light, barely punishable |
-| **Estoc** | Mangonel | 3/3/3/3/2 | Narrow thrust that pierces 60% of a raised shield's GUARD |
+| **Estoc** *(built)* | Mangonel | 3/3/3/3/2 | Narrow thrust that pierces 60% of a raised shield's GUARD |
 | **Tilt Lance** | Longshrift | 5/4/2/1/4 | The joust: damage scales with lunge distance (60→190) |
 | **Knell Maul** | Fetterlock | 2/3/3/3/5 | A bell-hammer that tolls through poise (REND 130) |
 | **Hydra Flail** *(built)* | Thornswarm | 3/3/3/2/3 | Five heads strike five angles at once; some always connect |
@@ -224,9 +224,9 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | **Volant Falx** | Falconet | 3/4/3/2/1 | A looping crescent wave that returns for a second pass |
 | **Iron Rosary** | Rookery | 2/3/4/4/2 | A weighted chain told bead by bead — the longest string (4+ hits) |
 | **Penitent Flail** | Vigil | 4/3/2/2/3 | The arc is unreadable and the timing is late |
-| **Sawtooth Espadon** | Auger | 3/3/3/2/4 | A grinding hold that ticks damage and drags the foe up the blade |
+| **Sawtooth Espadon** *(built)* | Auger | 3/3/3/2/4 | A grinding hold that ticks damage and drags the foe up the blade |
 | **Goliath Blade** | Goliath Shot | 1/5/1/2/3 | Enormous, slow, mostly ceremony — but the toll when it lands! |
-| **Hookbill** | Grapnel | 2/4/3/3/1 | The billhook that dragged knights from horses; hauls them to you |
+| **Hookbill** *(built)* | Grapnel | 2/4/3/3/1 | The billhook that dragged knights from horses; hauls them to you |
 | **Cestus** | Gauntlet | 5/1/5/5/5 | The fired fist's twin: hoists afoot, hurls aloft |
 | **Cavalcade** | Spur Volley | 4/3/2/2/3 | Chained accelerating lunges — each faster than the last |
 | **Fencer's Foil** | Quillon Bolt | 1/3/5/5/1 | Zero-commitment pokes to fill the space between threats |

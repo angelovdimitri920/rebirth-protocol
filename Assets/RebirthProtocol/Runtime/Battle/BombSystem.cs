@@ -157,6 +157,22 @@ namespace RebirthProtocol.Battle
                 return false;
             }
 
+            // Codex PR #21 finding: Tick()'s own ControlLocked-driven
+            // CancelAim() runs too late to catch this. DuelManager.Update
+            // ticks brains BEFORE BombSystem.Tick each frame, so a fetter
+            // that lands mid-frame (e.g. from _projectiles.Tick, which also
+            // runs after brains) isn't reflected until the FOLLOWING
+            // frame's Tick call -- but a brain calling Release() at the top
+            // of that following frame runs before Tick gets there, slipping
+            // a throw out under a fetter/knockdown that's already active.
+            // Same gate StartAim already uses, checked at the point of
+            // action instead of relying solely on the next Tick.
+            if (_owner.ControlLocked)
+            {
+                CancelAim();
+                return false;
+            }
+
             Aiming = false;
             _reticule.gameObject.SetActive(false);
             GameAudio.Sfx?.BombThrow(_owner.Position);

@@ -24,11 +24,19 @@ namespace RebirthProtocol.Domain
     // Oathblade (prototype id "saber") + the shared gap-closer mechanics.
     public sealed class MeleeTuning
     {
+        // The lunge's own default stop-distance, independent of any one
+        // weapon's HitRange. MeleeWeaponPart.ToTuning() clamps this down
+        // per-weapon so the lunge never stops farther out than the blade
+        // actually reaches (Codex PR #21 finding: Tocsin Mace's HitRange of
+        // 2.4 is shorter than this default, so a lunge could stop the gap-
+        // closer at a distance the swing's own hit-range check then missed).
+        public const float DefaultLungeReachDistance = 2.6f;
+
         public float CloseRange = 4f;
         public float LungeRange = 15f;
         public float LungeSpeed = 26f;
         public float LungeMaxDuration = 0.65f;
-        public float LungeReachDistance = 2.6f;
+        public float LungeReachDistance = DefaultLungeReachDistance;
         public float Damage = 130f;
         public float EnduranceDamage = 55f;
         public float HitRange = 3.0f;

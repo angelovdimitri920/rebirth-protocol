@@ -163,6 +163,12 @@ namespace RebirthProtocol.Battle
             Fetter = new FetterState();
             Fetter.Fettered += CancelMelee;
             Fetter.Fettered += CancelCharge;
+            // Codex PR #21 finding: a dash caught mid-flight was neither
+            // cancelled nor decremented (it fell into the generic "drift to
+            // a stop" branch instead of its own, since Fetter is checked
+            // ahead of _dashTimer in TickMotor's branch order), so gravity
+            // stayed suspended and the dash silently resumed once Immune.
+            Fetter.Fettered += CancelDash;
             Health.KnockedDown += Fetter.Cancel;
             Shield = loadout.HasShield ? new ShieldRig(loadout.Shield) : null;
 
@@ -690,6 +696,20 @@ namespace RebirthProtocol.Battle
             _actionLock = 0f;
         }
 
+        /// A dash caught mid-flight by Fetter is cancelled outright, not
+        /// paused: zeroing _dashTimer immediately routes TickMotor's
+        /// movement resolution into the "drift to a stop" branch (same
+        /// decay knockdown already uses) instead of the dash branch, which
+        /// also un-suspends gravity (gated on _dashTimer <= 0f) and stops a
+        /// vanish-dash's intangibility (Intangible reads _dashTimer too).
+        /// Without this, a fettered mid-dash robo hung frozen in the air
+        /// and the dash silently resumed once the fetter's immunity window
+        /// began (Codex PR #21 finding).
+        private void CancelDash()
+        {
+            _dashTimer = 0f;
+        }
+
         private void FaceFlatToward(RoboAvatar target)
         {
             var to = target.Position - Position;
@@ -969,7 +989,10 @@ namespace RebirthProtocol.Battle
             }
 
             // --- Facing (frozen mid-swing/recovery: commitment is punishable) ---
-            if (!downed && !_externalMove.HasValue && _actionLock <= 0f)
+            // Fetter joins the same freeze (Codex PR #21 finding: a
+            // fettered robo could still be turned to track input, which
+            // doesn't read as "immobilize").
+            if (!downed && !Fetter.IsFettered && !_externalMove.HasValue && _actionLock <= 0f)
             {
                 var target = Intent.HasFaceYaw
                     ? Intent.FaceYaw

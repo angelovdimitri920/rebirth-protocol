@@ -154,7 +154,16 @@ namespace RebirthProtocol.Domain
             WhiffRecovery = WhiffRecovery,
             KnockbackSpeed = KnockbackSpeed,
             ProngAngles = ProngAngles,
-            FetterSeconds = FetterSeconds
+            FetterSeconds = FetterSeconds,
+            // Codex PR #21 finding: the shared 2.6 default (every weapon
+            // before Tocsin Mace has HitRange >= 2.6, so it never mattered)
+            // can exceed a shorter blade's own reach, letting the lunge
+            // decide "close enough to stop" before the swing's own hit-
+            // range check would agree — a repeatable whiff at exactly the
+            // wrong distance. Clamping to HitRange minus a small contact
+            // margin guarantees the lunge always stops comfortably inside
+            // the blade's real reach.
+            LungeReachDistance = MathF.Min(MeleeTuning.DefaultLungeReachDistance, HitRange - 0.2f)
         };
     }
 

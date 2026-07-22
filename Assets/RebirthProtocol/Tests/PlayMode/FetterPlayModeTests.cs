@@ -135,6 +135,135 @@ namespace RebirthProtocol.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator TocsinMaceConnectsAfterAGapClosingLunge()
+        {
+            // Codex PR #21 finding: MeleeTuning's shared LungeReachDistance
+            // default (2.6) exceeded Tocsin Mace's own HitRange (2.4), so
+            // the gap-closer could decide "close enough to stop lunging"
+            // at a distance the swing's own hit-range check then rejected
+            // -- a real, distance-dependent whiff. Starting well beyond
+            // CloseRange forces an actual Lunge phase (not a direct swing),
+            // exercising the exact path the fix (MeleeWeaponPart.ToTuning's
+            // per-weapon LungeReachDistance clamp) targets.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(melee: Melee("tocsin-mace")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, Vector3.zero);
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, new Vector3(0f, 0f, 6f)); // well beyond CloseRange(4): a real lunge
+                yield return null;
+
+                var hpBefore = duel.Enemy.Health.Hp;
+                duel.Player.TryMelee(duel.Enemy);
+                for (var i = 0; i < 180 && duel.Player.Melee.Busy; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore), "the lunge must close the gap AND the swing must connect");
+                Assert.That(duel.Enemy.Fetter.IsFettered, Is.True);
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator FetterCancelsAnInFlightDashRatherThanPausingIt()
+        {
+            // Codex PR #21 finding: Fetter was checked ahead of _dashTimer
+            // in TickMotor's movement-branch order, so a dash caught mid-
+            // flight fell into the generic "drift to a stop" case instead
+            // of its own -- the dash timer never decremented, so gravity
+            // stayed suspended (gated on _dashTimer <= 0f) and the robo hung
+            // frozen in the air, then the stale timer silently resumed the
+            // dash once Fetter's immunity window began. An AIR dash (not a
+            // ground dash) is required to isolate this: a grounded dash's
+            // own landing edge already force-zeros _dashTimer independent
+            // of Fetter (TickMotor's "Landing" block), which would mask the
+            // bug in a grounded scenario.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(PartsCatalog.DefaultLoadout(), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, new Vector3(0f, 5f, 0f));
+                duel.Player.Intent = new RoboIntent { ThrustHeld = true };
+                for (var i = 0; i < 30; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Grounded, Is.False, "must be airborne before the air-dash");
+
+                var beforeDash = duel.Player.Position;
+                duel.Player.Intent = new RoboIntent { DashRequested = true };
+                yield return null; // the dash starts this frame
+                duel.Player.Intent = new RoboIntent(); // one-shot press, like a real button release
+
+                // A few more frames of real dash travel to prove the dash
+                // is actually live before interrupting it.
+                for (var i = 0; i < 5; i++)
+                {
+                    yield return null;
+                }
+
+                var midDash = duel.Player.Position;
+                Assert.That(Vector3.Distance(beforeDash, midDash), Is.GreaterThan(1f), "the dash must actually be moving");
+
+                duel.Player.ApplyFetter(1f);
+                var atFetterStart = duel.Player.Position;
+
+                // A dash's own duration (0.22s) is far shorter than the
+                // fetter (1s) alone, so if the timer were still frozen the
+                // robo would hang at exactly this height for the ENTIRE
+                // fettered window -- gravity resuming this quickly is only
+                // possible if the dash was actually cancelled, not paused.
+                for (var i = 0; i < 20; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Position.y, Is.LessThan(atFetterStart.y - 0.1f),
+                    "gravity must resume immediately -- a frozen _dashTimer would suspend it for the whole fettered+immune window");
+
+                // Run out the rest of the fetter+immunity cycle and confirm
+                // the dash never silently resumes (it would read as a
+                // second burst of fast horizontal travel).
+                var beforeTail = duel.Player.Position;
+                for (var i = 0; i < 200; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.Fetter.Phase, Is.EqualTo(FetterPhase.Free),
+                    "the fetter+immunity cycle should have fully elapsed by now");
+                var horizontalDrift = new Vector3(duel.Player.Position.x - beforeTail.x, 0f, duel.Player.Position.z - beforeTail.z).magnitude;
+                Assert.That(horizontalDrift, Is.LessThan(1f),
+                    "no further dash-speed horizontal travel -- the dash must not silently resume once Fetter ends");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator RimeChargeAppliesFetterOnBombHit()
         {
             var duel = BootDuel(out var go);
@@ -167,6 +296,54 @@ namespace RebirthProtocol.Tests.PlayMode
 
                 Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore), "the blast must actually connect");
                 Assert.That(duel.Enemy.Fetter.IsFettered, Is.True, "Rime Charge's real payload is the Fetter hold");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator FetteringAnAimingBomberRefusesTheReleaseEvenWithoutAnInterveningTick()
+        {
+            // Codex PR #21 finding: BombSystem.Tick's own ControlLocked-
+            // driven CancelAim() runs too late in a specific ordering --
+            // DuelManager.Update ticks brains BEFORE BombSystem.Tick, so a
+            // fetter landing mid-frame isn't reflected until the FOLLOWING
+            // frame's Tick call, and a brain calling Release() at the very
+            // top of that frame (before Tick gets there) could slip a
+            // throw out under an already-active fetter. Reproduced directly
+            // by calling ApplyFetter then Release() back-to-back with no
+            // Tick in between.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(PartsCatalog.DefaultLoadout(), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, Vector3.zero);
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, new Vector3(0f, 0f, 6f));
+
+                Assert.That(duel.PlayerBomb.StartAim(duel.Enemy), Is.True);
+                Assert.That(duel.PlayerBomb.Aiming, Is.True);
+
+                duel.Player.ApplyFetter(1f);
+                var released = duel.PlayerBomb.Release(); // no yield/Tick in between
+
+                Assert.That(released, Is.False, "a fettered pilot must not be able to release the throw");
+                Assert.That(duel.PlayerBomb.Aiming, Is.False, "the aim must be cancelled outright, not left open");
+                // CooldownRemaining ticks down (and past zero) every frame
+                // regardless of whether a bomb was ever thrown (Ready only
+                // checks <= 0f) -- a successful Release() is what we're
+                // ruling out, and that jumps it up to the bomb's full
+                // (large, positive) Cooldown, not exactly 0.
+                Assert.That(duel.PlayerBomb.CooldownRemaining, Is.LessThanOrEqualTo(0f), "a refused release must not have started the cooldown");
             }
             finally
             {

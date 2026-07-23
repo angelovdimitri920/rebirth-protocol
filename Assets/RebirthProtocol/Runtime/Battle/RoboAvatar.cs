@@ -856,6 +856,12 @@ namespace RebirthProtocol.Battle
             Melee.Cancel();
             _externalMove = null;
             _actionLock = 0.25f;
+            // A clash neutralizes the exchange, so it must also wipe a wave the
+            // clashing swing already cast this frame (Volant Falx casts on
+            // swing-entry, during the brain tick, before CheckMeleeClash runs)
+            // -- otherwise the cancelled swing still lands its wave (Codex
+            // PR #24). No-op for any weapon without an in-flight wave.
+            _projectiles.ClearMeleeWavesOwnedBy(this);
         }
 
         /// Shield rig tick: raise/lower per this frame's intent, toll

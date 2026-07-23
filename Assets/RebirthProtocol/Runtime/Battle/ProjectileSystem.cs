@@ -58,10 +58,22 @@ namespace RebirthProtocol.Battle
             public ProjectilePath Path;
             public bool IgnoresObstacles;
             public float LoopTurnRate; // Loop: signed yaw rate (rad/s)
+
+            // Vault exact integration (Codex PR #24): the ballistic arc is
+            // solved at spawn assuming continuous integration, so the per-step
+            // position is evaluated analytically from launch state + elapsed
+            // time rather than by semi-implicit Euler -- otherwise the landing
+            // drifts ~vaultRise*dt below the mark and a coarse frame turns a
+            // hit into a miss.
+            public Vector3 LaunchPos;
+            public Vector3 LaunchVel;
+            public float Elapsed;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
-        private readonly RaycastHit[] _hits = new RaycastHit[8];
+        // Grown from 8 to give cover-ignoring paths headroom past many walls
+        // before the saturation fallback below is needed (Codex PR #24).
+        private readonly RaycastHit[] _hits = new RaycastHit[16];
 
         public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
             float damage, float enduranceDamage, float speed, float homingTurnRate,
@@ -116,7 +128,11 @@ namespace RebirthProtocol.Battle
                     var mark = targetAlive ? target.Center : aimPoint;
                     var disp = new Vector3(mark.x - muzzle.x, 0f, mark.z - muzzle.z);
                     var g = Mathf.Abs(CombatTuning.Move.Gravity);
-                    var flightTime = g > 0.01f ? 2f * vaultRise / g : 0.6f;
+                    // Guard vaultRise (and gravity) before dividing (Codex
+                    // PR #24): a ~0 rise gives no real arc, so fall back to a
+                    // short flat-ish flight time rather than an exploding
+                    // horizontal velocity.
+                    var flightTime = g > 0.01f && vaultRise > 0.01f ? 2f * vaultRise / g : 0.6f;
                     velocity = disp / flightTime + Vector3.up * vaultRise;
                     break;
                 }
@@ -169,11 +185,24 @@ namespace RebirthProtocol.Battle
 
             go.transform.position = spawnPos;
 
+            // Loop rounds must outlive a full revolution or they despawn
+            // mid-loop and never make the promised second pass (Codex PR #24):
+            // a 2.6 rad/s loop takes 2.42 s to come back around, past the 2.0 s
+            // default. Give Loop a lifetime of one period plus margin so the
+            // return pass actually happens.
+            var lifetime = CombatTuning.Gun.ProjectileLifetime;
+            if (path == ProjectilePath.Loop && Mathf.Abs(loopTurnRate) > 0.01f)
+            {
+                lifetime = Mathf.Max(lifetime, 2f * Mathf.PI / Mathf.Abs(loopTurnRate) * 1.2f);
+            }
+
             _active.Add(new Projectile
             {
                 Tf = go.transform,
                 Velocity = velocity,
-                Life = CombatTuning.Gun.ProjectileLifetime,
+                Life = lifetime,
+                LaunchPos = spawnPos,
+                LaunchVel = velocity,
                 Owner = owner,
                 Target = target,
                 Damage = damage,
@@ -251,11 +280,26 @@ namespace RebirthProtocol.Battle
                 switch (p.Path)
                 {
                     case ProjectilePath.Vault:
-                        // Pure ballistic: the arc was solved at spawn to land
-                        // on the mark, so only gravity acts (no homing to bend
-                        // the parabola off its solution).
-                        p.Velocity.y += CombatTuning.Move.Gravity * dt;
+                    {
+                        // Exact constant-acceleration integration from launch
+                        // state (Codex PR #24): the arc was solved at spawn
+                        // assuming continuous ballistics, so evaluate the
+                        // position analytically from elapsed time rather than
+                        // stepping velocity with semi-implicit Euler (which
+                        // lands ~vaultRise*dt low and misses at coarse dt).
+                        // Velocity is back-derived from the analytic step so
+                        // the shared step/raycast code below sweeps exactly
+                        // along the arc.
+                        p.Elapsed += dt;
+                        var t = p.Elapsed;
+                        var g = CombatTuning.Move.Gravity;
+                        var analytic = p.LaunchPos + new Vector3(
+                            p.LaunchVel.x * t,
+                            p.LaunchVel.y * t + 0.5f * g * t * t,
+                            p.LaunchVel.z * t);
+                        p.Velocity = (analytic - p.Tf.position) / Mathf.Max(dt, 1e-6f);
                         break;
+                    }
 
                     case ProjectilePath.Loop:
                         p.Velocity = Quaternion.AngleAxis(p.LoopTurnRate * Mathf.Rad2Deg * dt, Vector3.up) * p.Velocity;
@@ -288,7 +332,22 @@ namespace RebirthProtocol.Battle
                 // Obstacle / robo intercept along this step. RaycastNonAlloc
                 // results are unsorted, so take the nearest non-owner hit.
                 // Vanish-dashing robos are intangible: shots pass through.
+                var hits = _hits;
                 var count = Physics.RaycastNonAlloc(from, step / stepLen, _hits, stepLen);
+
+                // Buffer saturation fallback (Codex PR #24): RaycastNonAlloc
+                // returns an arbitrary, unordered subset when there are more
+                // hits than the buffer holds, so the nearest robo/crate could
+                // be dropped -- especially for a cover-ignoring round that must
+                // see PAST several walls to the target behind them. On a full
+                // buffer, redo the rare step with the allocating RaycastAll so
+                // nothing is masked.
+                if (count == _hits.Length)
+                {
+                    hits = Physics.RaycastAll(from, step / stepLen, stepLen);
+                    count = hits.Length;
+                }
+
                 var blocked = false;
                 var nearest = float.MaxValue;
                 RoboAvatar struckAvatar = null;
@@ -297,13 +356,13 @@ namespace RebirthProtocol.Battle
                 var hitNormal = Vector3.up;
                 for (var h = 0; h < count; h++)
                 {
-                    var hitAvatar = _hits[h].collider.GetComponent<RoboAvatar>();
-                    if (hitAvatar == p.Owner || (hitAvatar != null && hitAvatar.Intangible) || _hits[h].distance >= nearest)
+                    var hitAvatar = hits[h].collider.GetComponent<RoboAvatar>();
+                    if (hitAvatar == p.Owner || (hitAvatar != null && hitAvatar.Intangible) || hits[h].distance >= nearest)
                     {
                         continue;
                     }
 
-                    var hitCrate = hitAvatar == null ? _hits[h].collider.GetComponent<CrateHealth>() : null;
+                    var hitCrate = hitAvatar == null ? hits[h].collider.GetComponent<CrateHealth>() : null;
 
                     // Cover-ignoring paths (Vault/Drop/Loop, Pass I1): arena
                     // geometry is "negotiable" -- a wall/pillar/floor hit is
@@ -314,11 +373,11 @@ namespace RebirthProtocol.Battle
                         continue;
                     }
 
-                    nearest = _hits[h].distance;
+                    nearest = hits[h].distance;
                     struckAvatar = hitAvatar;
                     struckCrate = hitCrate;
-                    hitPoint = _hits[h].point;
-                    hitNormal = _hits[h].normal;
+                    hitPoint = hits[h].point;
+                    hitNormal = hits[h].normal;
                     blocked = true;
                 }
 
@@ -502,6 +561,27 @@ namespace RebirthProtocol.Battle
                 p.Life = 0f;
                 p.Tf.gameObject.SetActive(false);
                 GameEffects.Fx?.ImpactSpark(p.Tf.position, Vector3.up, new Color(0.7f, 0.85f, 1f));
+            }
+        }
+
+        /// Melee clash (GAME_DESIGN §3.1, Codex PR #24): a clash cancels both
+        /// swings, but a Volant Falx swing casts its wave during the brain tick
+        /// -- BEFORE CheckMeleeClash runs -- so the neutralized exchange would
+        /// otherwise still land the wave. Clear the clashing owner's in-flight
+        /// waves alongside the melee cancel. Marks dead + hides (like the
+        /// overload wipe above); the cull at the top of each Tick removes them,
+        /// so this is safe to call reentrantly.
+        public void ClearMeleeWavesOwnedBy(RoboAvatar owner)
+        {
+            foreach (var p in _active)
+            {
+                if (p.Owner != owner || p.Source != HitSource.Melee || p.Life <= 0f)
+                {
+                    continue;
+                }
+
+                p.Life = 0f;
+                p.Tf.gameObject.SetActive(false);
             }
         }
 

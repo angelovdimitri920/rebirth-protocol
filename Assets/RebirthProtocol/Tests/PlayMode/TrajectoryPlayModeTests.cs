@@ -416,5 +416,268 @@ namespace RebirthProtocol.Tests.PlayMode
 
             yield return null;
         }
+
+        // --- Codex PR #24 review regression tests ---
+
+        [UnityTest]
+        public IEnumerator FalconetLoopSurvivesAndReturnsForItsSecondPass()
+        {
+            // Codex PR #24 P1: the shared 2.0s lifetime is shorter than a
+            // Falconet revolution (2.6 rad/s -> 2.42s), so the loop despawned
+            // mid-circle and never returned. With a period-scaled lifetime the
+            // round must outlive the old cap AND swing wide, then come back to
+            // its launch lane (a pure circle re-crosses only its start point,
+            // so the honest mechanical read of "second pass" is this return).
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(gun: Gun("falconet")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, new Vector3(LaneX, 8f, -3f));
+                duel.Player.SetFacing(0f);
+                yield return null;
+                Assert.That(duel.Player.Grounded, Is.False, "must be airborne to glide the loop");
+                duel.Player.Gun.ResetCooldown();
+                duel.Player.TickGun(1f / 60f, firing: true, target: null); // no lock: pure geometric loop
+                yield return null;
+                Assert.That(duel.Projectiles.transform.childCount, Is.GreaterThan(0), "the loop rounds must exist");
+
+                var round = duel.Projectiles.transform.GetChild(0);
+                var launch = round.position;
+                launch.y = 0f;
+                var maxDist = 0f;
+                var hasLeft = false;
+                var returnMin = 999f;
+                var aliveLate = false;
+                for (var i = 0; i < 200; i++)
+                {
+                    yield return null;
+                    if (round == null)
+                    {
+                        break; // despawned
+                    }
+
+                    var pos = round.position;
+                    pos.y = 0f;
+                    var d = Vector3.Distance(pos, launch);
+                    maxDist = Mathf.Max(maxDist, d);
+                    if (d > 6f)
+                    {
+                        hasLeft = true;
+                    }
+
+                    if (hasLeft)
+                    {
+                        returnMin = Mathf.Min(returnMin, d);
+                    }
+
+                    if (i >= 126)
+                    {
+                        aliveLate = true; // still in flight past the old 2.0s (~120-frame) cap
+                    }
+                }
+
+                Assert.That(maxDist, Is.GreaterThan(8f), "the loop must swing wide before returning");
+                Assert.That(aliveLate, Is.True, "the loop round must outlive the old 2.0s cap to complete its circle");
+                Assert.That(returnMin, Is.LessThan(4f), "and return to its launch lane for the second pass");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator VolantWaveIsWipedByAMeleeClash()
+        {
+            // Codex PR #24 P1: the wave is cast on swing-entry (during the brain
+            // tick) before CheckMeleeClash runs, so a clash cancelled the Melee
+            // action but the already-cast wave still flew. Two Volant Falx
+            // fighters swinging simultaneously in clash range must knock apart
+            // AND take no damage — contact is cancelled by the clash, and the
+            // waves are now wiped too, so nothing lands.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(melee: Melee("volant-falx")),
+                    LoadoutWith(melee: Melee("volant-falx")));
+                yield return null;
+
+                Teleport(duel.Player, new Vector3(0f, 0f, -1.5f));
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, new Vector3(0f, 0f, 1.5f)); // 3.0m apart: inside clashRange 3.5
+                duel.Enemy.SetFacing(Mathf.PI);
+                yield return null;
+
+                var pHp = duel.Player.Health.Hp;
+                var eHp = duel.Enemy.Health.Hp;
+                var startDist = duel.Player.FlatDistanceTo(duel.Enemy);
+                duel.Player.TryMelee(duel.Enemy);
+                duel.Enemy.TryMelee(duel.Player);
+
+                var clashed = false;
+                for (var i = 0; i < 120; i++)
+                {
+                    yield return null;
+                    if (duel.Player.FlatDistanceTo(duel.Enemy) > startDist + 0.5f)
+                    {
+                        clashed = true; // the clash knockback pushed them apart
+                    }
+                }
+
+                Assert.That(clashed, Is.True, "simultaneous close swings must clash and knock both apart");
+                Assert.That(duel.Enemy.Health.Hp, Is.EqualTo(eHp),
+                    "the clash must wipe the cast wave, not just the contact — the enemy takes nothing");
+                Assert.That(duel.Player.Health.Hp, Is.EqualTo(pHp), "and neither does the player");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator MangonelVaultLandsOnTheMarkAtACoarseTimestep()
+        {
+            // Codex PR #24 P1: semi-implicit Euler landed the arc ~vaultRise*dt
+            // low (2.6m at dt=0.2), turning a hit into a miss. With analytic
+            // integration the vault lands on the mark regardless of step size.
+            // Straddling the z-axis crate blocks the two straight streams, so
+            // only the vault can reach — isolating the arc's landing accuracy.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 0.2f; // ~5 fps: coarse enough that semi-implicit Euler would miss
+                duel.RespawnWithLoadouts(LoadoutWith(gun: Gun("mangonel")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, new Vector3(0f, 0f, 4f));
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, new Vector3(0f, 0f, 14f));
+                duel.Enemy.SetFacing(Mathf.PI);
+                for (var i = 0; i < 5; i++)
+                {
+                    yield return null; // settle grounded at the coarse step
+                }
+
+                var hpBefore = duel.Enemy.Health.Hp;
+                duel.Player.TickGun(1f / 60f, firing: true, duel.Enemy);
+                var connected = false;
+                for (var i = 0; i < 60; i++)
+                {
+                    yield return null;
+                    if (duel.Enemy.Health.Hp < hpBefore)
+                    {
+                        connected = true;
+                        break;
+                    }
+                }
+
+                Assert.That(connected, Is.True,
+                    "the vault must still land on the mark at a coarse timestep, not fall short below it");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        /// A stack of `count` non-damageable box colliders evenly placed from
+        /// `from` to `to`, each `scale` in size — plain cover the cover-ignoring
+        /// paths must see past. Returned container is the caller's to destroy.
+        private static GameObject SpawnColliderWall(int count, Vector3 from, Vector3 to, Vector3 scale)
+        {
+            var container = new GameObject("ColliderWall");
+            for (var i = 0; i < count; i++)
+            {
+                var cube = GameObject.CreatePrimitive(PrimitiveType.Cube); // carries a BoxCollider
+                cube.transform.SetParent(container.transform, false);
+                var t = count > 1 ? i / (count - 1f) : 0f;
+                cube.transform.position = Vector3.Lerp(from, to, t);
+                cube.transform.localScale = scale;
+            }
+
+            return container;
+        }
+
+        [UnityTest]
+        public IEnumerator CoverIgnoringDropHitsThroughAColliderWallThatSaturatesTheBuffer()
+        {
+            // Codex PR #24 P2: RaycastNonAlloc returns an unordered subset when
+            // there are more hits than the buffer holds, so the target behind a
+            // dense wall of cover could be dropped and a cover-ignoring round
+            // pass through it too. With the grown buffer + RaycastAll fallback,
+            // Skysword's straight-down drop (no curve to complicate the geometry)
+            // must still reach the target under a saturating vertical stack of
+            // cover.
+            var duel = BootDuel(out var go);
+            GameObject wall = null;
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 0.2f; // coarse: one descent step spans the lower stack + the target
+                duel.RespawnWithLoadouts(LoadoutWith(gun: Gun("skysword")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                Teleport(duel.Player, new Vector3(LaneX, 0f, 0f));
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, new Vector3(LaneX, 0f, 8f)); // clean lane, clear of the Depot crates
+                duel.Enemy.SetFacing(Mathf.PI);
+                for (var i = 0; i < 5; i++)
+                {
+                    yield return null;
+                }
+
+                // 30 colliders (well past the 16-entry buffer) stacked in the
+                // air directly above the target, clear of its capsule — the
+                // centre blade descends straight through them onto the mark.
+                wall = SpawnColliderWall(30, new Vector3(LaneX, 2.4f, 8f), new Vector3(LaneX, 7f, 8f),
+                    new Vector3(1.2f, 0.03f, 1.2f));
+                yield return null;
+
+                var hpBefore = duel.Enemy.Health.Hp;
+                duel.Player.TickGun(1f / 60f, firing: true, duel.Enemy);
+                var connected = false;
+                for (var i = 0; i < 60; i++)
+                {
+                    yield return null;
+                    if (duel.Enemy.Health.Hp < hpBefore)
+                    {
+                        connected = true;
+                        break;
+                    }
+                }
+
+                Assert.That(connected, Is.True,
+                    "a cover-ignoring drop must still reach the mark past a buffer-saturating stack of cover");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                if (wall != null)
+                {
+                    Object.Destroy(wall);
+                }
+
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
     }
 }

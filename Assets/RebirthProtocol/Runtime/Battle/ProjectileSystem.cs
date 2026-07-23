@@ -169,6 +169,14 @@ namespace RebirthProtocol.Battle
         /// (splinter darts, trigger-coil reloads, vampiric pod feeds).
         private void ApplyAvatarHit(Projectile p, RoboAvatar victim)
         {
+            // Captured BEFORE ReceiveHit: a raised shield that intercepts the
+            // shot suppresses the pull below, but a GuardBreak lowers the
+            // shield mid-ReceiveHit and a chip-through-shield knockdown
+            // returns a body-result enum, so the result alone can't tell a
+            // guarded hit from an unguarded one — the pre-hit guard state can
+            // (a raised shield always routes the hit through the shield
+            // branch).
+            var victimWasGuarding = victim.ShieldRaised;
             var result = victim.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
             if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
             {
@@ -187,7 +195,11 @@ namespace RebirthProtocol.Battle
                 // at impact needn't point back at the shooter, but "hauled
                 // off their aim / dragged up the thread" always means toward
                 // the gun. Flattened so the pull never lifts or buries.
-                if (p.PullSpeed > 0f && p.Owner != null)
+                // Suppressed when a raised shield intercepted the shot: a
+                // guard defeats the grab, matching how the ordinary flinch is
+                // itself suppressed by a block (the shield branch of
+                // ReceiveHit never applies it) — Codex PR #22 finding.
+                if (p.PullSpeed > 0f && p.Owner != null && !victimWasGuarding)
                 {
                     var toOwner = p.Owner.Position - victim.Position;
                     toOwner.y = 0f;

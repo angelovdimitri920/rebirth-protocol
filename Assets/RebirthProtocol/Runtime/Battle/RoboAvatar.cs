@@ -531,6 +531,11 @@ namespace RebirthProtocol.Battle
             var damage = (Melee.Tuning.Damage * Melee.ComboDamageMult * Stats.AtkMult
                     + (Effects?.FlatDamageBonus() ?? 0f))
                 * (Effects?.MeleeDamageMult() ?? 1f);
+            // Captured pre-hit for the pull suppression below (same reason as
+            // ProjectileSystem: a GuardBreak lowers the shield during
+            // ReceiveHit, so the result enum can't be trusted to report the
+            // guard state at contact).
+            var targetWasGuarding = target.ShieldRaised;
             var result = target.ReceiveHit(
                 damage,
                 Melee.Tuning.EnduranceDamage * Melee.ComboEnduranceMult,
@@ -548,9 +553,18 @@ namespace RebirthProtocol.Battle
                 // how the shove already reads. -dir points the impulse back
                 // toward this attacker; ApplyKnockback's normal positive-
                 // speed decay then applies, no negative-vector edge case.
+                // A raised guard defeats the grab: a pull the shield
+                // intercepts hauls nothing (the parry punish below still
+                // lands). This deliberately differs from the shove, which
+                // transmits through a raised shield as impact force the way
+                // it always has — a hook needs a body to catch, a hammer
+                // does not (Codex PR #22 finding).
                 if (Melee.Tuning.PullSpeed > 0f)
                 {
-                    target.ApplyKnockback(-dir, Melee.Tuning.PullSpeed * Melee.ComboKnockbackMult);
+                    if (!targetWasGuarding)
+                    {
+                        target.ApplyKnockback(-dir, Melee.Tuning.PullSpeed * Melee.ComboKnockbackMult);
+                    }
                 }
                 else
                 {

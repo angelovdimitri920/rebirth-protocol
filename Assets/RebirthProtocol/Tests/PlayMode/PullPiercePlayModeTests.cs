@@ -197,6 +197,112 @@ namespace RebirthProtocol.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator GrapnelDoesNotHaulAGuardedTarget()
+        {
+            // Contract (Codex PR #22 finding): a raised shield defeats the
+            // grab — a pull the guard intercepts hauls nothing, matching how
+            // the ordinary hit-flinch is itself suppressed by a block.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(gun: Gun("grapnel")), LoadoutWith(shield: Shield("kite-ward")));
+                yield return null;
+
+                Teleport(duel.Player, Vector3.zero);
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, new Vector3(0f, 0f, 6f));
+                duel.Enemy.Intent = new RoboIntent { HasFaceYaw = true, FaceYaw = Mathf.PI };
+                yield return null;
+                duel.Enemy.Intent.ShieldHeld = true;
+                yield return null; // TickShield raises the guard
+
+                Assert.That(duel.Enemy.ShieldRaised, Is.True, "the guard must be up for the shot to be intercepted");
+                var startDist = duel.Player.FlatDistanceTo(duel.Enemy);
+                var hpBefore = duel.Enemy.Health.Hp;
+                duel.Player.TickGun(1f / 60f, firing: true, duel.Enemy);
+
+                for (var i = 0; i < 120; i++)
+                {
+                    yield return null;
+                    if (duel.Enemy.Health.Hp < hpBefore)
+                    {
+                        break; // chip landed on the guard
+                    }
+                }
+
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore), "the shot must connect on the guard (chip)");
+
+                for (var i = 0; i < 30; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.FlatDistanceTo(duel.Enemy), Is.GreaterThan(startDist - 0.3f),
+                    "a raised guard defeats the grapnel's haul — the guarded target is not dragged in");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator HookbillDoesNotHaulAGuardedTarget()
+        {
+            // The melee half of the same contract: a pull blade whose swing
+            // the shield intercepts hauls nothing (the parry still punishes
+            // the attacker). This is the deliberate divergence from a shove,
+            // which still knocks a blocker back as it always has.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(melee: Melee("hookbill")), LoadoutWith(shield: Shield("kite-ward")));
+                yield return null;
+
+                Teleport(duel.Player, Vector3.zero);
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, new Vector3(0f, 0f, 3f));
+                duel.Enemy.Intent = new RoboIntent { HasFaceYaw = true, FaceYaw = Mathf.PI };
+                yield return null;
+                duel.Enemy.Intent.ShieldHeld = true;
+                yield return null; // TickShield raises the guard before the swing resolves
+
+                Assert.That(duel.Enemy.ShieldRaised, Is.True);
+                var startDist = duel.Player.FlatDistanceTo(duel.Enemy);
+                var hpBefore = duel.Enemy.Health.Hp;
+                duel.Player.TryMelee(duel.Enemy);
+                for (var i = 0; i < 120 && duel.Player.Melee.Busy; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore), "the swing must connect on the guard (chip)");
+
+                for (var i = 0; i < 20; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.Player.FlatDistanceTo(duel.Enemy), Is.GreaterThan(startDist - 0.3f),
+                    "a raised guard defeats Hookbill's haul — the guarded target is not dragged in");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator EstocPiercesMostOfARaisedGuard()
         {
             // Estoc's identity: "pierces 60% of a raised shield's GUARD." A

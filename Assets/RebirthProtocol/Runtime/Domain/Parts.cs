@@ -116,9 +116,12 @@ namespace RebirthProtocol.Domain
         // Pull capability (ARMORY_REFERENCE, Pass G): a landed hit hauls the
         // victim toward the shooter instead of away, at this speed --
         // ProjectileSystem.ApplyAvatarHit reuses RoboAvatar.ApplyKnockback's
-        // existing decay math by simply negating the shot's own travel
-        // direction. 0 (every gun before Grapnel/Auger) is today's ordinary
-        // small hit-flinch, unchanged.
+        // existing decay math by aiming the impulse at the owner's CURRENT
+        // position (a homing round curves in, so its heading at impact needn't
+        // point back at the shooter). Suppressed when a raised shield
+        // intercepts the shot -- a guard defeats the grab. 0 (every gun
+        // before Grapnel/Auger) is today's ordinary small hit-flinch,
+        // unchanged.
         public float PullSpeed;
     }
 
@@ -403,7 +406,7 @@ namespace RebirthProtocol.Domain
             // own thread." Bars 3/5/2/3/4 (MIGHT/BOLT/SEEK/CADENCE/REND) --
             // Falloff profile (brutal close, per §13.1), Wrightsguild's one
             // relic art. Scoping call: "channeled hold" reads in code as a
-            // very fast grinding cadence (FireInterval 0.09s) where every
+            // fast grinding cadence (FireInterval 0.12s) where every
             // connecting round hauls -- not a new maintained-contact state
             // machine (flagged in the Task G handoff as its own possible
             // design pass; this pass reuses the existing per-shot pull

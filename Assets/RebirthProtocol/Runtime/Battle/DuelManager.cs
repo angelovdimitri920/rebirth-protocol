@@ -131,6 +131,21 @@ namespace RebirthProtocol.Battle
                 Screen.SetResolution(res.width, res.height, FullScreenMode.FullScreenWindow);
             }
 
+            // -mute: silence all audio for the whole run. Used by automated
+            // smoke/verification boots so they don't play sound in the
+            // background; real playtests never pass it. Set BEFORE any
+            // AudioSource is created or played, and belt-and-suspenders:
+            // AudioListener.pause halts DSP processing outright (the
+            // stronger, standard full-mute technique), AudioListener.volume
+            // is a second independent gate in case anything ever resumes the
+            // listener without checking this flag.
+            var mute = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-mute") >= 0;
+            if (mute)
+            {
+                AudioListener.pause = true;
+                AudioListener.volume = 0f;
+            }
+
             var audioGo = new GameObject("Audio");
             audioGo.transform.SetParent(transform, false);
             GameAudio.Sfx = audioGo.AddComponent<SfxPlayer>();

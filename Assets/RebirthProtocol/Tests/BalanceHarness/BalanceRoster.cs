@@ -197,6 +197,38 @@ namespace RebirthProtocol.Tests.BalanceHarness
             }
         };
 
+        // Scaling & delayed threats (ARMORY §13.1, Pass H): each new part
+        // swapped one at a time against its plain counterpart, same
+        // one-axis shape as Volley/Fetter/Pulls. These parts' whole point is
+        // that damage varies with position/speed/timing, so a static AI that
+        // never keeps the long field (Pilgrim), spaces a burst (Beacon), or
+        // charges a joust (Tilt Lance) will UNDER-read them — that under-read
+        // is itself the headline Pass O signal, not a tuning error to chase.
+        private static GunPart PilgrimGun => PartsCatalog.Guns.First(g => g.Id == "pilgrim");
+        private static GunPart VigilGun => PartsCatalog.Guns.First(g => g.Id == "vigil");
+        private static GunPart BeaconGun => PartsCatalog.Guns.First(g => g.Id == "beacon");
+        private static MeleeWeaponPart CourserSaberMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "courser-saber");
+        private static MeleeWeaponPart TiltLanceMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "tilt-lance");
+        private static MeleeWeaponPart PenitentFlailMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "penitent-flail");
+        private static MeleeWeaponPart CrowbeakPickMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "crowbeak-pick");
+
+        public static MatrixSpec ScalingMatrix() => new MatrixSpec
+        {
+            Name = "scaling & delayed threats (on Bannerman, neutral kit otherwise)",
+            Builds = new List<NamedBuild>
+            {
+                new NamedBuild { Name = "arbalest (baseline gun)", Loadout = WithGun(Gun) },
+                new NamedBuild { Name = "pilgrim", Loadout = WithGun(PilgrimGun) },
+                new NamedBuild { Name = "vigil", Loadout = WithGun(VigilGun) },
+                new NamedBuild { Name = "beacon", Loadout = WithGun(BeaconGun) },
+                new NamedBuild { Name = "oathblade (baseline melee)", Loadout = WithMelee(Melee) },
+                new NamedBuild { Name = "courser-saber", Loadout = WithMelee(CourserSaberMelee) },
+                new NamedBuild { Name = "tilt-lance", Loadout = WithMelee(TiltLanceMelee) },
+                new NamedBuild { Name = "penitent-flail", Loadout = WithMelee(PenitentFlailMelee) },
+                new NamedBuild { Name = "crowbeak-pick", Loadout = WithMelee(CrowbeakPickMelee) }
+            }
+        };
+
         public static List<MatrixSpec> Select(string roster) => roster switch
         {
             "default" => new List<MatrixSpec> { ShapesMatrix(), BodiesMatrix() },
@@ -206,7 +238,8 @@ namespace RebirthProtocol.Tests.BalanceHarness
             "volley" => new List<MatrixSpec> { VolleyMatrix() },
             "fetter" => new List<MatrixSpec> { FetterMatrix() },
             "pulls" => new List<MatrixSpec> { PullsMatrix() },
-            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter|pulls).")
+            "scaling" => new List<MatrixSpec> { ScalingMatrix() },
+            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter|pulls|scaling).")
         };
     }
 }

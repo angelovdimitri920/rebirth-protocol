@@ -15,6 +15,42 @@ namespace RebirthProtocol.Tests.EditMode
         }
 
         [Test]
+        public void LateStrikeWindowIsNotSkippedByACoarseStep()
+        {
+            // Codex PR #23: Penitent Flail's late-strike window (the final
+            // 40% of a 0.4s swing = _timer <= 0.16) must not be stepped over
+            // by a coarse frame. With the hit checked before Tick decrements,
+            // two 0.2s steps sample _timer at 0.4 then 0.2 — both above 0.16 —
+            // so a pre-step gate would expire the swing unstruck. The gate
+            // projects past the step (_timer - dt), so the second frame lands.
+            var tuning = new MeleeTuning
+            {
+                SwingActiveTime = 0.4f,
+                StrikeDelayFraction = 0.6f,
+                HitRecovery = 0.1f,
+                WhiffRecovery = 0.1f
+            };
+            var melee = new MeleeAction(tuning);
+            Assert.That(melee.TryStart(1f), Is.True); // within CloseRange: swings directly
+            Assert.That(melee.Phase, Is.EqualTo(MeleePhase.Swing));
+
+            var landed = false;
+            // Mirror RoboAvatar.TickMelee's order: hit check, THEN Tick.
+            for (var i = 0; i < 3 && melee.Phase == MeleePhase.Swing; i++)
+            {
+                if (melee.TryRegisterHit(0.2f))
+                {
+                    landed = true;
+                    break;
+                }
+
+                melee.Tick(0.2f, 1f);
+            }
+
+            Assert.That(landed, Is.True, "a coarse frame must not skip the late-strike window");
+        }
+
+        [Test]
         public void FarStartLungesThenSwingsOnReach()
         {
             var melee = new MeleeAction();

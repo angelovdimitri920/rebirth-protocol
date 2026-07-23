@@ -362,6 +362,17 @@ namespace RebirthProtocol.Battle
             // stream must individually connect. count==1 (every gun before
             // Trefoil) takes the offset==0 branch below every iteration, so
             // this is byte-identical to the old single-Spawn call.
+            // Trajectory stance-split (ARMORY §13.1, Pass I1): the special
+            // Path only takes effect in its stance; outside it, the round
+            // flies Direct. Captured here at fire time, like every other G/A
+            // behavior (Vigil's hang, Pincer's split axis).
+            var stancePath = part.PathStance switch
+            {
+                ProjectilePathStance.GroundedOnly => Grounded ? part.Path : ProjectilePath.Direct,
+                ProjectilePathStance.AloftOnly => !Grounded ? part.Path : ProjectilePath.Direct,
+                _ => part.Path
+            };
+
             var count = Mathf.Max(1, part.ProjectileCount);
             for (var i = 0; i < count; i++)
             {
@@ -371,17 +382,22 @@ namespace RebirthProtocol.Battle
                 var shotAim = offsetDegrees == 0f
                     ? aim
                     : muzzle + Quaternion.Euler(0f, offsetDegrees, 0f) * (aim - muzzle);
-                // Trap-hang is a stance-split (Vigil, ARMORY §13.1): the
-                // round only keeps watch when fired GROUNDED; aloft it stays
-                // a straight shot. Captured here at fire time, like every
-                // other G/A behavior.
+                // Mixed-path guns (Mangonel): the first PlainStreams streams
+                // stay Direct even when the gun's Path is set.
+                var streamPath = i < part.PlainStreams ? ProjectilePath.Direct : stancePath;
+                // Hang applies only when fired GROUNDED, for both its users:
+                // Vigil's Direct trap-hang (aloft it flies straight) and
+                // Evenfall's Drop even-fall hang (aloft the GroundedOnly
+                // stance has already reduced streamPath to Direct, so this is
+                // 0 too). Spawn routes hangDuration to whichever path is live.
                 _projectiles.Spawn(this, targetAlive ? target : null, muzzle, shotAim,
                     damage, part.EnduranceDamage, part.ProjectileSpeed,
                     targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun,
                     part.SurvivesKnockdown, part.FetterSeconds, part.PullSpeed,
                     part.RangeScaling,
                     Grounded ? part.HangDistance : 0f,
-                    Grounded ? part.HangDuration : 0f);
+                    Grounded ? part.HangDuration : 0f,
+                    streamPath, part.VaultRise, part.DropHeight, part.LoopTurnRate, i, count);
             }
         }
 
@@ -470,6 +486,7 @@ namespace RebirthProtocol.Battle
                     _externalMove = null;
                     _actionLock = 10f; // held while swing+recovery run
                     GameAudio.Sfx?.MeleeSwing(Position);
+                    CastMeleeWave(target); // Volant Falx: a lunge that closed casts its wave
                     TryApplyMeleeHit(target, dt);
                     break;
                 case MeleeTickEvent.EnteredRecovery:
@@ -501,9 +518,35 @@ namespace RebirthProtocol.Battle
                 // Already-in-range starts/chains enter Swing directly here —
                 // the EnteredSwing tick event (and its own cue) only fires
                 // for a lunge that closes the gap, so this is the only place
-                // a direct close-range swing plays its start-up sound.
+                // a direct close-range swing plays its start-up sound and
+                // casts its wave (Volant Falx).
                 GameAudio.Sfx?.MeleeSwing(Position);
+                CastMeleeWave(target);
             }
+        }
+
+        // Casting wave (Volant Falx, ARMORY §5, Pass I1): the first melee that
+        // spawns a projectile. Called once as a swing becomes active — it
+        // casts a looping crescent wave (ProjectilePath.Loop, HitSource.Melee)
+        // straight ahead that curls out past the blade and back for a second
+        // pass. The swing's own contact hit still resolves separately at melee
+        // range. No-op for every weapon without a wave (WaveSpeed 0).
+        private void CastMeleeWave(RoboAvatar target)
+        {
+            var m = Loadout.Melee;
+            if (m == null || m.WaveSpeed <= 0f)
+            {
+                return;
+            }
+
+            var targetAlive = target != null && target.Health.State != HealthState.Dead;
+            var muzzle = Position + FacingDir * 0.8f + Vector3.up * 1.0f;
+            var aim = muzzle + FacingDir * 10f;
+            var damage = (m.WaveDamage * Stats.AtkMult + (Effects?.FlatDamageBonus() ?? 0f))
+                * (Effects?.MeleeDamageMult() ?? 1f);
+            _projectiles.Spawn(this, targetAlive ? target : null, muzzle, aim,
+                damage, m.WaveEnduranceDamage, m.WaveSpeed, 0f, HitSource.Melee,
+                path: ProjectilePath.Loop, loopTurnRate: m.WaveLoopTurnRate);
         }
 
         private void TryApplyMeleeHit(RoboAvatar target, float dt = 0f)

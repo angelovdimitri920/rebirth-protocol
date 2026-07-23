@@ -80,6 +80,28 @@ namespace RebirthProtocol.Domain
         public ChargeSpec Charge; // every garniture lists one (DOCTRINE §4.5)
     }
 
+    // Trajectory suite (ARMORY §4, Pass I1): the path a gun round flies.
+    // Direct (every gun before this pass) is the straight/homing + optional
+    // Vigil-hang behavior. The three new shapes each ignore arena geometry
+    // (walls are "negotiable"), resolving hits only against robos and crates.
+    public enum ProjectilePath
+    {
+        Direct, // straight, optionally homing/hanging (every existing gun)
+        Vault,  // up-launched parabola that clears walls, falling toward the target (Mangonel)
+        Drop,   // materializes above the target's mark and descends, bypassing cover (Skysword, Evenfall)
+        Loop    // curves at a constant yaw, tracing a wide loop that returns (Falconet aloft, Volant Falx)
+    }
+
+    // Stance-split (ARMORY §13.1): which stance the special Path applies in.
+    // Aloft/grounded outside that stance falls back to Direct — matching the
+    // G/A-differs idiom already used across the roster (Vigil, Pincer, etc.).
+    public enum ProjectilePathStance
+    {
+        Always,       // the Path applies in both stances (Mangonel, Skysword)
+        GroundedOnly, // special grounded, Direct aloft (Evenfall's "(G only)")
+        AloftOnly     // special aloft, Direct grounded (Falconet's "aloft ... glide")
+    }
+
     public sealed class GunPart
     {
         public string Id;
@@ -90,6 +112,33 @@ namespace RebirthProtocol.Domain
         public float FireInterval;
         public float ProjectileSpeed;
         public float HomingTurnRate;
+
+        // Trajectory suite (ARMORY §4, Pass I1): the flight path and the
+        // stance it applies in. Default Direct/Always is every gun before this
+        // pass, unchanged. See ProjectilePath.
+        public ProjectilePath Path = ProjectilePath.Direct;
+        public ProjectilePathStance PathStance = ProjectilePathStance.Always;
+
+        // Mixed-path guns (Mangonel, "two straight, two vaulting"): the first
+        // PlainStreams of ProjectileCount streams fly Direct regardless of
+        // Path; the rest take Path. 0 (every other gun) = all streams take
+        // Path. Only meaningful with ProjectileCount > PlainStreams.
+        public int PlainStreams;
+
+        // Vault: initial upward launch speed. Gravity (CombatTuning.Move)
+        // brings the round back down past wall height, over cover, onto the
+        // target it homes toward horizontally.
+        public float VaultRise;
+
+        // Drop: how far above the target's mark the round materializes before
+        // descending (Skysword straight down; Evenfall after its even-fall
+        // hang, then descending homing).
+        public float DropHeight;
+
+        // Loop: constant yaw rate (rad/s) that bends the round's heading into
+        // a wide returning loop. Multiple Loop streams mirror the sign so they
+        // fan out symmetrically.
+        public float LoopTurnRate;
 
         // Scrapwright exemption (DOCTRINE §4.3): rounds from a gun with this
         // set ride out their wielder's knockdown instead of being wiped by
@@ -196,6 +245,18 @@ namespace RebirthProtocol.Domain
         // window -- "the arc is unreadable and the timing is late." 0 (every
         // weapon before it) registers from the first active frame, unchanged.
         public float StrikeDelayFraction;
+
+        // Casting wave (Volant Falx, ARMORY §5, Pass I1): the first melee that
+        // spawns a projectile. When WaveSpeed > 0 a connecting-or-not swing
+        // also casts a looping crescent wave (ProjectilePath.Loop, HitSource
+        // .Melee) in the facing direction -- it reaches past the blade and
+        // curls back for a second pass. The normal contact hit still lands at
+        // melee range; the wave is the ranged extension. 0 (every weapon
+        // before it) casts nothing.
+        public float WaveSpeed;
+        public float WaveLoopTurnRate;
+        public float WaveDamage;
+        public float WaveEnduranceDamage;
 
         public MeleeTuning ToTuning() => new MeleeTuning
         {
@@ -468,7 +529,37 @@ namespace RebirthProtocol.Domain
             // Reference Damage 75 x 1.65 at the 18m bloom (~124), x 0.6
             // early/late (~45) -- the round has to be spaced to its burst.
             // Solarian Talon's.
-            new GunPart { Id = "beacon", Name = "Beacon", Blurb = "A flare that blooms at a set distance. Time the blossom or waste the shot.", Damage = 75f, EnduranceDamage = 30f, FireInterval = 0.7f, ProjectileSpeed = 34f, HomingTurnRate = 1.2f, RangeScaling = RangeScaling.BurstPoint(1.65f, 0.6f, 18f, 3.5f) }
+            new GunPart { Id = "beacon", Name = "Beacon", Blurb = "A flare that blooms at a set distance. Time the blossom or waste the shot.", Damage = 75f, EnduranceDamage = 30f, FireInterval = 0.7f, ProjectileSpeed = 34f, HomingTurnRate = 1.2f, RangeScaling = RangeScaling.BurstPoint(1.65f, 0.6f, 18f, 3.5f) },
+            // Vault trajectory (ARMORY §4, Pass I1): "Two straight, two
+            // vaulting -- the vault clears walls." Bars 2/3/3/2/4 (MIGHT/BOLT/
+            // SEEK/CADENCE/REND) -- slow cadence, heavy REND. 4 streams, the
+            // first 2 plain homing shots, the last 2 up-launched vaults that
+            // arc over cover (PlainStreams = 2). Damage is PER STREAM (pillar
+            // 3); volley 76 ~= 4 x 19. Estoc's counterpart (built Pass G).
+            new GunPart { Id = "mangonel", Name = "Mangonel", Blurb = "Two rounds fly straight, two vault the wall between you. Cover only helps them.", Damage = 19f, EnduranceDamage = 22f, FireInterval = 0.7f, ProjectileSpeed = 30f, HomingTurnRate = 1.6f, ProjectileCount = 4, Path = ProjectilePath.Vault, PlainStreams = 2, VaultRise = 13f },
+            // Drop trajectory / stance-split (ARMORY §4/§13.1, Pass I1): "Four
+            // rounds hang at even-fall, then descend homing (G only)." Bars
+            // 3/3/4/2/2 -- strong SEEK (the descent tracks). Fired grounded,
+            // 4 rounds materialize above the mark, hang ~0.7s at an even
+            // height, then descend homing. Fired aloft they are plain shots
+            // (PathStance GroundedOnly). Volley 84 ~= 4 x 21. Pendulum
+            // Glaive's counterpart. Scoping call: the numeric G/A split the
+            // doc omits is deferred, same as Vigil/Winterwatch before it.
+            new GunPart { Id = "evenfall", Name = "Evenfall", Blurb = "Four rounds hang at even-fall, then descend homing. Plain-fired aloft.", Damage = 21f, EnduranceDamage = 9f, FireInterval = 0.85f, ProjectileSpeed = 26f, HomingTurnRate = 2.6f, ProjectileCount = 4, Path = ProjectilePath.Drop, PathStance = ProjectilePathStance.GroundedOnly, DropHeight = 10f, HangDuration = 0.7f },
+            // Drop trajectory (ARMORY §4, Pass I1): "Blades cast heavenward
+            // that fall on the mark -- cover is negotiable." Bars 3/5/2/4/3 --
+            // BOLT 5, heavy per-blade damage. 3 blades materialize above the
+            // target's fire-time position and fall STRAIGHT down (no homing):
+            // they hit the mark, not the mover, but no horizontal wall can
+            // stop them. Volley 95 ~= 3 x 32. Steeple Strike's counterpart.
+            new GunPart { Id = "skysword", Name = "Skysword", Blurb = "Blades cast heavenward that fall on the mark. Cover is negotiable.", Damage = 32f, EnduranceDamage = 16f, FireInterval = 0.55f, ProjectileSpeed = 30f, HomingTurnRate = 0f, ProjectileCount = 3, Path = ProjectilePath.Drop, DropHeight = 11f },
+            // Loop trajectory / stance-split (ARMORY §4/§13.1, Pass I1):
+            // "Aloft, its rounds glide wide loops and return for a second
+            // pass" (56 G / 113 A). Bars 3/2/5/3/1 -- max SEEK, lowest REND.
+            // Fired grounded it is a plain homing pair (PathStance AloftOnly);
+            // aloft the two rounds bend into mirrored wide loops that sweep
+            // the target line out and back. Volant Falx's counterpart.
+            new GunPart { Id = "falconet", Name = "Falconet", Blurb = "Afoot, a plain pair of shots. Aloft, they glide wide loops and return for a second pass.", Damage = 28f, EnduranceDamage = 6f, FireInterval = 0.6f, ProjectileSpeed = 30f, HomingTurnRate = 3.4f, ProjectileCount = 2, Path = ProjectilePath.Loop, PathStance = ProjectilePathStance.AloftOnly, LoopTurnRate = 2.6f }
         };
 
         public static readonly MeleeWeaponPart[] MeleeWeapons =
@@ -546,7 +637,16 @@ namespace RebirthProtocol.Domain
             // Bars 4/3/3/3/3. Damage scales with distance to the target:
             // 0.35x smothered up close, 1.6x at the far edge of its reach.
             // Solarian Talon's.
-            new MeleeWeaponPart { Id = "crowbeak-pick", Name = "Crowbeak Pick", Blurb = "All the power lives in the beak's tip. Space it exactly or waste it.", Damage = 120f, EnduranceDamage = 50f, HitRange = 3.2f, HitArcDegrees = 45f, SwingActiveTime = 0.16f, HitRecovery = 0.42f, WhiffRecovery = 0.9f, KnockbackSpeed = 11f, Scaling = MeleeScaling.Ramp(MeleeScaleMode.Tip, 0.35f, 1.6f, 1.4f, 3.2f) }
+            new MeleeWeaponPart { Id = "crowbeak-pick", Name = "Crowbeak Pick", Blurb = "All the power lives in the beak's tip. Space it exactly or waste it.", Damage = 120f, EnduranceDamage = 50f, HitRange = 3.2f, HitArcDegrees = 45f, SwingActiveTime = 0.16f, HitRecovery = 0.42f, WhiffRecovery = 0.9f, KnockbackSpeed = 11f, Scaling = MeleeScaling.Ramp(MeleeScaleMode.Tip, 0.35f, 1.6f, 1.4f, 3.2f) },
+            // Casting wave (ARMORY §5, Pass I1): Falconet's counterpart and
+            // the first melee that spawns a projectile. "A looping crescent
+            // wave that returns for a second pass." Bars 3/4/3/2/1 -- long
+            // REACH (the wave extends it), lowest REND. A normal swing lands
+            // its contact hit at melee range AND casts a looping wave
+            // (ProjectilePath.Loop) that curls out past the blade and back.
+            // Wave damage is deliberately below the contact hit -- the reach
+            // is the payload, not the raw number.
+            new MeleeWeaponPart { Id = "volant-falx", Name = "Volant Falx", Blurb = "A looping crescent wave that returns for a second pass.", Damage = 90f, EnduranceDamage = 30f, HitRange = 3.6f, HitArcDegrees = 80f, SwingActiveTime = 0.2f, HitRecovery = 0.5f, WhiffRecovery = 1.0f, KnockbackSpeed = 9f, WaveSpeed = 26f, WaveLoopTurnRate = 2.2f, WaveDamage = 42f, WaveEnduranceDamage = 14f }
         };
 
         public static readonly BombPart[] Bombs =

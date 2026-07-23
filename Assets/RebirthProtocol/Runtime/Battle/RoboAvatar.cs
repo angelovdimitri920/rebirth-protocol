@@ -101,6 +101,13 @@ namespace RebirthProtocol.Battle
         private float _facing;
         private float _flashTime;
 
+        // Pass H melee-scaling capture, recorded when a swing commits:
+        // where the lunge began (Tilt Lance scales by how far it charged)
+        // and the wielder's horizontal speed at commit (Courser Saber scales
+        // by it — "never swing standing still").
+        private Vector3 _lungeStartPos;
+        private float _meleeEntrySpeed;
+
         private Transform _visualRoot;
         private Transform _tiltRoot;
         private Renderer[] _renderers;
@@ -364,10 +371,17 @@ namespace RebirthProtocol.Battle
                 var shotAim = offsetDegrees == 0f
                     ? aim
                     : muzzle + Quaternion.Euler(0f, offsetDegrees, 0f) * (aim - muzzle);
+                // Trap-hang is a stance-split (Vigil, ARMORY §13.1): the
+                // round only keeps watch when fired GROUNDED; aloft it stays
+                // a straight shot. Captured here at fire time, like every
+                // other G/A behavior.
                 _projectiles.Spawn(this, targetAlive ? target : null, muzzle, shotAim,
                     damage, part.EnduranceDamage, part.ProjectileSpeed,
                     targetAlive ? part.HomingTurnRate : 0f, HitSource.Gun,
-                    part.SurvivesKnockdown, part.FetterSeconds, part.PullSpeed);
+                    part.SurvivesKnockdown, part.FetterSeconds, part.PullSpeed,
+                    part.RangeScaling,
+                    Grounded ? part.HangDistance : 0f,
+                    Grounded ? part.HangDuration : 0f);
             }
         }
 
@@ -382,6 +396,7 @@ namespace RebirthProtocol.Battle
 
             if (Melee.TryStart(FlatDistanceTo(target)))
             {
+                CaptureMeleeCommit();
                 OnMeleePhaseEntered(target);
             }
         }
@@ -398,8 +413,18 @@ namespace RebirthProtocol.Battle
 
             if (Melee.TryChain(FlatDistanceTo(target)))
             {
+                CaptureMeleeCommit();
                 OnMeleePhaseEntered(target);
             }
+        }
+
+        /// Snapshot the scaling inputs at the instant a swing/chain commits:
+        /// the lunge's origin and the wielder's carried speed. Read back at
+        /// hit time by the Tilt Lance / Courser Saber scaling (Pass H).
+        private void CaptureMeleeCommit()
+        {
+            _lungeStartPos = Position;
+            _meleeEntrySpeed = new Vector3(_velocity.x, 0f, _velocity.z).magnitude;
         }
 
         public void TickMelee(float dt, RoboAvatar target)
@@ -528,7 +553,23 @@ namespace RebirthProtocol.Battle
             }
 
             var dir = to.normalized;
-            var damage = (Melee.Tuning.Damage * Melee.ComboDamageMult * Stats.AtkMult
+
+            // Damage scaling (ARMORY §13.1, Pass H): Courser Saber scales by
+            // the speed carried into the swing, Tilt Lance by how far the
+            // lunge charged, Crowbeak Pick by distance to the target (power
+            // in the tip). None (every weapon before this pass) returns 1.0.
+            var scaling = Melee.Tuning.Scaling;
+            var scaleInput = scaling.Mode switch
+            {
+                MeleeScaleMode.Speed => _meleeEntrySpeed,
+                MeleeScaleMode.LungeDistance =>
+                    new Vector3(Position.x - _lungeStartPos.x, 0f, Position.z - _lungeStartPos.z).magnitude,
+                MeleeScaleMode.Tip => to.magnitude, // flat distance to target (to.y already zeroed)
+                _ => 0f
+            };
+            var scaleFactor = scaling.FactorAt(scaleInput);
+
+            var damage = (Melee.Tuning.Damage * Melee.ComboDamageMult * scaleFactor * Stats.AtkMult
                     + (Effects?.FlatDamageBonus() ?? 0f))
                 * (Effects?.MeleeDamageMult() ?? 1f);
             // Captured pre-hit for the pull suppression below (same reason as

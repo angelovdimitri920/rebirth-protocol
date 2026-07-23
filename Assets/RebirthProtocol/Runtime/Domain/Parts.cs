@@ -123,6 +123,23 @@ namespace RebirthProtocol.Domain
         // before Grapnel/Auger) is today's ordinary small hit-flinch,
         // unchanged.
         public float PullSpeed;
+
+        // Range-profile damage scaling (ARMORY §13.1, Pass H): the round's
+        // damage scales with how far it has flown, evaluated at impact.
+        // Default (Flat) returns 1.0 at every distance, so every gun before
+        // Pilgrim/Beacon is unchanged. Damage stays the REFERENCE value; the
+        // profile scales it (Rangecraft ramps up, Burst-point peaks at a set
+        // distance).
+        public RangeScaling RangeScaling;
+
+        // Trap-hang (Vigil, ARMORY §13.1 Stance-split, Pass H): fired
+        // GROUNDED, the round flies HangDistance metres, hovers in place for
+        // HangDuration seconds ("keeps watch, near-invisible"), then
+        // re-accelerates homing at the target ("then strike"). Fired aloft it
+        // stays an ordinary straight/homing shot. Both 0 (every gun before
+        // Vigil) = no hang, unchanged.
+        public float HangDistance;
+        public float HangDuration;
     }
 
     public sealed class MeleeWeaponPart
@@ -168,6 +185,18 @@ namespace RebirthProtocol.Domain
         // today's unpierced block, unchanged.
         public float GuardPierce;
 
+        // Damage scaling (ARMORY §13.1, Pass H): Courser Saber (wielder
+        // speed at commit), Tilt Lance (lunge distance charged), Crowbeak
+        // Pick (distance to target -- power in the tip). None (default,
+        // every weapon before this pass) is a flat 1.0.
+        public MeleeScaling Scaling;
+
+        // Late-strike (Penitent Flail, Pass H): the swing's hit only
+        // registers in the final (1 - StrikeDelayFraction) of its active
+        // window -- "the arc is unreadable and the timing is late." 0 (every
+        // weapon before it) registers from the first active frame, unchanged.
+        public float StrikeDelayFraction;
+
         public MeleeTuning ToTuning() => new MeleeTuning
         {
             Damage = Damage,
@@ -182,6 +211,8 @@ namespace RebirthProtocol.Domain
             FetterSeconds = FetterSeconds,
             PullSpeed = PullSpeed,
             GuardPierce = GuardPierce,
+            Scaling = Scaling,
+            StrikeDelayFraction = StrikeDelayFraction,
             // Codex PR #21 finding: the shared 2.6 default (every weapon
             // before Tocsin Mace has HitRange >= 2.6, so it never mattered)
             // can exceed a shorter blade's own reach, letting the lunge
@@ -413,7 +444,31 @@ namespace RebirthProtocol.Domain
             // capability instead, matching the Task-ladder practice of
             // scoping down rather than building bespoke infra when the
             // existing shape already reads the identity honestly).
-            new GunPart { Id = "auger", Name = "Auger", Blurb = "A grinding stream that drags the victim up its own thread.", Damage = 20f, EnduranceDamage = 16f, FireInterval = 0.12f, ProjectileSpeed = 30f, HomingTurnRate = 2.5f, PullSpeed = 6f }
+            new GunPart { Id = "auger", Name = "Auger", Blurb = "A grinding stream that drags the victim up its own thread.", Damage = 20f, EnduranceDamage = 16f, FireInterval = 0.12f, ProjectileSpeed = 30f, HomingTurnRate = 2.5f, PullSpeed = 6f },
+            // Rangecraft profile (ARMORY §4/§13.1, Pass H): Courser Saber's
+            // counterpart. "Rounds that grow stronger the farther they
+            // travel" (volley 53→114). Bars 3/3/2/3/4. The reference Damage
+            // is scaled by distance flown -- weak point-blank (0.55x), strong
+            // at range (1.7x at 26m), rewarding the long field. Hedge
+            // Errantry's own gun.
+            new GunPart { Id = "pilgrim", Name = "Pilgrim", Blurb = "Flame-rounds that grow stronger the farther they travel. Reward for keeping the long field.", Damage = 34f, EnduranceDamage = 14f, FireInterval = 0.42f, ProjectileSpeed = 30f, HomingTurnRate = 1.8f, RangeScaling = RangeScaling.Rangecraft(0.55f, 1.7f, 26f) },
+            // Trap / stance-split (ARMORY §4/§13.1, Pass H): Penitent Flail's
+            // counterpart. "Rounds keep watch, near-invisible, then strike
+            // (G); straight aloft" (228 G / 74 A). Bars 3/3/2/4/1. Fired
+            // grounded the round flies out, hovers ~1.1s keeping watch, then
+            // re-accelerates homing hard. Fired aloft it's a plain straight
+            // shot (the hang is gated on Grounded in TickGun). Scoping call:
+            // the trap-vs-straight BEHAVIOR is the stance-split identity; the
+            // numeric G/A damage difference (228 vs 74) is deferred, same as
+            // Winterwatch's G/A split in Pass F. Umbral Concordat's.
+            new GunPart { Id = "vigil", Name = "Vigil", Blurb = "Rounds that keep watch where you place them, near-invisible, then strike. Straight-fired aloft.", Damage = 85f, EnduranceDamage = 20f, FireInterval = 0.9f, ProjectileSpeed = 28f, HomingTurnRate = 2.5f, HangDistance = 9f, HangDuration = 1.1f },
+            // Burst-point profile (ARMORY §4/§13.1, Pass H): Crowbeak Pick's
+            // counterpart. "Bursts at a set distance; time the blossom or
+            // waste the shot" (124 at burst, 47 past it). Bars 4/4/2/3/3.
+            // Reference Damage 75 x 1.65 at the 18m bloom (~124), x 0.6
+            // early/late (~45) -- the round has to be spaced to its burst.
+            // Solarian Talon's.
+            new GunPart { Id = "beacon", Name = "Beacon", Blurb = "A flare that blooms at a set distance. Time the blossom or waste the shot.", Damage = 75f, EnduranceDamage = 30f, FireInterval = 0.7f, ProjectileSpeed = 34f, HomingTurnRate = 1.2f, RangeScaling = RangeScaling.BurstPoint(1.65f, 0.6f, 18f, 3.5f) }
         };
 
         public static readonly MeleeWeaponPart[] MeleeWeapons =
@@ -466,7 +521,32 @@ namespace RebirthProtocol.Domain
             // new maintained-contact/tick-damage state machine -- flagged in
             // the Task G handoff as a candidate for its own future design
             // pass if the feel doesn't read as "grinding" enough.
-            new MeleeWeaponPart { Id = "sawtooth-espadon", Name = "Sawtooth Espadon", Blurb = "A grinding hold that ticks damage and drags the foe up the blade.", Damage = 150f, EnduranceDamage = 65f, HitRange = 3.0f, HitArcDegrees = 60f, SwingActiveTime = 0.26f, HitRecovery = 0.6f, WhiffRecovery = 1.15f, PullSpeed = 9f }
+            new MeleeWeaponPart { Id = "sawtooth-espadon", Name = "Sawtooth Espadon", Blurb = "A grinding hold that ticks damage and drags the foe up the blade.", Damage = 150f, EnduranceDamage = 65f, HitRange = 3.0f, HitArcDegrees = 60f, SwingActiveTime = 0.26f, HitRecovery = 0.6f, WhiffRecovery = 1.15f, PullSpeed = 9f },
+            // Speed scaling (ARMORY §5/§13.1, Pass H): Pilgrim's counterpart.
+            // "Damage scales with your current speed — never swing standing
+            // still." Bars 3/3/4/3/2. The wielder's horizontal speed at the
+            // instant the swing commits scales the hit: 0.5x barely moving,
+            // 1.5x at a full run (RunSpeed 9). Winter Wing rides fast.
+            new MeleeWeaponPart { Id = "courser-saber", Name = "Courser Saber", Blurb = "A running cut that scales with your speed. Never swing it standing still.", Damage = 115f, EnduranceDamage = 48f, HitRange = 3.0f, HitArcDegrees = 70f, SwingActiveTime = 0.16f, HitRecovery = 0.4f, WhiffRecovery = 0.85f, KnockbackSpeed = 10f, Scaling = MeleeScaling.Ramp(MeleeScaleMode.Speed, 0.5f, 1.5f, 1.5f, 9f) },
+            // Lunge-distance scaling (ARMORY §5/§13.1, Pass H): Longshrift's
+            // counterpart. "The joust: damage scales with lunge distance
+            // (60→190)." Bars 5/4/2/1/4 -- longest reach, worst GRACE (a
+            // whiffed joust is ruinous). The farther the gap-closer charged,
+            // the harder it lands: 0.5x on a standing thrust, 1.55x on a full
+            // ~12m joust. Kurultai Vanguard's -- the joust is theirs.
+            new MeleeWeaponPart { Id = "tilt-lance", Name = "Tilt Lance", Blurb = "The joust: the farther you charge before it lands, the harder it hits. Ruinous to whiff.", Damage = 125f, EnduranceDamage = 52f, HitRange = 3.6f, HitArcDegrees = 45f, SwingActiveTime = 0.2f, HitRecovery = 0.5f, WhiffRecovery = 1.5f, KnockbackSpeed = 15f, Scaling = MeleeScaling.Ramp(MeleeScaleMode.LungeDistance, 0.5f, 1.55f, 0f, 12f) },
+            // Late-strike (ARMORY §5, Pass H): Vigil's counterpart. "The arc
+            // is unreadable and the timing is late." Bars 4/3/2/2/3. A long
+            // (0.4s) wide swing whose hit only registers in the final 40% of
+            // its active window -- you cannot read when it will land. Umbral
+            // Concordat's.
+            new MeleeWeaponPart { Id = "penitent-flail", Name = "Penitent Flail", Blurb = "A wide, late arc you cannot read. It lands when you have stopped expecting it.", Damage = 135f, EnduranceDamage = 55f, HitRange = 3.2f, HitArcDegrees = 90f, SwingActiveTime = 0.4f, HitRecovery = 0.5f, WhiffRecovery = 1.1f, KnockbackSpeed = 12f, StrikeDelayFraction = 0.6f },
+            // Tip scaling (ARMORY §5/§13.1, Pass H): Beacon's counterpart.
+            // "All the power lives in the beak's tip — space it or waste it."
+            // Bars 4/3/3/3/3. Damage scales with distance to the target:
+            // 0.35x smothered up close, 1.6x at the far edge of its reach.
+            // Solarian Talon's.
+            new MeleeWeaponPart { Id = "crowbeak-pick", Name = "Crowbeak Pick", Blurb = "All the power lives in the beak's tip. Space it exactly or waste it.", Damage = 120f, EnduranceDamage = 50f, HitRange = 3.2f, HitArcDegrees = 45f, SwingActiveTime = 0.16f, HitRecovery = 0.42f, WhiffRecovery = 0.9f, KnockbackSpeed = 11f, Scaling = MeleeScaling.Ramp(MeleeScaleMode.Tip, 0.35f, 1.6f, 1.4f, 3.2f) }
         };
 
         public static readonly BombPart[] Bombs =

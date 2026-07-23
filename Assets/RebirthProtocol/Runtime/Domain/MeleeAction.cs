@@ -63,6 +63,15 @@ namespace RebirthProtocol.Domain
         // MeleeWeaponPart.GuardPierce — the fraction of a raised shield's
         // block% this swing ignores.
         public float GuardPierce;
+
+        // Damage scaling (Pass H): mirrors MeleeWeaponPart.Scaling. The
+        // avatar feeds it the mode-appropriate live input at hit time.
+        public MeleeScaling Scaling;
+
+        // Late-strike (Pass H): mirrors MeleeWeaponPart.StrikeDelayFraction.
+        // Consumed by MeleeAction.TryRegisterHit, which refuses to register
+        // until the swing timer has entered its late window.
+        public float StrikeDelayFraction;
     }
 
     // Melee with a gap-closer (GAME_DESIGN.md §3.1): high commitment,
@@ -182,6 +191,18 @@ namespace RebirthProtocol.Domain
         public bool TryRegisterHit()
         {
             if (Phase != MeleePhase.Swing || _didHit)
+            {
+                return false;
+            }
+
+            // Late-strike (Penitent Flail, Pass H): the hit only registers in
+            // the final (1 - StrikeDelayFraction) of the active window. The
+            // timer counts DOWN from SwingActiveTime, so the late window is
+            // _timer <= SwingActiveTime * (1 - StrikeDelayFraction). Default
+            // 0 gates at the full SwingActiveTime — active from the first
+            // frame, exactly today's behavior.
+            if (_tuning.StrikeDelayFraction > 0f
+                && _timer > _tuning.SwingActiveTime * (1f - _tuning.StrikeDelayFraction))
             {
                 return false;
             }

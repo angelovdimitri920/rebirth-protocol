@@ -32,6 +32,23 @@ namespace RebirthProtocol.Battle
             // Carried from GunPart.PullSpeed (Grapnel/Auger); 0 for pods and
             // every non-pull gun.
             public float PullSpeed;
+
+            // Range-profile damage scaling (Pass H): Damage is the reference
+            // value; final damage at impact is Damage * RangeScaling.FactorAt
+            // (DistanceTraveled). Flat (default) = 1.0 always.
+            public RangeScaling RangeScaling;
+            public float DistanceTraveled;
+            public float Speed; // launch speed, kept for re-accel after a hang
+
+            // Trap-hang (Vigil, Pass H): after flying HangDistance the round
+            // hovers for HangDuration ("keeps watch"), then re-accelerates
+            // homing ("strike"). HangDuration 0 = no hang (every other gun,
+            // and Vigil fired aloft).
+            public float HangDistance;
+            public float HangDuration;
+            public bool Hanging;
+            public bool HasHung;
+            public float HangTimer;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
@@ -40,7 +57,8 @@ namespace RebirthProtocol.Battle
         public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
             float damage, float enduranceDamage, float speed, float homingTurnRate,
             HitSource source = HitSource.None, bool survivesKnockdown = false, float fetterSeconds = 0f,
-            float pullSpeed = 0f)
+            float pullSpeed = 0f, RangeScaling rangeScaling = default, float hangDistance = 0f,
+            float hangDuration = 0f)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             // Immediate, not deferred: a deferred Destroy leaves the sphere
@@ -68,7 +86,11 @@ namespace RebirthProtocol.Battle
                 Source = source,
                 SurvivesKnockdown = survivesKnockdown,
                 FetterSeconds = fetterSeconds,
-                PullSpeed = pullSpeed
+                PullSpeed = pullSpeed,
+                RangeScaling = rangeScaling,
+                Speed = speed,
+                HangDistance = hangDistance,
+                HangDuration = hangDuration
             });
         }
 
@@ -82,6 +104,35 @@ namespace RebirthProtocol.Battle
                 {
                     Despawn(i);
                     continue;
+                }
+
+                // Trap-hang (Vigil, Pass H): while keeping watch the round
+                // holds position and only strikes a target that wanders into
+                // it; when the watch ends it re-accelerates homing — "then
+                // strike."
+                if (p.Hanging)
+                {
+                    p.HangTimer -= dt;
+                    if (p.HangTimer > 0f)
+                    {
+                        if (TargetAlive(p) && !p.Target.Intangible)
+                        {
+                            var toWatched = p.Target.Center - p.Tf.position;
+                            if (toWatched.sqrMagnitude < 0.7f * 0.7f)
+                            {
+                                ApplyAvatarHit(p, p.Target);
+                                Despawn(i);
+                            }
+                        }
+
+                        continue; // hovering: no travel this frame
+                    }
+
+                    p.Hanging = false;
+                    var strikeDir = TargetAlive(p)
+                        ? (p.Target.Center - p.Tf.position).normalized
+                        : (p.Velocity.sqrMagnitude > 0.0001f ? p.Velocity.normalized : p.Tf.forward);
+                    p.Velocity = strikeDir * p.Speed;
                 }
 
                 // Homing: curve toward the locked target's center.
@@ -146,6 +197,18 @@ namespace RebirthProtocol.Battle
                 }
 
                 p.Tf.position = from + step;
+                p.DistanceTraveled += stepLen;
+
+                // Trigger the trap-hang once the round has flown its watch
+                // distance (Vigil, grounded). HasHung stops it re-arming
+                // after it strikes and flies on.
+                if (p.HangDuration > 0f && !p.HasHung && p.DistanceTraveled >= p.HangDistance)
+                {
+                    p.Hanging = true;
+                    p.HasHung = true;
+                    p.HangTimer = p.HangDuration;
+                    p.Velocity = Vector3.zero;
+                }
 
                 // Proximity hit: homing shots that drift past the raycast line.
                 if (TargetAlive(p) && !p.Target.Intangible)
@@ -165,6 +228,14 @@ namespace RebirthProtocol.Battle
             return p.Target != null && p.Target.Health.State != HealthState.Dead;
         }
 
+        /// A normalized heading, falling back to world-forward when the input
+        /// is degenerate (a hovering trap round striking a target that walked
+        /// onto it has no travel heading of its own).
+        private static Vector3 SafeDirection(Vector3 v)
+        {
+            return v.sqrMagnitude > 0.0001f ? v.normalized : Vector3.forward;
+        }
+
         /// Land the hit and fire the owner's run-effect trigger verbs
         /// (splinter darts, trigger-coil reloads, vampiric pod feeds).
         private void ApplyAvatarHit(Projectile p, RoboAvatar victim)
@@ -177,7 +248,19 @@ namespace RebirthProtocol.Battle
             // (a raised shield always routes the hit through the shield
             // branch).
             var victimWasGuarding = victim.ShieldRaised;
-            var result = victim.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
+
+            // Range-profile damage scaling (Pilgrim/Beacon, ARMORY §13.1,
+            // Pass H): the reference Damage/endurance are scaled by how far
+            // the round has flown. Poise runs the same chain in parallel
+            // (§13). Flat (default) leaves both untouched.
+            var rangeFactor = p.RangeScaling.FactorAt(p.DistanceTraveled);
+
+            // A hovering trap round has zero velocity at contact, so derive a
+            // real hit direction from the geometry when the heading is null.
+            var hitDir = p.Velocity.sqrMagnitude > 0.0001f
+                ? p.Velocity.normalized
+                : SafeDirection(victim.Center - p.Tf.position);
+            var result = victim.ReceiveHit(p.Damage * rangeFactor, p.EnduranceDamage * rangeFactor, hitDir);
             if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
             {
                 // Fetter capability (Fetterlock/Winterwatch, Pass F): a

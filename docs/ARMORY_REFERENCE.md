@@ -149,7 +149,7 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Longshrift** | Sniper | 3/5/1/1/4 | Med-long | 84–105 | One fast round and a long vulnerable breath after | Tilt Lance |
 | **Fetterlock** | Stun | 2/5/1/5/4 | Short | 53 | Two shackle-rounds; near-guaranteed down up close | Knell Maul |
 | **Thornswarm** | Hornet | 3/2/4/2/3 | Med | 130 | Five chasing thorns; layer volleys to smother | Hydra Flail |
-| **Pilgrim** | Flame | 3/3/2/3/4 | Med | 114 far | Six rounds that grow stronger the farther they travel | Courser Saber |
+| **Pilgrim** *(built)* | Flame | 3/3/2/3/4 | Med | 114 far | Six rounds that grow stronger the farther they travel | Courser Saber |
 | **Dragoon** | Dragon | 4/2/3/1/4 | Med-long | 114 | One heavy tracking round; slow, patient, punishing | Wyrmtail |
 | **Aspergill** | Splash | 1/2/1/5/2 | Sh-med | 19 | A sprinkling of stopping rounds; setup, not damage | Tocsin Mace |
 | **Arcus (Dexter/Sinister)** | L/R Arc | 3/4/2/2/3 | Med-long | 73 | Two rounds curving in from the named side; reversed airborne | Backsword (D/S) |
@@ -163,7 +163,7 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Splintered Star** | Starshot | 2/3/2/4/2 | Long | 155 | One round splits five — vertically afoot, laterally aloft | Shatterblade |
 | **Falconet** | Glider | 3/2/5/3/1 | Long | 56 G / 113 A | Aloft, its rounds glide wide loops and return for a second pass | Volant Falx |
 | **Rookery** *(planned)* | Homing Star | 3/3/4/2/2 | Med-long | 256 | One casting breaks into seven homing rooks | Iron Rosary |
-| **Vigil** *(planned)* | Trap | 3/3/2/4/1 | Med-long | 228 | Rounds keep watch, near-invisible, then strike (G); straight aloft | Penitent Flail |
+| **Vigil** *(built)* | Trap | 3/3/2/4/1 | Med-long | 228 | Rounds keep watch, near-invisible, then strike (G); straight aloft | Penitent Flail |
 | **Auger** *(built)* | Drill | 3/5/2/3/4 | Short | 107 | A grinding stream that drags the victim up its own thread | Sawtooth Espadon |
 | **Goliath Shot** | Titan (gun) | 1/1/1/2/3 | Med | 42 | An enormous, slow, mostly-ceremonial round | Goliath Blade |
 | **Grapnel** *(built)* | Claw | 1/3/5/4/1 | Med | 19 | Barbed lines that haul the target off their aim | Hookbill |
@@ -177,7 +177,7 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Processional (D/S)** | L/R Pulse | 2/3/4/3/2 | Med | 99–107 | Eight rounds processing in a curve from the named side | Serpentine Blade (D/S) |
 | **Skysword** | Sword Storm | 3/5/2/4/3 | Med-long | 95 | Blades cast heavenward that fall on the mark — cover is negotiable | Steeple Strike |
 | **Wending Bolt** | Ion | 3/5/5/5/2 | Med | 86 | A round that turns twice to find its man; slow but faithful | Feinting Rapier |
-| **Beacon** | Flare | 4/4/2/3/3 | Med | 124 at burst | Bursts at a set distance; time the blossom or waste the shot | Crowbeak Pick |
+| **Beacon** *(built)* | Flare | 4/4/2/3/3 | Med | 124 at burst | Bursts at a set distance; time the blossom or waste the shot | Crowbeak Pick |
 | **Cinquefoil (D/S)** | L/R 5-Way | 2/4/1/4/3 | Med-long | 158–273 | Five streams fanning from the named side; reversed aloft | Quintain Sweep (D/S) |
 | **Annulet** | Halo | 3/3/4/3/3 | Med-long | 69–85 | A great ring that climbs, then hunts (G); halts before you aloft | Roundelay |
 
@@ -207,10 +207,10 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | **Longglaive** *(built)* | Trefoil | 3/4/3/2/3 | Wide crescent sweep (140°) — punishes strafing |
 | **Misericorde** *(built)* | Litany | 2/2/5/5/2 | The mercy-dagger; fast, light, barely punishable |
 | **Estoc** *(built)* | Mangonel | 3/3/3/3/2 | Narrow thrust that pierces 60% of a raised shield's GUARD |
-| **Tilt Lance** | Longshrift | 5/4/2/1/4 | The joust: damage scales with lunge distance (60→190) |
+| **Tilt Lance** *(built)* | Longshrift | 5/4/2/1/4 | The joust: damage scales with lunge distance (60→190) |
 | **Knell Maul** | Fetterlock | 2/3/3/3/5 | A bell-hammer that tolls through poise (REND 130) |
 | **Hydra Flail** *(built)* | Thornswarm | 3/3/3/2/3 | Five heads strike five angles at once; some always connect |
-| **Courser Saber** | Pilgrim | 3/3/4/3/2 | Damage scales with your current speed — never swing standing still |
+| **Courser Saber** *(built)* | Pilgrim | 3/3/4/3/2 | Damage scales with your current speed — never swing standing still |
 | **Wyrmtail** | Dragoon | 4/4/2/2/4 | A heavy sweep that re-tracks mid-lunge; slow, faithful |
 | **Tocsin Mace** | Aspergill | 1/2/5/4/3 | Light stopping taps; rings a foe still for the follow-up |
 | **Backsword (D/S)** | Arcus | 3/3/3/3/3 | Curving cut that reaches around a guard's named side |
@@ -223,7 +223,7 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | **Shatterblade** | Splintered Star | 2/3/3/3/2 | The swing splinters into a fan of five edges |
 | **Volant Falx** | Falconet | 3/4/3/2/1 | A looping crescent wave that returns for a second pass |
 | **Iron Rosary** | Rookery | 2/3/4/4/2 | A weighted chain told bead by bead — the longest string (4+ hits) |
-| **Penitent Flail** | Vigil | 4/3/2/2/3 | The arc is unreadable and the timing is late |
+| **Penitent Flail** *(built)* | Vigil | 4/3/2/2/3 | The arc is unreadable and the timing is late |
 | **Sawtooth Espadon** *(built)* | Auger | 3/3/3/2/4 | A grinding hold that ticks damage and drags the foe up the blade |
 | **Goliath Blade** | Goliath Shot | 1/5/1/2/3 | Enormous, slow, mostly ceremony — but the toll when it lands! |
 | **Hookbill** *(built)* | Grapnel | 2/4/3/3/1 | The billhook that dragged knights from horses; hauls them to you |
@@ -237,7 +237,7 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | **Serpentine Blade (D/S)** | Processional | 2/3/4/3/2 | An eight-touch winding combo curving from the named side |
 | **Steeple Strike** | Skysword | 3/3/3/2/3 | A leaping plunge that clears low cover entirely |
 | **Feinting Rapier** | Wending Bolt | 3/3/5/5/2 | Feints, re-aims mid-swing; nearly impossible to read |
-| **Crowbeak Pick** | Beacon | 4/3/3/3/3 | All the power lives in the beak's tip — space it or waste it |
+| **Crowbeak Pick** *(built)* | Beacon | 4/3/3/3/3 | All the power lives in the beak's tip — space it or waste it |
 | **Quintain Sweep (D/S)** | Cinquefoil | 2/4/4/3/3 | A five-point fan combo sweeping from the named side |
 | **Roundelay** | Annulet | 3/3/3/2/3 | A full-circle spin — the answer to being surrounded |
 

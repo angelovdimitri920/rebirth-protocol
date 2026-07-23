@@ -144,6 +144,43 @@ namespace RebirthProtocol.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator BeaconBurstWindowIsFrameRateIndependentAtTheEdge()
+        {
+            // Codex PR #23: a raycast hit scaled off the pre-step distance
+            // made the burst-window boundary frame-rate dependent. Fired just
+            // PAST the window (18m +/-3.5 → 21.5m edge; ~22m impact) under a
+            // COARSE dt (a ~2.3m step), the round must still read as
+            // off-window (low damage) — with the bug the undercredited
+            // distance would fall back inside the window and read peak.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 15f; // coarse: ~2.3m per step at 34 m/s
+                duel.RespawnWithLoadouts(LoadoutWith(gun: Gun("beacon")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                var pastWindow = 0f;
+                yield return FireOnceAndMeasure(duel, 23f, d => pastWindow = d);
+
+                Assert.That(pastWindow, Is.GreaterThan(0f), "the shot must connect");
+                // Off-window is 0.6 x 75 = 45; peak is 1.65 x 75 = 124. A
+                // reading below the midpoint proves the distance credited at
+                // impact was the true (past-the-edge) one, not an
+                // undercredited in-window value.
+                Assert.That(pastWindow, Is.LessThan(80f),
+                    "past the burst window the round must read off-window regardless of step size");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator VigilRoundHangsThenStrikes()
         {
             // The trap identity: fired grounded, the round should still be

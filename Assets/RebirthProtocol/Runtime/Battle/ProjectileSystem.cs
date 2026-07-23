@@ -113,26 +113,33 @@ namespace RebirthProtocol.Battle
                 if (p.Hanging)
                 {
                     p.HangTimer -= dt;
-                    if (p.HangTimer > 0f)
-                    {
-                        if (TargetAlive(p) && !p.Target.Intangible)
-                        {
-                            var toWatched = p.Target.Center - p.Tf.position;
-                            if (toWatched.sqrMagnitude < 0.7f * 0.7f)
-                            {
-                                ApplyAvatarHit(p, p.Target);
-                                Despawn(i);
-                            }
-                        }
 
-                        continue; // hovering: no travel this frame
+                    // Watched contact, checked BEFORE the expiry branch: a
+                    // target that reaches the trap is struck whether or not
+                    // the watch ends this frame. A contact landing exactly at
+                    // expiry must not fall through to the re-accel path, where
+                    // a zero direction toward an on-top target would strand a
+                    // zero-velocity round (Codex PR #23).
+                    if (TargetAlive(p) && !p.Target.Intangible
+                        && (p.Target.Center - p.Tf.position).sqrMagnitude < 0.7f * 0.7f)
+                    {
+                        ApplyAvatarHit(p, p.Target);
+                        Despawn(i);
+                        continue;
                     }
 
+                    if (p.HangTimer > 0f)
+                    {
+                        continue; // still hovering: no travel this frame
+                    }
+
+                    // Watch over: re-accelerate homing. SafeDirection guards
+                    // the degenerate heading (target sitting on the trap) so
+                    // the round never resumes with zero velocity.
                     p.Hanging = false;
-                    var strikeDir = TargetAlive(p)
-                        ? (p.Target.Center - p.Tf.position).normalized
-                        : (p.Velocity.sqrMagnitude > 0.0001f ? p.Velocity.normalized : p.Tf.forward);
-                    p.Velocity = strikeDir * p.Speed;
+                    p.Velocity = SafeDirection(TargetAlive(p)
+                        ? p.Target.Center - p.Tf.position
+                        : p.Velocity) * p.Speed;
                 }
 
                 // Homing: curve toward the locked target's center.
@@ -146,6 +153,15 @@ namespace RebirthProtocol.Battle
                 var step = p.Velocity * dt;
                 var stepLen = step.magnitude;
                 var from = p.Tf.position;
+
+                // A zero-length step would divide by zero in the raycast
+                // direction below. SafeDirection makes this practically
+                // unreachable, but guard it: no travel this frame (Codex
+                // PR #23).
+                if (stepLen <= 1e-6f)
+                {
+                    continue;
+                }
 
                 // Obstacle / robo intercept along this step. RaycastNonAlloc
                 // results are unsorted, so take the nearest non-owner hit.
@@ -175,6 +191,15 @@ namespace RebirthProtocol.Battle
 
                 if (struckAvatar != null)
                 {
+                    // Credit the true distance to THIS impact (the raycast hit
+                    // at `nearest` along the step) before it resolves — range
+                    // scaling reads DistanceTraveled, and without this a
+                    // raycast hit would scale off last frame's distance,
+                    // making Beacon's burst-window boundary frame-rate
+                    // dependent (Codex PR #23). The proximity-hit path below
+                    // already runs after the full-step increment, so both
+                    // paths now credit distance-to-impact consistently.
+                    p.DistanceTraveled += nearest;
                     ApplyAvatarHit(p, struckAvatar);
                 }
                 else if (struckCrate != null)

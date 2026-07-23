@@ -458,8 +458,9 @@ namespace RebirthProtocol.Battle
             {
                 // Hit check BEFORE the timer decrements (matching Melee.ts):
                 // a hitch frame with dt >= SwingActiveTime must not let an
-                // in-range swing expire into recovery unchecked.
-                TryApplyMeleeHit(target);
+                // in-range swing expire into recovery unchecked. dt is passed
+                // so the late-strike gate can project past this step.
+                TryApplyMeleeHit(target, dt);
             }
 
             var ev = Melee.Tick(dt, dist);
@@ -469,7 +470,7 @@ namespace RebirthProtocol.Battle
                     _externalMove = null;
                     _actionLock = 10f; // held while swing+recovery run
                     GameAudio.Sfx?.MeleeSwing(Position);
-                    TryApplyMeleeHit(target);
+                    TryApplyMeleeHit(target, dt);
                     break;
                 case MeleeTickEvent.EnteredRecovery:
                     _externalMove = null;
@@ -505,7 +506,7 @@ namespace RebirthProtocol.Battle
             }
         }
 
-        private void TryApplyMeleeHit(RoboAvatar target)
+        private void TryApplyMeleeHit(RoboAvatar target, float dt = 0f)
         {
             var to = target.Position - Position;
             to.y = 0f;
@@ -547,7 +548,7 @@ namespace RebirthProtocol.Battle
                 return;
             }
 
-            if (!Melee.TryRegisterHit())
+            if (!Melee.TryRegisterHit(dt))
             {
                 return;
             }

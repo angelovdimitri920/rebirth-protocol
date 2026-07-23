@@ -188,7 +188,7 @@ namespace RebirthProtocol.Domain
 
         /// The presentation layer calls this when the swing's range/arc check
         /// passes. Returns true only once per swing.
-        public bool TryRegisterHit()
+        public bool TryRegisterHit(float dt = 0f)
         {
             if (Phase != MeleePhase.Swing || _didHit)
             {
@@ -198,11 +198,17 @@ namespace RebirthProtocol.Domain
             // Late-strike (Penitent Flail, Pass H): the hit only registers in
             // the final (1 - StrikeDelayFraction) of the active window. The
             // timer counts DOWN from SwingActiveTime, so the late window is
-            // _timer <= SwingActiveTime * (1 - StrikeDelayFraction). Default
-            // 0 gates at the full SwingActiveTime — active from the first
-            // frame, exactly today's behavior.
+            // _timer <= SwingActiveTime * (1 - StrikeDelayFraction). The gate
+            // compares the PROJECTED post-step timer (_timer - dt), not the
+            // current one: the caller checks the hit before Tick decrements,
+            // so a single coarse frame that would step the swing straight
+            // through the whole window still lands — otherwise it samples
+            // above the window on both sides and the swing expires unstruck
+            // (Codex PR #23). Default 0 (every weapon before Penitent Flail,
+            // and dt omitted) gates at full SwingActiveTime — active from the
+            // first frame, exactly today's behavior.
             if (_tuning.StrikeDelayFraction > 0f
-                && _timer > _tuning.SwingActiveTime * (1f - _tuning.StrikeDelayFraction))
+                && _timer - dt > _tuning.SwingActiveTime * (1f - _tuning.StrikeDelayFraction))
             {
                 return false;
             }

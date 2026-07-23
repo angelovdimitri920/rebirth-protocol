@@ -137,6 +137,15 @@ namespace RebirthProtocol.Battle
             _music = audioGo.AddComponent<MusicSequencer>();
             _music.Play(MusicMode.Hangar);
 
+            // -mute: silence all audio at startup (global AudioListener
+            // volume). Used by automated smoke/verification boots so they
+            // don't play sound in the background; real playtests never pass
+            // it. Music/SFX still run — the output is just zeroed.
+            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-mute") >= 0)
+            {
+                AudioListener.volume = 0f;
+            }
+
             _arenaRoot = new GameObject("Arena").transform;
             _arenaRoot.SetParent(transform, false);
 

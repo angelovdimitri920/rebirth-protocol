@@ -112,6 +112,17 @@ namespace RebirthProtocol.Domain
         // many seconds. 0 (every gun before Fetterlock) applies nothing --
         // RoboAvatar.ApplyFetter is a no-op below/at zero.
         public float FetterSeconds;
+
+        // Pull capability (ARMORY_REFERENCE, Pass G): a landed hit hauls the
+        // victim toward the shooter instead of away, at this speed --
+        // ProjectileSystem.ApplyAvatarHit reuses RoboAvatar.ApplyKnockback's
+        // existing decay math by aiming the impulse at the owner's CURRENT
+        // position (a homing round curves in, so its heading at impact needn't
+        // point back at the shooter). Suppressed when a raised shield
+        // intercepts the shot -- a guard defeats the grab. 0 (every gun
+        // before Grapnel/Auger) is today's ordinary small hit-flinch,
+        // unchanged.
+        public float PullSpeed;
     }
 
     public sealed class MeleeWeaponPart
@@ -143,6 +154,20 @@ namespace RebirthProtocol.Domain
         // Maul/Tocsin Mace) applies nothing.
         public float FetterSeconds;
 
+        // Pull capability (ARMORY_REFERENCE, Pass G): a connecting swing
+        // hauls the victim toward the wielder instead of away, at this
+        // speed -- overrides KnockbackSpeed entirely when set (a weapon
+        // either shoves or hauls, never both). 0 (every weapon before
+        // Hookbill/Sawtooth Espadon) is today's ordinary push, unchanged.
+        public float PullSpeed;
+
+        // Guard-piercing capability (ARMORY_REFERENCE, Pass G): a connecting
+        // swing against a RAISED shield reduces its effective block% by
+        // this fraction before the damage/drain split (0.6 = "pierces 60%
+        // of a raised shield's GUARD"). 0 (every weapon before Estoc) is
+        // today's unpierced block, unchanged.
+        public float GuardPierce;
+
         public MeleeTuning ToTuning() => new MeleeTuning
         {
             Damage = Damage,
@@ -155,6 +180,8 @@ namespace RebirthProtocol.Domain
             KnockbackSpeed = KnockbackSpeed,
             ProngAngles = ProngAngles,
             FetterSeconds = FetterSeconds,
+            PullSpeed = PullSpeed,
+            GuardPierce = GuardPierce,
             // Codex PR #21 finding: the shared 2.6 default (every weapon
             // before Tocsin Mace has HitRange >= 2.6, so it never mattered)
             // can exceed a shorter blade's own reach, letting the lunge
@@ -367,7 +394,26 @@ namespace RebirthProtocol.Domain
             // FireInterval), high REND (heavy EnduranceDamage), low SEEK
             // (weak homing). The shackle payload is the 1s Fetter itself,
             // not the per-shot damage.
-            new GunPart { Id = "fetterlock", Name = "Fetterlock", Blurb = "Two shackle-rounds fired short and fast. Near-guaranteed down up close.", Damage = 18f, EnduranceDamage = 40f, FireInterval = 0.24f, ProjectileSpeed = 40f, HomingTurnRate = 0.8f, FetterSeconds = 1.0f }
+            new GunPart { Id = "fetterlock", Name = "Fetterlock", Blurb = "Two shackle-rounds fired short and fast. Near-guaranteed down up close.", Damage = 18f, EnduranceDamage = 40f, FireInterval = 0.24f, ProjectileSpeed = 40f, HomingTurnRate = 0.8f, FetterSeconds = 1.0f },
+            // Pull capability (ARMORY §4, Pass G): "Barbed lines that haul
+            // the target off their aim." Bars 1/3/5/4/1 (MIGHT/BOLT/SEEK/
+            // CADENCE/REND) -- lowest MIGHT in the roster, near-max SEEK
+            // (the claw tracks hard to keep the line taut). Flat damage
+            // profile (§13.1) -- low but honest, the haul is the payload.
+            new GunPart { Id = "grapnel", Name = "Grapnel", Blurb = "Barbed lines that haul the target off their aim.", Damage = 19f, EnduranceDamage = 12f, FireInterval = 0.55f, ProjectileSpeed = 34f, HomingTurnRate = 3.0f, PullSpeed = 11f },
+            // Pull capability (ARMORY §4, Pass G): Sawtooth Espadon's
+            // counterpart. "A grinding stream that drags the victim up its
+            // own thread." Bars 3/5/2/3/4 (MIGHT/BOLT/SEEK/CADENCE/REND) --
+            // Falloff profile (brutal close, per §13.1), Wrightsguild's one
+            // relic art. Scoping call: "channeled hold" reads in code as a
+            // fast grinding cadence (FireInterval 0.12s) where every
+            // connecting round hauls -- not a new maintained-contact state
+            // machine (flagged in the Task G handoff as its own possible
+            // design pass; this pass reuses the existing per-shot pull
+            // capability instead, matching the Task-ladder practice of
+            // scoping down rather than building bespoke infra when the
+            // existing shape already reads the identity honestly).
+            new GunPart { Id = "auger", Name = "Auger", Blurb = "A grinding stream that drags the victim up its own thread.", Damage = 20f, EnduranceDamage = 16f, FireInterval = 0.12f, ProjectileSpeed = 30f, HomingTurnRate = 2.5f, PullSpeed = 6f }
         };
 
         public static readonly MeleeWeaponPart[] MeleeWeapons =
@@ -396,7 +442,31 @@ namespace RebirthProtocol.Domain
             // Bars 1/2/5/4/3: lowest MIGHT and REACH, near-max TEMPO (fast
             // swing) and GRACE (cheap recovery) -- a quick tap, not a
             // committed swing.
-            new MeleeWeaponPart { Id = "tocsin-mace", Name = "Tocsin Mace", Blurb = "Light stopping taps that ring a foe still for the follow-up.", Damage = 55f, EnduranceDamage = 30f, HitRange = 2.4f, HitArcDegrees = 70f, SwingActiveTime = 0.10f, HitRecovery = 0.30f, WhiffRecovery = 0.5f, KnockbackSpeed = 6f, FetterSeconds = 0.7f }
+            new MeleeWeaponPart { Id = "tocsin-mace", Name = "Tocsin Mace", Blurb = "Light stopping taps that ring a foe still for the follow-up.", Damage = 55f, EnduranceDamage = 30f, HitRange = 2.4f, HitArcDegrees = 70f, SwingActiveTime = 0.10f, HitRecovery = 0.30f, WhiffRecovery = 0.5f, KnockbackSpeed = 6f, FetterSeconds = 0.7f },
+            // Pull capability (ARMORY §5, Pass G): Grapnel's counterpart.
+            // "The billhook that dragged knights from horses; hauls them to
+            // you." Bars 2/4/3/3/1 (MIGHT/REACH/TEMPO/GRACE/REND) -- longer
+            // reach than Oathblade (the hook needs to catch at range),
+            // lowest REND (the haul is the point, not the damage). PullSpeed
+            // set, KnockbackSpeed left at 0 -- a weapon either shoves or
+            // hauls.
+            new MeleeWeaponPart { Id = "hookbill", Name = "Hookbill", Blurb = "The billhook that dragged knights from horses. Hauls them to you.", Damage = 95f, EnduranceDamage = 40f, HitRange = 3.4f, HitArcDegrees = 65f, SwingActiveTime = 0.22f, HitRecovery = 0.5f, WhiffRecovery = 1.0f, PullSpeed = 14f },
+            // Guard-piercing capability (ARMORY §5, Pass G): Mangonel's
+            // counterpart. "Narrow thrust that pierces 60% of a raised
+            // shield's GUARD." Bars 3/3/3/3/2 (MIGHT/REACH/TEMPO/GRACE/REND)
+            // -- an even, unremarkable spread everywhere except the pierce,
+            // which is the entire identity.
+            new MeleeWeaponPart { Id = "estoc", Name = "Estoc", Blurb = "A narrow thrust that pierces 60% of a raised shield's guard.", Damage = 100f, EnduranceDamage = 45f, HitRange = 3.0f, HitArcDegrees = 50f, SwingActiveTime = 0.16f, HitRecovery = 0.4f, WhiffRecovery = 0.85f, KnockbackSpeed = 9f, GuardPierce = 0.6f },
+            // Pull capability (ARMORY §5, Pass G): Auger's counterpart. "A
+            // grinding hold that ticks damage and drags the foe up the
+            // blade." Bars 3/3/3/2/4 (MIGHT/REACH/TEMPO/GRACE/REND) --
+            // Wrightsguild's one relic melee art alongside Auger. Same
+            // scoping call as Auger: the "grinding hold" reads as a heavy
+            // single connecting hit with a strong haul (PullSpeed), not a
+            // new maintained-contact/tick-damage state machine -- flagged in
+            // the Task G handoff as a candidate for its own future design
+            // pass if the feel doesn't read as "grinding" enough.
+            new MeleeWeaponPart { Id = "sawtooth-espadon", Name = "Sawtooth Espadon", Blurb = "A grinding hold that ticks damage and drags the foe up the blade.", Damage = 150f, EnduranceDamage = 65f, HitRange = 3.0f, HitArcDegrees = 60f, SwingActiveTime = 0.26f, HitRecovery = 0.6f, WhiffRecovery = 1.15f, PullSpeed = 9f }
         };
 
         public static readonly BombPart[] Bombs =

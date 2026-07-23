@@ -53,6 +53,16 @@ namespace RebirthProtocol.Domain
 
         // Fetter capability (Pass F): mirrors MeleeWeaponPart.FetterSeconds.
         public float FetterSeconds;
+
+        // Pull capability (Pass G): mirrors MeleeWeaponPart.PullSpeed. When
+        // > 0 the connecting swing hauls the target toward the wielder
+        // instead of shoving away, overriding KnockbackSpeed entirely.
+        public float PullSpeed;
+
+        // Guard-piercing capability (Pass G): mirrors
+        // MeleeWeaponPart.GuardPierce — the fraction of a raised shield's
+        // block% this swing ignores.
+        public float GuardPierce;
     }
 
     // Melee with a gap-closer (GAME_DESIGN.md §3.1): high commitment,

@@ -113,6 +113,46 @@ namespace RebirthProtocol.Tests.EditMode
         }
 
         [Test]
+        public void NoMeleeWeaponBothShovesAndHauls()
+        {
+            // Pull capability (Pass G): TryApplyMeleeHit uses PullSpeed when
+            // it is > 0 and ignores KnockbackSpeed entirely in that branch —
+            // a blade either shoves away or hauls in, never both. A weapon
+            // that set both would silently drop its KnockbackSpeed, so the
+            // catalog must never express that ambiguity.
+            foreach (var melee in PartsCatalog.MeleeWeapons)
+            {
+                if (melee.PullSpeed > 0f)
+                {
+                    Assert.That(melee.KnockbackSpeed, Is.EqualTo(0f),
+                        $"{melee.Name} sets PullSpeed, so its KnockbackSpeed must be 0 (it would be ignored anyway)");
+                }
+            }
+        }
+
+        [Test]
+        public void PassGPartsCarryTheirPullAndPierceCapabilities()
+        {
+            // Guards against a silently-dropped field on the five new parts
+            // (ARMORY §4-5): the pull guns/melee haul, Estoc pierces, and
+            // the pull is threaded all the way into MeleeTuning.
+            var grapnel = System.Array.Find(PartsCatalog.Guns, g => g.Id == "grapnel");
+            var auger = System.Array.Find(PartsCatalog.Guns, g => g.Id == "auger");
+            Assert.That(grapnel.PullSpeed, Is.GreaterThan(0f), "Grapnel hauls");
+            Assert.That(auger.PullSpeed, Is.GreaterThan(0f), "Auger drags");
+
+            var hookbill = System.Array.Find(PartsCatalog.MeleeWeapons, m => m.Id == "hookbill");
+            var sawtooth = System.Array.Find(PartsCatalog.MeleeWeapons, m => m.Id == "sawtooth-espadon");
+            var estoc = System.Array.Find(PartsCatalog.MeleeWeapons, m => m.Id == "estoc");
+            Assert.That(hookbill.PullSpeed, Is.GreaterThan(0f), "Hookbill hauls");
+            Assert.That(hookbill.ToTuning().PullSpeed, Is.EqualTo(hookbill.PullSpeed), "pull threads into the tuning");
+            Assert.That(sawtooth.PullSpeed, Is.GreaterThan(0f), "Sawtooth Espadon drags");
+            Assert.That(estoc.GuardPierce, Is.EqualTo(0.6f), "Estoc pierces 60% of the guard");
+            Assert.That(estoc.ToTuning().GuardPierce, Is.EqualTo(0.6f), "pierce threads into the tuning");
+            Assert.That(estoc.PullSpeed, Is.EqualTo(0f), "Estoc is a shove/pierce, not a pull");
+        }
+
+        [Test]
         public void EveryMeleeWeaponsLungeStopsWithinItsOwnHitRange()
         {
             // Codex PR #21 finding: MeleeTuning's shared default

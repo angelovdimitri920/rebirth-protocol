@@ -26,6 +26,12 @@ namespace RebirthProtocol.Battle
             // Fetter capability (Pass F): carried through from the firing
             // GunPart/PodPart and applied to the victim on a landed hit.
             public float FetterSeconds;
+
+            // Pull capability (Pass G): a landed hit hauls the victim toward
+            // the owner at this speed instead of the small default flinch.
+            // Carried from GunPart.PullSpeed (Grapnel/Auger); 0 for pods and
+            // every non-pull gun.
+            public float PullSpeed;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
@@ -33,7 +39,8 @@ namespace RebirthProtocol.Battle
 
         public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
             float damage, float enduranceDamage, float speed, float homingTurnRate,
-            HitSource source = HitSource.None, bool survivesKnockdown = false, float fetterSeconds = 0f)
+            HitSource source = HitSource.None, bool survivesKnockdown = false, float fetterSeconds = 0f,
+            float pullSpeed = 0f)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             // Immediate, not deferred: a deferred Destroy leaves the sphere
@@ -60,7 +67,8 @@ namespace RebirthProtocol.Battle
                 HomingTurnRate = homingTurnRate,
                 Source = source,
                 SurvivesKnockdown = survivesKnockdown,
-                FetterSeconds = fetterSeconds
+                FetterSeconds = fetterSeconds,
+                PullSpeed = pullSpeed
             });
         }
 
@@ -161,6 +169,14 @@ namespace RebirthProtocol.Battle
         /// (splinter darts, trigger-coil reloads, vampiric pod feeds).
         private void ApplyAvatarHit(Projectile p, RoboAvatar victim)
         {
+            // Captured BEFORE ReceiveHit: a raised shield that intercepts the
+            // shot suppresses the pull below, but a GuardBreak lowers the
+            // shield mid-ReceiveHit and a chip-through-shield knockdown
+            // returns a body-result enum, so the result alone can't tell a
+            // guarded hit from an unguarded one — the pre-hit guard state can
+            // (a raised shield always routes the hit through the shield
+            // branch).
+            var victimWasGuarding = victim.ShieldRaised;
             var result = victim.ReceiveHit(p.Damage, p.EnduranceDamage, p.Velocity.normalized);
             if (result is not ReceiveResult.Invulnerable and not ReceiveResult.Evaded)
             {
@@ -169,6 +185,29 @@ namespace RebirthProtocol.Battle
                 // it here, covering both hit sources through the one place
                 // they both resolve.
                 victim.ApplyFetter(p.FetterSeconds);
+
+                // Pull capability (Grapnel/Auger, ARMORY §4, Pass G): haul
+                // the victim toward the shooter, overriding the small
+                // default flinch ReceiveHit just applied (ApplyKnockback
+                // assigns, so this cleanly replaces it). Aimed at the
+                // owner's CURRENT position rather than negating the shot's
+                // final heading — a homing round curves in, so its heading
+                // at impact needn't point back at the shooter, but "hauled
+                // off their aim / dragged up the thread" always means toward
+                // the gun. Flattened so the pull never lifts or buries.
+                // Suppressed when a raised shield intercepted the shot: a
+                // guard defeats the grab, matching how the ordinary flinch is
+                // itself suppressed by a block (the shield branch of
+                // ReceiveHit never applies it) — Codex PR #22 finding.
+                if (p.PullSpeed > 0f && p.Owner != null && !victimWasGuarding)
+                {
+                    var toOwner = p.Owner.Position - victim.Position;
+                    toOwner.y = 0f;
+                    if (toOwner.sqrMagnitude > 0.0001f)
+                    {
+                        victim.ApplyKnockback(toOwner.normalized, p.PullSpeed);
+                    }
+                }
             }
 
             var effects = p.Owner != null ? p.Owner.Effects : null;

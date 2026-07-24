@@ -62,6 +62,25 @@ namespace RebirthProtocol.Tests.PlayMode
         private static float HorizontalDistanceToMark(Vector3 pos) =>
             Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(MarkPos.x, MarkPos.z));
 
+        /// Of two planted pits, the one further along +X — the one that can be
+        /// walked onto from outside the pair without crossing its sibling.
+        private static Vector3 Outboard(Vector3 a, Vector3 b) => a.x >= b.x ? a : b;
+
+        /// Walks the probe onto `pit` from further out along +X, staging one
+        /// step short so the swept trigger only ever crosses this pit. The
+        /// staging point is 4.5 m out: clear of the 2.6 m trigger and of the
+        /// 3.1 m blast, and clear of the sibling pit 3 m the other way.
+        private static IEnumerator ApproachPitFromOutboard(DuelManager duel, Vector3 pit)
+        {
+            Teleport(duel.Enemy, new Vector3(pit.x + 4.5f, 0f, pit.z));
+            yield return null;
+            yield return null;
+
+            Assert.That(duel.PlayerBomb.LiveBombCount, Is.EqualTo(2),
+                "staging outside the pair must not arm either pit");
+            Teleport(duel.Enemy, new Vector3(pit.x, 0f, pit.z));
+        }
+
         /// Stands the thrower in the clean lane, aims at the mark (the enemy
         /// stands on it so the Target-anchored reticule settles there), throws,
         /// and immediately parks the enemy far away so nothing perturbs the
@@ -407,6 +426,18 @@ namespace RebirthProtocol.Tests.PlayMode
                 yield return null;
 
                 yield return ThrowAtTheMark(duel);
+
+                // A witness parked in the ring BETWEEN the trigger radius (3)
+                // and the blast's real reach (3.6 + the 0.5 hit-buffer = 4.1):
+                // too far to ever arm the mine, close enough that a real
+                // detonation must hurt it. Without this the test could not
+                // tell "went off" from "was quietly destroyed" — a timeout
+                // branch that merely removed the mine would pass on
+                // LiveBombCount alone (Codex PR #25 finding 6).
+                var witness = MarkPos + new Vector3(3.5f, 0f, 0f);
+                Teleport(duel.Enemy, witness);
+                var hpBefore = duel.Enemy.Health.Hp;
+
                 for (var i = 0; i < 300; i++) // 5s in: well past landing, inside the 8s wait
                 {
                     yield return null;
@@ -414,14 +445,17 @@ namespace RebirthProtocol.Tests.PlayMode
 
                 Assert.That(duel.PlayerBomb.LiveBombCount, Is.EqualTo(1), "the mine holds its wait");
                 Assert.That(duel.PlayerBomb.LiveBombDwelling(0), Is.True);
+                Assert.That(duel.Enemy.Health.Hp, Is.EqualTo(hpBefore),
+                    "and the witness sits outside the trigger, so nothing has armed it");
 
                 for (var i = 0; i < 300 && duel.PlayerBomb.LiveBombCount > 0; i++) // out to 10s
                 {
                     yield return null;
                 }
 
-                Assert.That(duel.PlayerBomb.LiveBombCount, Is.Zero,
-                    "and once the wait runs out it goes off rather than expiring quietly");
+                Assert.That(duel.PlayerBomb.LiveBombCount, Is.Zero, "the wait ends");
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore),
+                    "and it ends in a DETONATION, not a quiet removal");
             }
             finally
             {
@@ -462,8 +496,13 @@ namespace RebirthProtocol.Tests.PlayMode
                 Assert.That(Vector3.Distance(first, second), Is.GreaterThan(2f),
                     "the pits are planted apart, not stacked on one point");
 
-                // Step on exactly one of them.
-                Teleport(duel.Enemy, new Vector3(first.x, 0f, first.z));
+                // Step on exactly ONE of them. The approach has to come from
+                // the outboard side and be staged first: the mine trigger is
+                // swept (Codex PR #25 finding 5), so a probe dropped in from
+                // across the arena crosses BOTH pits on the way and arms them
+                // together — correct behavior, but it would make this test
+                // about the trigger rather than about pit independence.
+                yield return ApproachPitFromOutboard(duel, Outboard(first, second));
                 var damage = 0f;
                 yield return MeasureDamageOverFlight(duel, d => damage = d, windowFrames: 60);
 
@@ -471,6 +510,302 @@ namespace RebirthProtocol.Tests.PlayMode
                 Assert.That(duel.PlayerBomb.LiveBombCount, Is.EqualTo(1),
                     "and the OTHER pit is still waiting — two independent mines, not one two-point blast");
                 Assert.That(duel.PlayerBomb.LiveBombDwelling(0), Is.True);
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator OxbowSweepsTheFinalStretchBeforeItLands()
+        {
+            // Codex PR #25 finding 1: Tick branched to landing BEFORE moving
+            // or checking contact, so the last slice of a flight was never
+            // swept. The probe below stands squarely in that slice and
+            // nowhere else -- ~4.6 m from the mark, outside the endpoint
+            // blast's 4.1 m reach, and ~3.3 m from the last pre-landing
+            // sample the old code did check. With the gap present the bomb
+            // passes clean through it and blows harmlessly ahead.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(Bomb("oxbow-charge")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                yield return ThrowAtTheMark(duel);
+
+                // A coarse but entirely legal frame: at dt 0.35 the ~0.67 s
+                // flight is two steps, so T jumps 0.52 -> past 1 and the whole
+                // back half of the bow falls inside the unswept final slice.
+                Time.captureDeltaTime = 0.35f;
+                Teleport(duel.Enemy, new Vector3(3.5f, 0f, -5f));
+
+                var damage = 0f;
+                yield return MeasureDamageOverFlight(duel, d => damage = d, windowFrames: 40);
+
+                Assert.That(damage, Is.GreaterThan(0f),
+                    "the stretch between the last frame and the mark must be swept like any other");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator OxbowDoesNotCutTheCornerOffItsOwnBow()
+        {
+            // Codex PR #25 finding 2: one chord across a whole frame is not a
+            // sweep of a strongly curved path — it cuts straight across the
+            // inside of the bow. This probe stands ON that chord and nowhere
+            // near the route the bomb visibly flies: dead on the throw line
+            // at the midpoint, while the bow is a full 5 m out to the dexter
+            // side there. A chord check "hits" it; the real curve misses it
+            // by ~5 m, so the bomb must fly on and blow on the mark instead.
+            //
+            // dt 0.7 makes the whole ~0.67 s flight a single interval, which
+            // is the regime the substepping exists for.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(Bomb("oxbow-charge")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                yield return ThrowAtTheMark(duel);
+
+                Time.captureDeltaTime = 0.7f;
+                // On the straight line from hand to mark, 6 m from the mark —
+                // so outside the endpoint blast's 4.1 m reach as well.
+                Teleport(duel.Enemy, new Vector3(0f, 0f, -8f));
+
+                var damage = 0f;
+                yield return MeasureDamageOverFlight(duel, d => damage = d, windowFrames: 20);
+
+                Assert.That(damage, Is.EqualTo(0f),
+                    "a foe standing inside the bow, off the flown curve, must not be swept up by a shortcut chord");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator OxbowPassesThroughAnIntangibleFoeInsteadOfBeingSpentOnIt()
+        {
+            // Codex PR #25 finding 3: i-frames let attacks pass through
+            // (ProjectileSystem's raycast filter already skips Intangible),
+            // but contact selection did not -- so a vanish-dashing or
+            // charging foe ATE the bomb: it detonated, ReceiveHit returned
+            // Evaded, and the throw was spent for nothing.
+            //
+            // The probe is a Vesper, whose charge strike grants 0.8 s of
+            // i-frames -- long enough to cover the whole flight. The charge
+            // is started and confirmed intangible BEFORE the throw, and the
+            // probe is re-teleported onto the bow every frame (the charge's
+            // own movement is simply overridden).
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                var vesper = new Loadout
+                {
+                    Body = PartsCatalog.Bodies[1], // Vesper: StrikeTime 0.8s, grants i-frames
+                    Gun = PartsCatalog.Guns[0],
+                    Bomb = PartsCatalog.Bombs[0],
+                    Legs = PartsCatalog.Legs[0],
+                    Pod = PartsCatalog.Pods[0]
+                };
+                duel.RespawnWithLoadouts(LoadoutWith(Bomb("oxbow-charge")), vesper);
+                yield return null;
+
+                Teleport(duel.Player, ThrowerPos);
+                duel.Player.SetFacing(0f);
+                Teleport(duel.Enemy, MarkPos);
+                yield return null;
+
+                // Get the probe intangible first, holding it on the aim mark.
+                duel.Enemy.TryCharge(duel.Player);
+                for (var i = 0; i < 120 && !duel.Enemy.Intangible; i++)
+                {
+                    Teleport(duel.Enemy, MarkPos);
+                    yield return null;
+                }
+
+                Assert.That(duel.Enemy.Intangible, Is.True, "the probe must be intangible before the throw");
+
+                duel.PlayerBomb.StartAim(duel.Enemy);
+                duel.PlayerBomb.UpdateAim(duel.Enemy);
+                duel.PlayerBomb.Release();
+
+                var probe = new Vector3(5f, 0f, -8f); // the bow's widest point
+                var wasInContactRange = false;
+                var tangibleWhileInRange = false;
+                var last = Vector3.zero;
+                for (var i = 0; i < 120 && duel.PlayerBomb.LiveBombCount > 0; i++)
+                {
+                    Teleport(duel.Enemy, probe);
+                    last = duel.PlayerBomb.LiveBombPosition(0);
+                    if (Vector3.Distance(duel.Enemy.Center, last) <= 2.2f) // Oxbow's ContactRadius
+                    {
+                        wasInContactRange = true;
+                        tangibleWhileInRange |= !duel.Enemy.Intangible;
+                    }
+
+                    yield return null;
+                }
+
+                Assert.That(wasInContactRange, Is.True,
+                    "the bomb must actually have swept within contact range, or this proves nothing");
+                Assert.That(tangibleWhileInRange, Is.False,
+                    "inconclusive: the probe dropped out of i-frames while the bomb was in contact range");
+                Assert.That(HorizontalDistanceToMark(last), Is.LessThan(1.5f),
+                    "the bomb must fly on to the mark, not be consumed detonating on an intangible foe");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator OublietteTwinSpendsOneClusterAllowanceForTheWholeThrow()
+        {
+            // Codex PR #25 finding 4: Cluster Shell's once-per-THROW contract
+            // held only by the accident that a throw was always one bomb.
+            // Twin's two pits detonate seconds apart, so each claimed its own
+            // allowance -- four follow-ups from a single throw.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(Bomb("oubliette-twin")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                duel.Effects.AddBoon(System.Array.Find(RunCatalog.Boons, b => b.Id == "cluster"));
+                Assert.That(duel.Effects.ClusterBlasts, Is.EqualTo(2), "the boon must actually be active");
+
+                yield return ThrowAtTheMark(duel);
+                for (var i = 0; i < 120; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.PlayerBomb.LiveBombCount, Is.EqualTo(2), "both pits planted");
+                Assert.That(duel.PlayerBomb.PendingClusterCount, Is.Zero, "nothing queued before a pit goes off");
+
+                // Set off the first pit, reading the queue before the 0.3 s
+                // follow-ups start resolving. Approached from outboard so the
+                // swept trigger crosses only this pit -- see
+                // ApproachPitFromOutboard.
+                yield return ApproachPitFromOutboard(
+                    duel, Outboard(duel.PlayerBomb.LiveBombPosition(0), duel.PlayerBomb.LiveBombPosition(1)));
+                for (var i = 0; i < 30 && duel.PlayerBomb.LiveBombCount > 1; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.PlayerBomb.LiveBombCount, Is.EqualTo(1), "one pit spent, one still waiting");
+                Assert.That(duel.PlayerBomb.PendingClusterCount, Is.EqualTo(2),
+                    "the throw's whole cluster allowance, spent once");
+
+                // Now set off the SECOND pit; it must add none of its own.
+                // The window is FIXED, not "while a pit is still live": the
+                // extra follow-ups only appear on the frame the last pit
+                // detonates, so a loop that stopped at LiveBombCount == 0
+                // stopped one frame too early to ever see them. (Learned the
+                // hard way — the first cut of this test passed with the bug
+                // fully reintroduced.) The second pit is one step away, so
+                // its blast lands well inside the first batch's 0.3 s life
+                // and a double allowance would be visible as 4 at once.
+                var second = duel.PlayerBomb.LiveBombPosition(0);
+                Teleport(duel.Enemy, new Vector3(second.x, 0f, second.z));
+                var peak = 0;
+                for (var i = 0; i < 40; i++)
+                {
+                    yield return null;
+                    peak = Mathf.Max(peak, duel.PlayerBomb.PendingClusterCount);
+                }
+
+                Assert.That(duel.PlayerBomb.LiveBombCount, Is.Zero, "both pits now spent");
+                Assert.That(peak, Is.LessThanOrEqualTo(2),
+                    "the second pit must not claim a second allowance -- once per THROW, not once per pit");
+            }
+            finally
+            {
+                Time.captureDeltaTime = 0f;
+                Object.Destroy(go);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ADwellingMineCatchesAFoeThatCrossesRightOverIt()
+        {
+            // Codex PR #25 finding 5: the trigger sampled only the post-motor
+            // position, so a robo covering more ground in one step than the
+            // trigger is wide crossed clean over an armed mine. Both sampled
+            // points below sit outside the 3 m radius AND the 4.1 m blast;
+            // only the span between them runs through the pit.
+            var duel = BootDuel(out var go);
+            try
+            {
+                yield return null;
+                Time.captureDeltaTime = 1f / 60f;
+                duel.RespawnWithLoadouts(LoadoutWith(Bomb("oubliette-mine")), PartsCatalog.DefaultLoadout());
+                yield return null;
+
+                yield return ThrowAtTheMark(duel);
+                for (var i = 0; i < 120; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.PlayerBomb.LiveBombDwelling(0), Is.True, "the mine must be armed and waiting");
+
+                // Both endpoints sit outside the 3 m trigger; only the span
+                // between them runs through the pit. The far side is 3.5 m
+                // out -- past the trigger but still inside the blast's 4.1 m
+                // reach, so a real detonation has to be felt.
+                var near = MarkPos + new Vector3(-5f, 0f, 0f);
+                var far = MarkPos + new Vector3(3.5f, 0f, 0f);
+                Teleport(duel.Enemy, near);
+                yield return null;
+                yield return null;
+
+                Assert.That(duel.PlayerBomb.LiveBombCount, Is.EqualTo(1),
+                    "standing off to the side must not arm it");
+
+                var hpBefore = duel.Enemy.Health.Hp;
+                Teleport(duel.Enemy, far); // one step, straight across the pit
+
+                for (var i = 0; i < 30 && duel.PlayerBomb.LiveBombCount > 0; i++)
+                {
+                    yield return null;
+                }
+
+                Assert.That(duel.PlayerBomb.LiveBombCount, Is.Zero,
+                    "crossing over an armed mine must set it off, however big the step");
+                Assert.That(duel.Enemy.Health.Hp, Is.LessThan(hpBefore), "and the crosser eats it");
             }
             finally
             {

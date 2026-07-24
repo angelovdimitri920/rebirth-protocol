@@ -71,6 +71,14 @@ namespace RebirthProtocol.Domain
             // not a lit orange shell still sitting at throw size.
             public const float MineDwellScale = 0.3f;
             public const float MineRestHeight = 0.15f;
+
+            // Contact detonation sweep (Pass I2, Codex PR #25): how finely a
+            // frame's slice of flight is resampled when testing a curving
+            // path against robos. A bomb covers ~0.3 m per step at 60 fps, so
+            // this subdivides nothing at normal frame rates and only kicks in
+            // when a coarse frame would otherwise cut the corner off a bow.
+            public const float ContactSweepStep = 0.5f;
+            public const int MaxContactSweepSteps = 16;
         }
 
         // Shared shield mechanics (per-part guard/toll numbers in PartsCatalog).

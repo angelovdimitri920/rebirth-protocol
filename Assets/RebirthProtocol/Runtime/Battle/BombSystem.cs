@@ -33,6 +33,41 @@ namespace RebirthProtocol.Battle
             // used across the gun roster, which also reads at fire time.
             public bool GroundedAtRelease;
             public Vector3 ForwardAtRelease;
+
+            // Trajectory suite (ARMORY §6, Pass I2). Path is evaluated as a
+            // pure function of T in PathPosition -- never integrated step by
+            // step -- so the route is identical at any frame rate and the
+            // landing always lands exactly on End.
+            public BombPath Path;
+
+            // Bend: the full lateral swing vector at the bow's widest,
+            // resolved to a world direction AT RELEASE from the throw line
+            // and the part's Dexter/Sinister side. Captured with
+            // ForwardAtRelease and for the same reason: the bow's side is
+            // decided when the bomb leaves the hand, and nothing the thrower
+            // does afterward may re-aim a bomb already in the air.
+            public Vector3 BendOffset;
+
+            // Contact detonation: blow on the first enemy robo swept within
+            // this radius mid-flight. 0 = fly through everything to the mark.
+            // The check runs against the arc actually traced between two
+            // frames (TrySweepContact resamples it), never a single point.
+            public float ContactRadius;
+
+            // Oubliette Twin: the sibling pits of ONE throw share this, so
+            // Cluster Shell's once-per-throw contract survives a throw that
+            // plants several independently-detonating bombs (Codex PR #25
+            // finding 4). Never null.
+            public ThrowState Throw;
+
+            // Dwell: a landed mine parks and waits instead of detonating.
+            // DwellSeconds 0 means "detonate at landing" (every bomb before
+            // this pass); otherwise Dwelling flips true on landing and
+            // DwellTimer counts the remaining patience down.
+            public float DwellSeconds;
+            public float DwellTriggerRadius;
+            public bool Dwelling;
+            public float DwellTimer;
         }
 
         public float CooldownRemaining { get; private set; }
@@ -47,13 +82,47 @@ namespace RebirthProtocol.Battle
             public float Timer;
         }
 
+        /// State shared by every bomb from a SINGLE throw. Cluster Shell's
+        /// contract is once per throw, not once per blast -- which used to
+        /// be trivially true because a throw was one bomb. Oubliette Twin
+        /// breaks that assumption (two pits, detonating seconds apart), so
+        /// the allowance has to live on the throw rather than the bomb.
+        private sealed class ThrowState
+        {
+            public bool ClustersSpent;
+        }
+
         private RoboAvatar _owner;
         private Transform _reticule;
         private Vector3 _manualOffset;
         private readonly List<LiveBomb> _live = new List<LiveBomb>();
         private readonly List<PendingCluster> _pendingClusters = new List<PendingCluster>();
 
+        // Where each robo stood at the end of last tick, so a dwelling mine
+        // can test the span a robo CROSSED rather than only where it ended
+        // up -- a dash covers more ground in one coarse step than a trigger
+        // radius is wide (Codex PR #25 finding 5).
+        private Vector3 _prevPlayerPos;
+        private Vector3 _prevEnemyPos;
+        private bool _haveRoboPrev;
+
         public bool Ready => CooldownRemaining <= 0f;
+
+        /// Trajectory introspection (Pass I2 PlayMode tests): a bomb's SHAPE
+        /// is the thing this pass builds, and shape can only be asserted by
+        /// sampling the route in flight -- an outcome check ("the target took
+        /// damage") is satisfied by a straight lob too.
+        public int LiveBombCount => _live.Count;
+
+        public Vector3 LiveBombPosition(int index) => _live[index].Tf.position;
+
+        public bool LiveBombDwelling(int index) => _live[index].Dwelling;
+
+        /// Cluster Shell follow-ups currently queued. Exposed so a test can
+        /// assert the once-per-THROW allowance directly, rather than trying
+        /// to infer it from the scatter's random damage (Codex PR #25
+        /// finding 4).
+        public int PendingClusterCount => _pendingClusters.Count;
 
         /// Rearm Protocol boon: a knockdown wipes the remaining cooldown.
         public void ResetCooldown()
@@ -181,7 +250,6 @@ namespace RebirthProtocol.Battle
 
             var start = _owner.Position + Vector3.up * 0.8f;
             var end = _reticule.position;
-            var dist = Vector3.Distance(start, end);
 
             // Volley capability: the flattened throw direction, captured
             // NOW -- see LiveBomb.ForwardAtRelease. Same near-zero fallback
@@ -194,6 +262,35 @@ namespace RebirthProtocol.Battle
                 ? throwDirAtRelease.normalized
                 : _owner.FacingDir;
 
+            // The thrower's right at release (Dexter); Sinister is its
+            // negation. Also the axis Oubliette Twin's pits are spread
+            // along, so the two pits straddle the throw line rather than
+            // stacking one behind the other.
+            var rightAtRelease = new Vector3(forwardAtRelease.z, 0f, -forwardAtRelease.x);
+            var bendOffset = part.Path == BombPath.Bend
+                ? rightAtRelease * (part.BendSide == BombBendSide.Sinister ? -part.BendWidth : part.BendWidth)
+                : Vector3.zero;
+
+            // Oubliette Twin: one throw, several independent pits abreast.
+            // Every other bomb is MineCount 1 and takes the single-throw
+            // path unchanged.
+            var count = Mathf.Max(1, part.MineCount);
+            var halfSpread = (count - 1) * 0.5f;
+            var throwState = new ThrowState(); // shared by every pit of THIS throw
+            for (var i = 0; i < count; i++)
+            {
+                var mineEnd = count > 1
+                    ? end + rightAtRelease * ((i - halfSpread) * part.MineSpacing)
+                    : end;
+                SpawnBomb(part, start, mineEnd, forwardAtRelease, bendOffset, throwState);
+            }
+
+            return true;
+        }
+
+        private void SpawnBomb(BombPart part, Vector3 start, Vector3 end, Vector3 forwardAtRelease,
+            Vector3 bendOffset, ThrowState throwState)
+        {
             var shell = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             DestroyImmediate(shell.GetComponent<Collider>());
             shell.name = "Bomb";
@@ -202,18 +299,25 @@ namespace RebirthProtocol.Battle
             shell.transform.localScale = Vector3.one * 0.55f;
             shell.GetComponent<Renderer>().material = BattleMaterials.Unlit(new Color(1f, 0.4f, 0.15f));
 
+            var dist = Vector3.Distance(start, end);
             _live.Add(new LiveBomb
             {
                 Tf = shell.transform,
                 Start = start,
                 End = end,
                 T = 0f,
-                FlightTime = Mathf.Max(CombatTuning.Bomb.MinFlightTime, dist / CombatTuning.Bomb.LobSpeed),
+                FlightTime = Mathf.Max(CombatTuning.Bomb.MinFlightTime, dist / CombatTuning.Bomb.LobSpeed)
+                    * Mathf.Max(0.01f, part.FlightTimeMult),
                 ArcHeight = part.ArcHeight,
                 GroundedAtRelease = _owner.Grounded,
-                ForwardAtRelease = forwardAtRelease
+                ForwardAtRelease = forwardAtRelease,
+                Path = part.Path,
+                BendOffset = bendOffset,
+                ContactRadius = part.ContactRadius,
+                Throw = throwState,
+                DwellSeconds = part.DwellSeconds,
+                DwellTriggerRadius = part.DwellTriggerRadius
             });
-            return true;
         }
 
         /// Closes the reticule without throwing (knockdown/death mid-aim).
@@ -245,24 +349,253 @@ namespace RebirthProtocol.Battle
             for (var i = _live.Count - 1; i >= 0; i--)
             {
                 var b = _live[i];
-                b.T += dt / b.FlightTime;
-                if (b.T >= 1f)
+
+                // Dwelling mines (Pass I2) are done flying: they sit on the
+                // mark and wait, blowing on the first robo that strays
+                // within reach or when their patience runs out. A mine never
+                // just expires -- "it remembers."
+                if (b.Dwelling)
                 {
-                    Detonate(b.End, player, enemy, groundedAtRelease: b.GroundedAtRelease, forwardAtRelease: b.ForwardAtRelease);
-                    Destroy(b.Tf.gameObject);
-                    _live.RemoveAt(i);
+                    b.DwellTimer -= dt;
+                    if (b.DwellTimer <= 0f || Disturbed(b, player, enemy))
+                    {
+                        DetonateAndClear(b, b.End, player, enemy, i);
+                    }
+
                     continue;
                 }
 
-                // Parabolic arc: lerp + sine bump.
-                var pos = Vector3.Lerp(b.Start, b.End, b.T);
-                pos.y += Mathf.Sin(b.T * Mathf.PI) * b.ArcHeight;
-                b.Tf.position = pos;
+                // The interval this frame covers, CLAMPED at the landing:
+                // the final slice of a flight is swept like every other one
+                // (Codex PR #25 finding 1 -- the original code branched to
+                // landing before moving or checking contact, leaving the last
+                // stretch before the mark unswept, so at a coarse dt a foe
+                // standing in it was passed through untouched AND was outside
+                // the endpoint blast).
+                var fromT = b.T;
+                b.T += dt / b.FlightTime;
+                var landing = b.T >= 1f;
+                if (landing)
+                {
+                    b.T = 1f;
+                }
+
+                b.Tf.position = PathPosition(b, b.T);
+
+                // Contact detonation (Oxbow Charge): a bomb whose ROUTE is
+                // the weapon blows on the enemy it sweeps past, rather than
+                // sailing over them to the mark behind. Owner-exempt,
+                // intangible-exempt and geometry-exempt by design -- see
+                // BombPart.ContactRadius.
+                if (b.ContactRadius > 0f && TrySweepContact(b, fromT, b.T, player, enemy, out var contactAt))
+                {
+                    DetonateAndClear(b, contactAt, player, enemy, i);
+                    continue;
+                }
+
+                if (landing)
+                {
+                    if (b.DwellSeconds > 0f)
+                    {
+                        BeginDwell(b);
+                        continue;
+                    }
+
+                    DetonateAndClear(b, b.End, player, enemy, i);
+                }
+            }
+
+            // Robo sweep bookkeeping for dwelling mines (Codex PR #25 finding
+            // 5): captured AFTER the bombs are processed, so next frame's
+            // Disturbed() sees exactly the span each robo covered.
+            _prevPlayerPos = player != null ? player.Position : _prevPlayerPos;
+            _prevEnemyPos = enemy != null ? enemy.Position : _prevEnemyPos;
+            _haveRoboPrev = true;
+        }
+
+        /// Parks a landed mine: it stops moving, shrinks to a dark lump on
+        /// the floor, and starts counting its patience down.
+        private static void BeginDwell(LiveBomb b)
+        {
+            b.Dwelling = true;
+            b.DwellTimer = b.DwellSeconds;
+            var rest = b.End;
+            rest.y = CombatTuning.Bomb.MineRestHeight;
+            b.End = rest; // the blast center is the pit itself, at floor level
+            b.Tf.position = rest;
+            b.Tf.localScale = Vector3.one * CombatTuning.Bomb.MineDwellScale;
+            b.Tf.GetComponent<Renderer>().material = BattleMaterials.Unlit(new Color(0.18f, 0.1f, 0.08f));
+        }
+
+        /// True once any live robo is close enough to a dwelling mine to set
+        /// it off. Unlike contact detonation this reads the OWNER too: a
+        /// planted mine is a hazard on the floor, and DOCTRINE is consistent
+        /// that your own blast can knock you down.
+        ///
+        /// Swept, not sampled (Codex PR #25 finding 5): a dash covers 6-9 m
+        /// in a coarse step -- more than the whole trigger diameter -- so a
+        /// point check on the post-motor position alone let a robo cross
+        /// clean over a mine without arming it.
+        private bool Disturbed(LiveBomb b, RoboAvatar player, RoboAvatar enemy)
+        {
+            foreach (var robo in new[] { player, enemy })
+            {
+                if (robo == null || robo.Health.State == HealthState.Dead)
+                {
+                    continue;
+                }
+
+                var from = _haveRoboPrev
+                    ? (robo == player ? _prevPlayerPos : _prevEnemyPos)
+                    : robo.Position;
+                var closest = ClosestPointOnSegment(b.End, from, robo.Position);
+                if (Vector3.Distance(closest, b.End) <= b.DwellTriggerRadius)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// True when the arc a flying bomb actually traced over [fromT, toT]
+        /// passes within its contact radius of an ENEMY robo. Reports the
+        /// point of closest approach, so the blast centers where the bomb met
+        /// the foe rather than wherever the frame boundary happened to fall.
+        ///
+        /// SUBSTEPPED rather than one chord (Codex PR #25 finding 2): Bend is
+        /// a strongly curved path, and a single chord across a coarse frame
+        /// both cuts the corner (false-triggering on a foe standing inside
+        /// the bow who the bomb visibly curved around) and misses foes on the
+        /// outside of the curve. The step count is driven by how far the bomb
+        /// can actually have travelled -- the chord plus the most the bow and
+        /// the arc can add over that slice, since both are sine-weighted and
+        /// so bounded by amplitude*pi*dT. At 60 fps this is one step, exactly
+        /// as before; it only subdivides when a frame is coarse enough to
+        /// need it.
+        private bool TrySweepContact(LiveBomb b, float fromT, float toT, RoboAvatar player, RoboAvatar enemy,
+            out Vector3 contactAt)
+        {
+            var from = PathPosition(b, fromT);
+            var to = PathPosition(b, toT);
+            contactAt = to;
+
+            var slack = (b.BendOffset.magnitude + b.ArcHeight) * Mathf.PI * (toT - fromT);
+            var travel = Vector3.Distance(from, to) + slack;
+            var steps = Mathf.Clamp(
+                Mathf.CeilToInt(travel / CombatTuning.Bomb.ContactSweepStep), 1,
+                CombatTuning.Bomb.MaxContactSweepSteps);
+
+            var segmentStart = from;
+            for (var s = 1; s <= steps; s++)
+            {
+                var segmentEnd = s == steps ? to : PathPosition(b, Mathf.Lerp(fromT, toT, s / (float)steps));
+                foreach (var robo in new[] { player, enemy })
+                {
+                    // Intangible robos are passed straight through, matching
+                    // ProjectileSystem's raycast filter -- a vanish dash or a
+                    // charge's i-frames let attacks through, and a bomb that
+                    // detonated on them would be consumed for an Evaded hit
+                    // (Codex PR #25 finding 3).
+                    if (robo == null || robo == _owner || robo.Intangible
+                        || robo.Health.State == HealthState.Dead)
+                    {
+                        continue;
+                    }
+
+                    var closest = ClosestPointOnSegment(robo.Center, segmentStart, segmentEnd);
+                    if (Vector3.Distance(robo.Center, closest) <= b.ContactRadius)
+                    {
+                        contactAt = closest;
+                        return true;
+                    }
+                }
+
+                segmentStart = segmentEnd;
+            }
+
+            return false;
+        }
+
+        private static Vector3 ClosestPointOnSegment(Vector3 point, Vector3 a, Vector3 b)
+        {
+            var ab = b - a;
+            var lengthSq = ab.sqrMagnitude;
+            if (lengthSq < 0.000001f)
+            {
+                return a;
+            }
+
+            return a + ab * Mathf.Clamp01(Vector3.Dot(point - a, ab) / lengthSq);
+        }
+
+        private void DetonateAndClear(LiveBomb b, Vector3 at, RoboAvatar player, RoboAvatar enemy, int index)
+        {
+            Detonate(at, player, enemy, groundedAtRelease: b.GroundedAtRelease,
+                forwardAtRelease: b.ForwardAtRelease, throwState: b.Throw);
+            Destroy(b.Tf.gameObject);
+            _live.RemoveAt(index);
+        }
+
+        /// The bomb's world position at flight parameter `t` -- a PURE
+        /// FUNCTION of t, deliberately: every path is evaluated from the
+        /// release state rather than integrated frame by frame, so a coarse
+        /// or uneven frame can never drift the route or the landing (the
+        /// class of bug that put Pass I1's Vault arc below its mark). Taking
+        /// t as an argument is also what lets the contact sweep resample the
+        /// real curve between two frames instead of approximating it.
+        private static Vector3 PathPosition(LiveBomb b, float t)
+        {
+            switch (b.Path)
+            {
+                case BombPath.Steeple:
+                {
+                    // All the ground travel is spent climbing; past the apex
+                    // it is a straight vertical drop onto the mark. Both
+                    // halves use a quadratic so the rise decelerates and the
+                    // fall accelerates, the way a thrown weight actually
+                    // behaves -- a symmetric sine bump reads as a float.
+                    var climb = CombatTuning.Bomb.SteepleClimbFraction;
+                    var ground = Mathf.Min(t / climb, 1f);
+                    var pos = Vector3.Lerp(b.Start, b.End, ground);
+                    if (t <= climb)
+                    {
+                        var v = t / climb;
+                        pos.y += (1f - (1f - v) * (1f - v)) * b.ArcHeight;
+                    }
+                    else
+                    {
+                        var u = (t - climb) / (1f - climb);
+                        pos.y += (1f - u * u) * b.ArcHeight;
+                    }
+
+                    return pos;
+                }
+
+                case BombPath.Bend:
+                {
+                    // A bow off the straight throw line: zero swing at the
+                    // hand and at the mark, widest at the midpoint, so the
+                    // bomb goes around by the named side and still lands
+                    // exactly where the reticule promised.
+                    var swing = Mathf.Sin(t * Mathf.PI);
+                    var pos = Vector3.Lerp(b.Start, b.End, t) + b.BendOffset * swing;
+                    pos.y += swing * b.ArcHeight;
+                    return pos;
+                }
+
+                default:
+                {
+                    // Lob: the original parabola -- lerp + symmetric sine bump.
+                    var pos = Vector3.Lerp(b.Start, b.End, t);
+                    pos.y += Mathf.Sin(t * Mathf.PI) * b.ArcHeight;
+                    return pos;
+                }
             }
         }
 
         private void Detonate(Vector3 at, RoboAvatar player, RoboAvatar enemy, bool isCluster = false,
-            bool groundedAtRelease = true, Vector3 forwardAtRelease = default)
+            bool groundedAtRelease = true, Vector3 forwardAtRelease = default, ThrowState throwState = null)
         {
             var part = _owner.Loadout.Bomb;
             var effects = _owner.Effects;
@@ -285,8 +618,16 @@ namespace RebirthProtocol.Battle
             // THROW even for a multi-point bomb, not once per point).
             // Scatter is drawn from the run's seeded RNG (not
             // UnityEngine.Random) so RunSeedOverride pins it too.
-            if (!isCluster && effects != null)
+            //
+            // The allowance is consumed on the FIRST detonation of the throw
+            // and lives on the shared ThrowState, so Oubliette Twin's two
+            // independently-detonating pits still yield one set of follow-ups
+            // between them rather than one set each (Codex PR #25 finding 4:
+            // the once-per-throw promise above used to be enforced only by
+            // the accident that a throw was always a single bomb).
+            if (!isCluster && effects != null && throwState is { ClustersSpent: false })
             {
+                throwState.ClustersSpent = true;
                 for (var i = 0; i < effects.ClusterBlasts; i++)
                 {
                     _pendingClusters.Add(new PendingCluster

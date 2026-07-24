@@ -257,6 +257,33 @@ namespace RebirthProtocol.Tests.BalanceHarness
             }
         };
 
+        // Trajectory bombs (ARMORY §6, Pass I2): the BombSystem half of the
+        // trajectory suite -- extreme arc, curving route, dwelling mines --
+        // each swapped against the baseline bomb on the same one-axis shape.
+        // Expect these to UNDER-read here for the same reason the I1 wall-
+        // clearers did: the static EnemyBrain never uses cover (so Oxbow's
+        // bow has nothing to bend around) and never avoids the floor (so the
+        // Oubliettes' dwell is a pure delay, not a zoning threat). That is a
+        // Pass O signal, not a number to chase now -- this roster's job here
+        // is the crash/no-timeout safety check.
+        private static BombPart SteeplefallBomb => PartsCatalog.Bombs.First(b => b.Id == "steeplefall");
+        private static BombPart OxbowBomb => PartsCatalog.Bombs.First(b => b.Id == "oxbow-charge");
+        private static BombPart OublietteMineBomb => PartsCatalog.Bombs.First(b => b.Id == "oubliette-mine");
+        private static BombPart OublietteTwinBomb => PartsCatalog.Bombs.First(b => b.Id == "oubliette-twin");
+
+        public static MatrixSpec TrajectoryBombsMatrix() => new MatrixSpec
+        {
+            Name = "trajectory bombs (on Bannerman, neutral kit otherwise)",
+            Builds = new List<NamedBuild>
+            {
+                new NamedBuild { Name = "censer (baseline bomb)", Loadout = WithBomb(Bomb) },
+                new NamedBuild { Name = "steeplefall", Loadout = WithBomb(SteeplefallBomb) },
+                new NamedBuild { Name = "oxbow-charge", Loadout = WithBomb(OxbowBomb) },
+                new NamedBuild { Name = "oubliette-mine", Loadout = WithBomb(OublietteMineBomb) },
+                new NamedBuild { Name = "oubliette-twin", Loadout = WithBomb(OublietteTwinBomb) }
+            }
+        };
+
         public static List<MatrixSpec> Select(string roster) => roster switch
         {
             "default" => new List<MatrixSpec> { ShapesMatrix(), BodiesMatrix() },
@@ -268,7 +295,8 @@ namespace RebirthProtocol.Tests.BalanceHarness
             "pulls" => new List<MatrixSpec> { PullsMatrix() },
             "scaling" => new List<MatrixSpec> { ScalingMatrix() },
             "trajectory" => new List<MatrixSpec> { TrajectoryMatrix() },
-            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter|pulls|scaling|trajectory).")
+            "trajectory-bombs" => new List<MatrixSpec> { TrajectoryBombsMatrix() },
+            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter|pulls|scaling|trajectory|trajectory-bombs).")
         };
     }
 }

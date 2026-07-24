@@ -229,6 +229,34 @@ namespace RebirthProtocol.Tests.BalanceHarness
             }
         };
 
+        // Trajectory suite (ARMORY §4-5, Pass I1): each new arcing/dropping/
+        // looping gun and the wave-casting melee swapped one at a time against
+        // its plain counterpart, same one-axis shape as the passes above.
+        // Like the scaling parts, these read against the static EnemyBrain,
+        // which never uses cover, so the wall-clearers (Mangonel/Skysword) and
+        // the loop (Falconet) may under-read here — a Pass O signal, not a
+        // tuning error to chase now.
+        private static GunPart MangonelGun => PartsCatalog.Guns.First(g => g.Id == "mangonel");
+        private static GunPart EvenfallGun => PartsCatalog.Guns.First(g => g.Id == "evenfall");
+        private static GunPart SkyswordGun => PartsCatalog.Guns.First(g => g.Id == "skysword");
+        private static GunPart FalconetGun => PartsCatalog.Guns.First(g => g.Id == "falconet");
+        private static MeleeWeaponPart VolantFalxMelee => PartsCatalog.MeleeWeapons.First(m => m.Id == "volant-falx");
+
+        public static MatrixSpec TrajectoryMatrix() => new MatrixSpec
+        {
+            Name = "trajectory suite (on Bannerman, neutral kit otherwise)",
+            Builds = new List<NamedBuild>
+            {
+                new NamedBuild { Name = "arbalest (baseline gun)", Loadout = WithGun(Gun) },
+                new NamedBuild { Name = "mangonel", Loadout = WithGun(MangonelGun) },
+                new NamedBuild { Name = "evenfall", Loadout = WithGun(EvenfallGun) },
+                new NamedBuild { Name = "skysword", Loadout = WithGun(SkyswordGun) },
+                new NamedBuild { Name = "falconet", Loadout = WithGun(FalconetGun) },
+                new NamedBuild { Name = "oathblade (baseline melee)", Loadout = WithMelee(Melee) },
+                new NamedBuild { Name = "volant-falx", Loadout = WithMelee(VolantFalxMelee) }
+            }
+        };
+
         public static List<MatrixSpec> Select(string roster) => roster switch
         {
             "default" => new List<MatrixSpec> { ShapesMatrix(), BodiesMatrix() },
@@ -239,7 +267,8 @@ namespace RebirthProtocol.Tests.BalanceHarness
             "fetter" => new List<MatrixSpec> { FetterMatrix() },
             "pulls" => new List<MatrixSpec> { PullsMatrix() },
             "scaling" => new List<MatrixSpec> { ScalingMatrix() },
-            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter|pulls|scaling).")
+            "trajectory" => new List<MatrixSpec> { TrajectoryMatrix() },
+            _ => throw new ArgumentException($"Unknown roster '{roster}' (default|shapes|bodies|cross|volley|fetter|pulls|scaling|trajectory).")
         };
     }
 }

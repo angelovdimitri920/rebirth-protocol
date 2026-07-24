@@ -43,22 +43,44 @@ namespace RebirthProtocol.Battle
             // Trap-hang (Vigil, Pass H): after flying HangDistance the round
             // hovers for HangDuration ("keeps watch"), then re-accelerates
             // homing ("strike"). HangDuration 0 = no hang (every other gun,
-            // and Vigil fired aloft).
+            // and Vigil fired aloft). A Drop round with a hang (Evenfall)
+            // starts Hanging at spawn instead of arming on distance flown.
             public float HangDistance;
             public float HangDuration;
             public bool Hanging;
             public bool HasHung;
             public float HangTimer;
+
+            // Trajectory suite (Pass I1): the flight path and its parameters.
+            // Direct (default) is every gun before this pass. Vault/Drop/Loop
+            // ignore arena geometry (IgnoresObstacles) -- walls never block
+            // them; only robos and crates do.
+            public ProjectilePath Path;
+            public bool IgnoresObstacles;
+            public float LoopTurnRate; // Loop: signed yaw rate (rad/s)
+
+            // Vault exact integration (Codex PR #24): the ballistic arc is
+            // solved at spawn assuming continuous integration, so the per-step
+            // position is evaluated analytically from launch state + elapsed
+            // time rather than by semi-implicit Euler -- otherwise the landing
+            // drifts ~vaultRise*dt below the mark and a coarse frame turns a
+            // hit into a miss.
+            public Vector3 LaunchPos;
+            public Vector3 LaunchVel;
+            public float Elapsed;
         }
 
         private readonly List<Projectile> _active = new List<Projectile>();
-        private readonly RaycastHit[] _hits = new RaycastHit[8];
+        // Grown from 8 to give cover-ignoring paths headroom past many walls
+        // before the saturation fallback below is needed (Codex PR #24).
+        private readonly RaycastHit[] _hits = new RaycastHit[16];
 
         public void Spawn(RoboAvatar owner, RoboAvatar target, Vector3 muzzle, Vector3 aimPoint,
             float damage, float enduranceDamage, float speed, float homingTurnRate,
             HitSource source = HitSource.None, bool survivesKnockdown = false, float fetterSeconds = 0f,
             float pullSpeed = 0f, RangeScaling rangeScaling = default, float hangDistance = 0f,
-            float hangDuration = 0f)
+            float hangDuration = 0f, ProjectilePath path = ProjectilePath.Direct, float vaultRise = 0f,
+            float dropHeight = 0f, float loopTurnRate = 0f, int streamIndex = 0, int streamCount = 1)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             // Immediate, not deferred: a deferred Destroy leaves the sphere
@@ -68,16 +90,119 @@ namespace RebirthProtocol.Battle
             DestroyImmediate(go.GetComponent<Collider>());
             go.name = "Projectile";
             go.transform.SetParent(transform, false);
-            go.transform.position = muzzle;
             go.transform.localScale = Vector3.one * 0.25f;
             go.GetComponent<Renderer>().material = BattleMaterials.Unlit(
                 owner.CompareTag("Player") ? new Color(0.4f, 0.8f, 1f) : new Color(1f, 0.45f, 0.3f));
 
+            // Trajectory suite (Pass I1): the launch position and initial
+            // velocity are path-specific. Direct fires from the muzzle toward
+            // the aim; Vault adds an upward kick to a wall-clearing arc; Drop
+            // materializes above the target's mark and falls; Loop leaves the
+            // muzzle straight and bends. The three new paths ignore obstacles.
+            var flatToAim = aimPoint - muzzle;
+            flatToAim.y = 0f;
+            var forward = flatToAim.sqrMagnitude > 0.0001f ? flatToAim.normalized : owner.FacingDir;
+            var right = new Vector3(forward.z, 0f, -forward.x); // perpendicular, for stream spread
+            var targetAlive = target != null && target.Health.State != HealthState.Dead;
+
+            Vector3 spawnPos;
+            Vector3 velocity;
+            var hanging = false;
+            var hangTimer = 0f;
+            var hasHung = false;
+            var loopSigned = loopTurnRate;
+
+            switch (path)
+            {
+                case ProjectilePath.Vault:
+                {
+                    // Ballistic lob (mortar) over the wall onto the target's
+                    // fire-time mark. The upward kick vaultRise and gravity fix
+                    // the flight time T = 2*vaultRise/|g|; the horizontal
+                    // velocity is whatever lands the round on the mark in T, so
+                    // it arcs ~vaultRise^2/(2|g|) high (clearing cover) and
+                    // comes down on the spot rather than overshooting at full
+                    // speed. Aimed at the mark, not homing — "clears walls" is
+                    // the identity, not tracking (the 2 plain streams track).
+                    spawnPos = muzzle;
+                    var mark = targetAlive ? target.Center : aimPoint;
+                    var disp = new Vector3(mark.x - muzzle.x, 0f, mark.z - muzzle.z);
+                    var g = Mathf.Abs(CombatTuning.Move.Gravity);
+                    // Guard vaultRise (and gravity) before dividing (Codex
+                    // PR #24): a ~0 rise gives no real arc, so fall back to a
+                    // short flat-ish flight time rather than an exploding
+                    // horizontal velocity.
+                    var flightTime = g > 0.01f && vaultRise > 0.01f ? 2f * vaultRise / g : 0.6f;
+                    velocity = disp / flightTime + Vector3.up * vaultRise;
+                    break;
+                }
+
+                case ProjectilePath.Drop:
+                {
+                    // Materialize above the target's mark, spread laterally so
+                    // several blades read as a storm rather than one stack.
+                    var mark = targetAlive ? target.Center : aimPoint;
+                    var spread = streamCount > 1 ? (streamIndex - (streamCount - 1) * 0.5f) * 0.8f : 0f;
+                    spawnPos = new Vector3(mark.x, 0f, mark.z) + right * spread + Vector3.up * dropHeight;
+                    if (hangDuration > 0f)
+                    {
+                        // Evenfall: hang at even-fall, then descend homing.
+                        // Reuse the trap-hang machinery, armed at spawn rather
+                        // than on distance flown; HasHung stops the Direct
+                        // distance trigger ever re-arming it.
+                        velocity = Vector3.zero;
+                        hanging = true;
+                        hangTimer = hangDuration;
+                        hasHung = true;
+                    }
+                    else
+                    {
+                        // Skysword: straight down onto the mark.
+                        velocity = Vector3.down * speed;
+                    }
+
+                    break;
+                }
+
+                case ProjectilePath.Loop:
+                    // Leaves the muzzle straight; Tick bends the heading by
+                    // LoopTurnRate each frame. Mirror the sign across streams
+                    // so a pair fans into symmetric loops.
+                    spawnPos = muzzle;
+                    velocity = forward * speed;
+                    if (streamCount > 1 && streamIndex % 2 == 1)
+                    {
+                        loopSigned = -loopTurnRate;
+                    }
+
+                    break;
+
+                default: // Direct
+                    spawnPos = muzzle;
+                    velocity = (aimPoint - muzzle).normalized * speed;
+                    break;
+            }
+
+            go.transform.position = spawnPos;
+
+            // Loop rounds must outlive a full revolution or they despawn
+            // mid-loop and never make the promised second pass (Codex PR #24):
+            // a 2.6 rad/s loop takes 2.42 s to come back around, past the 2.0 s
+            // default. Give Loop a lifetime of one period plus margin so the
+            // return pass actually happens.
+            var lifetime = CombatTuning.Gun.ProjectileLifetime;
+            if (path == ProjectilePath.Loop && Mathf.Abs(loopTurnRate) > 0.01f)
+            {
+                lifetime = Mathf.Max(lifetime, 2f * Mathf.PI / Mathf.Abs(loopTurnRate) * 1.2f);
+            }
+
             _active.Add(new Projectile
             {
                 Tf = go.transform,
-                Velocity = (aimPoint - muzzle).normalized * speed,
-                Life = CombatTuning.Gun.ProjectileLifetime,
+                Velocity = velocity,
+                Life = lifetime,
+                LaunchPos = spawnPos,
+                LaunchVel = velocity,
                 Owner = owner,
                 Target = target,
                 Damage = damage,
@@ -90,7 +215,13 @@ namespace RebirthProtocol.Battle
                 RangeScaling = rangeScaling,
                 Speed = speed,
                 HangDistance = hangDistance,
-                HangDuration = hangDuration
+                HangDuration = hangDuration,
+                Hanging = hanging,
+                HangTimer = hangTimer,
+                HasHung = hasHung,
+                Path = path,
+                IgnoresObstacles = path != ProjectilePath.Direct,
+                LoopTurnRate = loopSigned
             });
         }
 
@@ -142,12 +273,47 @@ namespace RebirthProtocol.Battle
                         : p.Velocity) * p.Speed;
                 }
 
-                // Homing: curve toward the locked target's center.
-                if (p.HomingTurnRate > 0f && TargetAlive(p))
+                // Per-path motion (Pass I1). Direct/Drop home toward the
+                // target's center; Vault arcs under gravity while homing only
+                // horizontally (so the parabola survives); Loop bends its
+                // heading at a constant yaw, tracing the returning loop.
+                switch (p.Path)
                 {
-                    var toTarget = (p.Target.Center - p.Tf.position).normalized;
-                    var maxRadians = p.HomingTurnRate * dt;
-                    p.Velocity = Vector3.RotateTowards(p.Velocity, toTarget * p.Velocity.magnitude, maxRadians, 0f);
+                    case ProjectilePath.Vault:
+                    {
+                        // Exact constant-acceleration integration from launch
+                        // state (Codex PR #24): the arc was solved at spawn
+                        // assuming continuous ballistics, so evaluate the
+                        // position analytically from elapsed time rather than
+                        // stepping velocity with semi-implicit Euler (which
+                        // lands ~vaultRise*dt low and misses at coarse dt).
+                        // Velocity is back-derived from the analytic step so
+                        // the shared step/raycast code below sweeps exactly
+                        // along the arc.
+                        p.Elapsed += dt;
+                        var t = p.Elapsed;
+                        var g = CombatTuning.Move.Gravity;
+                        var analytic = p.LaunchPos + new Vector3(
+                            p.LaunchVel.x * t,
+                            p.LaunchVel.y * t + 0.5f * g * t * t,
+                            p.LaunchVel.z * t);
+                        p.Velocity = (analytic - p.Tf.position) / Mathf.Max(dt, 1e-6f);
+                        break;
+                    }
+
+                    case ProjectilePath.Loop:
+                        p.Velocity = Quaternion.AngleAxis(p.LoopTurnRate * Mathf.Rad2Deg * dt, Vector3.up) * p.Velocity;
+                        break;
+
+                    default: // Direct, Drop
+                        if (p.HomingTurnRate > 0f && TargetAlive(p))
+                        {
+                            var toTarget = (p.Target.Center - p.Tf.position).normalized;
+                            var maxRadians = p.HomingTurnRate * dt;
+                            p.Velocity = Vector3.RotateTowards(p.Velocity, toTarget * p.Velocity.magnitude, maxRadians, 0f);
+                        }
+
+                        break;
                 }
 
                 var step = p.Velocity * dt;
@@ -166,7 +332,22 @@ namespace RebirthProtocol.Battle
                 // Obstacle / robo intercept along this step. RaycastNonAlloc
                 // results are unsorted, so take the nearest non-owner hit.
                 // Vanish-dashing robos are intangible: shots pass through.
+                var hits = _hits;
                 var count = Physics.RaycastNonAlloc(from, step / stepLen, _hits, stepLen);
+
+                // Buffer saturation fallback (Codex PR #24): RaycastNonAlloc
+                // returns an arbitrary, unordered subset when there are more
+                // hits than the buffer holds, so the nearest robo/crate could
+                // be dropped -- especially for a cover-ignoring round that must
+                // see PAST several walls to the target behind them. On a full
+                // buffer, redo the rare step with the allocating RaycastAll so
+                // nothing is masked.
+                if (count == _hits.Length)
+                {
+                    hits = Physics.RaycastAll(from, step / stepLen, stepLen);
+                    count = hits.Length;
+                }
+
                 var blocked = false;
                 var nearest = float.MaxValue;
                 RoboAvatar struckAvatar = null;
@@ -175,17 +356,28 @@ namespace RebirthProtocol.Battle
                 var hitNormal = Vector3.up;
                 for (var h = 0; h < count; h++)
                 {
-                    var hitAvatar = _hits[h].collider.GetComponent<RoboAvatar>();
-                    if (hitAvatar == p.Owner || (hitAvatar != null && hitAvatar.Intangible) || _hits[h].distance >= nearest)
+                    var hitAvatar = hits[h].collider.GetComponent<RoboAvatar>();
+                    if (hitAvatar == p.Owner || (hitAvatar != null && hitAvatar.Intangible) || hits[h].distance >= nearest)
                     {
                         continue;
                     }
 
-                    nearest = _hits[h].distance;
+                    var hitCrate = hitAvatar == null ? hits[h].collider.GetComponent<CrateHealth>() : null;
+
+                    // Cover-ignoring paths (Vault/Drop/Loop, Pass I1): arena
+                    // geometry is "negotiable" -- a wall/pillar/floor hit is
+                    // skipped entirely so the round passes through it, but a
+                    // robo or crate along the same sweep still resolves.
+                    if (p.IgnoresObstacles && hitAvatar == null && hitCrate == null)
+                    {
+                        continue;
+                    }
+
+                    nearest = hits[h].distance;
                     struckAvatar = hitAvatar;
-                    struckCrate = hitAvatar == null ? _hits[h].collider.GetComponent<CrateHealth>() : null;
-                    hitPoint = _hits[h].point;
-                    hitNormal = _hits[h].normal;
+                    struckCrate = hitCrate;
+                    hitPoint = hits[h].point;
+                    hitNormal = hits[h].normal;
                     blocked = true;
                 }
 
@@ -225,9 +417,11 @@ namespace RebirthProtocol.Battle
                 p.DistanceTraveled += stepLen;
 
                 // Trigger the trap-hang once the round has flown its watch
-                // distance (Vigil, grounded). HasHung stops it re-arming
-                // after it strikes and flies on.
-                if (p.HangDuration > 0f && !p.HasHung && p.DistanceTraveled >= p.HangDistance)
+                // distance (Vigil, grounded, Direct path). HasHung stops it
+                // re-arming after it strikes and flies on. A Drop hang
+                // (Evenfall) is armed at spawn, not here.
+                if (p.Path == ProjectilePath.Direct
+                    && p.HangDuration > 0f && !p.HasHung && p.DistanceTraveled >= p.HangDistance)
                 {
                     p.Hanging = true;
                     p.HasHung = true;
@@ -367,6 +561,27 @@ namespace RebirthProtocol.Battle
                 p.Life = 0f;
                 p.Tf.gameObject.SetActive(false);
                 GameEffects.Fx?.ImpactSpark(p.Tf.position, Vector3.up, new Color(0.7f, 0.85f, 1f));
+            }
+        }
+
+        /// Melee clash (GAME_DESIGN §3.1, Codex PR #24): a clash cancels both
+        /// swings, but a Volant Falx swing casts its wave during the brain tick
+        /// -- BEFORE CheckMeleeClash runs -- so the neutralized exchange would
+        /// otherwise still land the wave. Clear the clashing owner's in-flight
+        /// waves alongside the melee cancel. Marks dead + hides (like the
+        /// overload wipe above); the cull at the top of each Tick removes them,
+        /// so this is safe to call reentrantly.
+        public void ClearMeleeWavesOwnedBy(RoboAvatar owner)
+        {
+            foreach (var p in _active)
+            {
+                if (p.Owner != owner || p.Source != HitSource.Melee || p.Life <= 0f)
+                {
+                    continue;
+                }
+
+                p.Life = 0f;
+                p.Tf.gameObject.SetActive(false);
             }
         }
 

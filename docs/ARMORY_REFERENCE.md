@@ -145,7 +145,7 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Arbalest** *(built)* | Basic | 3/2/1/2/2 | Med | 88 | Three honest bolts; the workhorse | Oathblade |
 | **Trefoil** *(built)* | 3-Way | 3/3/3/3/2 | Med-long | 67 | Three streams in a heraldic fan; better from afar | Longglaive |
 | **Litany** *(built)* | Gatling | 2/3/1/3/3 | Med | 88 | Eight recited rounds; power grows with distance, accuracy shrinks | Misericorde |
-| **Mangonel** | Vertical | 2/3/3/2/4 | Med | 76 | Two straight, two vaulting — the vault clears walls | Estoc |
+| **Mangonel** *(built)* | Vertical | 2/3/3/2/4 | Med | 76 | Two straight, two vaulting — the vault clears walls | Estoc |
 | **Longshrift** | Sniper | 3/5/1/1/4 | Med-long | 84–105 | One fast round and a long vulnerable breath after | Tilt Lance |
 | **Fetterlock** | Stun | 2/5/1/5/4 | Short | 53 | Two shackle-rounds; near-guaranteed down up close | Knell Maul |
 | **Thornswarm** | Hornet | 3/2/4/2/3 | Med | 130 | Five chasing thorns; layer volleys to smother | Hydra Flail |
@@ -154,14 +154,14 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Aspergill** | Splash | 1/2/1/5/2 | Sh-med | 19 | A sprinkling of stopping rounds; setup, not damage | Tocsin Mace |
 | **Arcus (Dexter/Sinister)** | L/R Arc | 3/4/2/2/3 | Med-long | 73 | Two rounds curving in from the named side; reversed airborne | Backsword (D/S) |
 | **Culverin** | Shotgun | 5/5/1/1/5 | Short | 142 pt-blank | Three-throat blast; downs anything, dies at range | Pollaxe |
-| **Evenfall** | Rayfall | 3/3/4/2/2 | Long | 84 | Four rounds hang at even-fall, then descend homing (G only) | Pendulum Glaive |
+| **Evenfall** *(built)* | Rayfall | 3/3/4/2/2 | Long | 84 | Four rounds hang at even-fall, then descend homing (G only) | Pendulum Glaive |
 | **Alembic** | Bubble | 2/1/2/3/4 | Sh-med | 84 | Fat slow alchemic orbs; two afoot, one aloft | Leaden Cudgel |
 | **Gyrfalcon** | Eagle | 2/4/2/3/3 | Med-long | 33 G / 48 A | Straight afoot; aloft it pauses, then stoops | Stooping Talon |
 | **Chevron** | V Laser | 3/4/1/3/4 | Med-long | 152 pt-blank / 76 | Fires a heraldic V afoot, a straight lance aloft | Scissor Glaive |
 | **Petronel** | Magnum | 4/5/1/1/5 | Short | 126 | One brutal cavalry-shot; toothless past arm's reach | Rondel Dagger |
 | **Versicle** | Needle | 2/3/1/4/4 | Med | 57 | Three vertical verses; hoists the victim skyward | Rising Falchion |
 | **Splintered Star** | Starshot | 2/3/2/4/2 | Long | 155 | One round splits five — vertically afoot, laterally aloft | Shatterblade |
-| **Falconet** | Glider | 3/2/5/3/1 | Long | 56 G / 113 A | Aloft, its rounds glide wide loops and return for a second pass | Volant Falx |
+| **Falconet** *(built)* | Glider | 3/2/5/3/1 | Long | 56 G / 113 A | Aloft, its rounds glide wide loops and return for a second pass | Volant Falx |
 | **Rookery** *(planned)* | Homing Star | 3/3/4/2/2 | Med-long | 256 | One casting breaks into seven homing rooks | Iron Rosary |
 | **Vigil** *(built)* | Trap | 3/3/2/4/1 | Med-long | 228 | Rounds keep watch, near-invisible, then strike (G); straight aloft | Penitent Flail |
 | **Auger** *(built)* | Drill | 3/5/2/3/4 | Short | 107 | A grinding stream that drags the victim up its own thread | Sawtooth Espadon |
@@ -175,7 +175,7 @@ Bars = MIGHT/BOLT/SEEK/CADENCE/REND. Volley = all-rounds-hit damage at medium ra
 | **Yoke** | Gravity | 4/3/1/4/4 | Med | 38 G / 95 A | Hangs black weights over the foe — the sky stops being safe | Yoke Hammer |
 | **Firecrest** | Phoenix | 3/5/2/4/3 | Long | 114 | Fast burning birds; bell-curve afoot, level aloft | Brandiron |
 | **Processional (D/S)** | L/R Pulse | 2/3/4/3/2 | Med | 99–107 | Eight rounds processing in a curve from the named side | Serpentine Blade (D/S) |
-| **Skysword** | Sword Storm | 3/5/2/4/3 | Med-long | 95 | Blades cast heavenward that fall on the mark — cover is negotiable | Steeple Strike |
+| **Skysword** *(built)* | Sword Storm | 3/5/2/4/3 | Med-long | 95 | Blades cast heavenward that fall on the mark — cover is negotiable | Steeple Strike |
 | **Wending Bolt** | Ion | 3/5/5/5/2 | Med | 86 | A round that turns twice to find its man; slow but faithful | Feinting Rapier |
 | **Beacon** *(built)* | Flare | 4/4/2/3/3 | Med | 124 at burst | Bursts at a set distance; time the blossom or waste the shot | Crowbeak Pick |
 | **Cinquefoil (D/S)** | L/R 5-Way | 2/4/1/4/3 | Med-long | 158–273 | Five streams fanning from the named side; reversed aloft | Quintain Sweep (D/S) |
@@ -221,7 +221,7 @@ Bars = MIGHT/REACH/TEMPO/GRACE/REND. Each is the designed counterpart of its gun
 | **Scissor Glaive** | Chevron | 3/3/3/3/4 | Twin blades cross in a V — wide afoot, needle-narrow aloft |
 | **Rondel Dagger** | Petronel | 4/1/4/2/5 | One armor-splitting thrust at grapple range |
 | **Shatterblade** | Splintered Star | 2/3/3/3/2 | The swing splinters into a fan of five edges |
-| **Volant Falx** | Falconet | 3/4/3/2/1 | A looping crescent wave that returns for a second pass |
+| **Volant Falx** *(built)* | Falconet | 3/4/3/2/1 | A looping crescent wave that returns for a second pass |
 | **Iron Rosary** | Rookery | 2/3/4/4/2 | A weighted chain told bead by bead — the longest string (4+ hits) |
 | **Penitent Flail** *(built)* | Vigil | 4/3/2/2/3 | The arc is unreadable and the timing is late |
 | **Sawtooth Espadon** *(built)* | Auger | 3/3/3/2/4 | A grinding hold that ticks damage and drags the foe up the blade |

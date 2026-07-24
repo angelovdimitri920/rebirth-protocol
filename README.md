@@ -6,10 +6,12 @@ A 3D arena mecha roguelite — Custom Robo's build-and-battle loop, crossed with
 
 ## Repo structure
 
-- `docs/GAME_DESIGN.md` — the living design document. Source of truth for mechanics, differentiators, tech stack, and the staged roadmap. Keep it updated as decisions get made; don't let it go stale.
-- `docs/SETTING_AND_FACTIONS.md` — canonical present-day world, factions, Orders, characters, and lexicon.
-- `docs/WORLD_HISTORY.md` — canonical Meridian Ascendancy, BFE/AFE timeline, Final Edict, Great Severance, Long Hush, Ashen Century, Present Age, Edictbound infection, Rebirth Protocol, and Riderless backstory.
-- `docs/RELIGION_AND_IDEOLOGY.md` — canonical religions, religious orders, schisms, ideological movements, subfactions, and their relationship to Edictbound technology.
+- `docs/00_CANON_INDEX.md` — the creative-documentation authority map, canon-status vocabulary, and change-control guide.
+- `docs/01_THEME_AND_PREMISE.md` through `docs/09_CANON_LEDGER_AND_BACKLOG.md` — the numbered creative authorities for theme, history, setting rules, the present world, factions, characters, campaign, gameplay, and unresolved canon.
+- `docs/GAME_DESIGN.md` — detailed mechanics, implementation history, and the staged roadmap; Section 08 owns the high-level gameplay contract.
+- `docs/SETTING_AND_FACTIONS.md` — detailed legacy support for the present world, factions, Orders, characters, and lexicon, under the numbered authority map.
+- `docs/WORLD_HISTORY.md` — detailed historical support for the Meridian Ascendancy, BFE/AFE timeline, Final Edict, Great Severance, Long Hush, Ashen Century, Present Age, Edictbound infection, Rebirth Protocol, and Riderless backstory.
+- `docs/RELIGION_AND_IDEOLOGY.md` — detailed specialist reference for religions, orders, schisms, ideological movements, subfactions, and their relationship to Edictbound technology.
 - `prompts/MASTER_BUILD_PROMPT.md` — the prompt used to kick off full development with Claude Code / Fable 5.
 - `CLAUDE.md` — project instructions Claude Code reads automatically at session start.
 - `src/` — the actual Three.js project (created once development begins: `npm create vite@latest . -- --template vanilla-ts`).

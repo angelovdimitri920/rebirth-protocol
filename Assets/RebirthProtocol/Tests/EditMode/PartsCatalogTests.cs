@@ -153,6 +153,55 @@ namespace RebirthProtocol.Tests.EditMode
         }
 
         [Test]
+        public void PassI2BombsCarryTheirTrajectoryAndDwellCapabilities()
+        {
+            // Guards against a silently-dropped field on the four new bombs
+            // (ARMORY §6): the two shapes fly their own paths, and the two
+            // Oubliettes dwell rather than detonating on landing.
+            var steeplefall = System.Array.Find(PartsCatalog.Bombs, b => b.Id == "steeplefall");
+            Assert.That(steeplefall.Path, Is.EqualTo(BombPath.Steeple));
+            Assert.That(steeplefall.ArcHeight, Is.GreaterThan(10f), "\"past steeple height\"");
+            Assert.That(steeplefall.FlightTimeMult, Is.GreaterThan(1f), "and the seconds to make that climb");
+
+            var oxbow = System.Array.Find(PartsCatalog.Bombs, b => b.Id == "oxbow-charge");
+            Assert.That(oxbow.Path, Is.EqualTo(BombPath.Bend));
+            Assert.That(oxbow.BendWidth, Is.GreaterThan(0f), "a bow with no width is a straight line");
+            Assert.That(oxbow.ContactRadius, Is.GreaterThan(0f),
+                "and a bow that cannot meet anything on the way is decoration — see BombPart.ContactRadius");
+
+            var mine = System.Array.Find(PartsCatalog.Bombs, b => b.Id == "oubliette-mine");
+            var twin = System.Array.Find(PartsCatalog.Bombs, b => b.Id == "oubliette-twin");
+            foreach (var pit in new[] { mine, twin })
+            {
+                Assert.That(pit.DwellSeconds, Is.GreaterThan(0f), $"{pit.Name} must wait");
+                Assert.That(pit.DwellTriggerRadius, Is.GreaterThan(0f), $"{pit.Name} must be steppable");
+            }
+
+            Assert.That(twin.MineCount, Is.EqualTo(2), "two pits for one throw");
+            Assert.That(twin.MineSpacing, Is.GreaterThan(0f), "planted apart, not stacked");
+            Assert.That(twin.Pattern, Is.EqualTo(BlastPattern.Single),
+                "each pit is its own single blast — the multiplicity is two MINES, not a two-point blast");
+        }
+
+        [Test]
+        public void NoBombBeforePassI2ChangedShape()
+        {
+            // The trajectory/dwell fields are additive: every bomb built
+            // before this pass must still be a plain single lob that
+            // detonates on landing, flies through everything, and throws one
+            // bomb. Cheap guard against a default leaking onto the roster.
+            foreach (var id in new[] { "impact", "quake", "palisade", "pincer-charge", "rime-charge" })
+            {
+                var bomb = System.Array.Find(PartsCatalog.Bombs, b => b.Id == id);
+                Assert.That(bomb.Path, Is.EqualTo(BombPath.Lob), $"{bomb.Name} still lobs");
+                Assert.That(bomb.FlightTimeMult, Is.EqualTo(1f), $"{bomb.Name} still flies at lob speed");
+                Assert.That(bomb.ContactRadius, Is.EqualTo(0f), $"{bomb.Name} still flies through everything");
+                Assert.That(bomb.DwellSeconds, Is.EqualTo(0f), $"{bomb.Name} still blows on landing");
+                Assert.That(bomb.MineCount, Is.EqualTo(1), $"{bomb.Name} is still one bomb per throw");
+            }
+        }
+
+        [Test]
         public void EveryMeleeWeaponsLungeStopsWithinItsOwnHitRange()
         {
             // Codex PR #21 finding: MeleeTuning's shared default

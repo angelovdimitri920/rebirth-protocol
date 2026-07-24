@@ -58,6 +58,19 @@ namespace RebirthProtocol.Domain
         {
             public const float LobSpeed = 18f; // flightTime = dist / LobSpeed
             public const float MinFlightTime = 0.5f;
+
+            // Steeple trajectory (Pass I2): the fraction of the flight spent
+            // climbing. ALL of the ground travel happens in that first
+            // stretch, so everything after the apex is a straight vertical
+            // drop -- the "falls straight down" half of Steeplefall's blurb.
+            // Shared shape, not a per-part knob: one bomb flies this path.
+            public const float SteepleClimbFraction = 0.55f;
+
+            // Dwelling mines (Pass I2): how a landed mine hides itself while
+            // it waits -- "near-invisible" is a small dark lump on the floor,
+            // not a lit orange shell still sitting at throw size.
+            public const float MineDwellScale = 0.3f;
+            public const float MineRestHeight = 0.15f;
         }
 
         // Shared shield mechanics (per-part guard/toll numbers in PartsCatalog).

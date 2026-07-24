@@ -302,6 +302,28 @@ namespace RebirthProtocol.Domain
         Split // two points offset from the impact (Pincer Charge)
     }
 
+    // Trajectory suite (ARMORY §6, Pass I2): the shape a thrown bomb's flight
+    // traces between the hand and the mark. Lob (every bomb before this pass)
+    // is the straight-line lerp under a symmetric sine bump. Every path lands
+    // on the SAME reticule mark -- the reticule never lies about where the
+    // blast will be; only the route there differs. All three are evaluated
+    // analytically from the flight parameter T (a pure function of T, never
+    // integrated step-by-step), so a coarse frame can't drift the landing.
+    public enum BombPath
+    {
+        Lob,     // straight lerp + symmetric sine arc (every existing bomb)
+        Steeple, // finishes its ground travel by the apex, then falls straight down (Steeplefall)
+        Bend     // bows wide to the named side and converges back on the mark (Oxbow Charge)
+    }
+
+    // Heraldic mirror (ARMORY §1.1): which side a Bend path bows toward.
+    // Mirrored parts are ONE entry with a side variant, not two catalog rows.
+    public enum BombBendSide
+    {
+        Dexter,  // bows to the thrower's right
+        Sinister // bows to the thrower's left
+    }
+
     public sealed class BombPart
     {
         public string Id;
@@ -324,6 +346,57 @@ namespace RebirthProtocol.Domain
         // many seconds -- flat, not scaled by the cluster-mini-blast
         // damage scale. 0 (every bomb before Rime Charge) applies nothing.
         public float FetterSeconds;
+
+        // Trajectory suite (ARMORY §6, Pass I2). Default Lob is every bomb
+        // before this pass, unchanged. See BombPath.
+        public BombPath Path = BombPath.Lob;
+
+        // Multiplier on the distance-derived flight time. 1 (every bomb
+        // before this pass) is the plain dist/LobSpeed lob. Steeplefall runs
+        // long: a throw that "climbs past steeple height" has to spend the
+        // seconds to get up there and back down, and that hang IS the weapon
+        // (its LINGER bar) -- a 14m climb crammed into a half-second flight
+        // would read as a blur, not a steeple.
+        public float FlightTimeMult = 1f;
+
+        // Bend: how far the bow swings off the straight throw line at its
+        // widest (meters), and which side it swings to. Only read by
+        // BombPath.Bend.
+        public float BendWidth;
+        public BombBendSide BendSide = BombBendSide.Dexter;
+
+        // Contact detonation: a bomb in flight blows on the first ENEMY robo
+        // it sweeps within this many meters of, instead of riding out its
+        // flight to the mark. 0 (every bomb before this pass) means the
+        // flight is untouchable and the blast always lands on the reticule.
+        //
+        // This is what gives Oxbow's bow teeth. Bomb flight ignores arena
+        // geometry entirely -- no bomb has ever been stopped by a wall -- so
+        // a curving path with no contact check would be pure decoration: the
+        // blast would land on the same mark a straight lob reaches. With
+        // contact, "bends around cover from the named side" means what it
+        // says: cover still doesn't stop it (crates and walls are NOT
+        // contact-eligible, only robos), but a foe hugging cover on the
+        // NAMED flank is swept up on the way past, where a straight lob
+        // would have sailed over their head onto the mark behind them. The
+        // owner is never contact-eligible -- the bomb has to leave the hand.
+        public float ContactRadius;
+
+        // Dwelling mines (ARMORY §6, Pass I2): on landing the bomb does not
+        // detonate. It settles near-invisible and waits, blowing when a robo
+        // comes within DwellTriggerRadius or when the wait runs out -- "lands,
+        // waits near-invisible, remembers." 0 (every bomb before this pass)
+        // detonates on landing as always.
+        public float DwellSeconds;
+        public float DwellTriggerRadius;
+
+        // Oubliette Twin: one throw that plants MineCount separate pits,
+        // spaced MineSpacing apart across the throw line. Each flies, lands,
+        // dwells, and triggers INDEPENDENTLY -- which is what separates this
+        // from BlastPattern.Split, where one bomb detonates at several points
+        // at the same instant. 1 (every other bomb) throws a single bomb.
+        public int MineCount = 1;
+        public float MineSpacing;
     }
 
     // Raise behaviors (ARMORY_REFERENCE §2.3, §7): what raising the shield
@@ -669,7 +742,42 @@ namespace RebirthProtocol.Domain
             // the foe for the real blow." Bars 1/3/2/4/1 (MIGHT/LOFT/BREADTH/
             // LINGER/REND), Dmg 8 -- both directly from the doc. The Fetter
             // hold is the actual payload, not the pittance blast.
-            new BombPart { Id = "rime-charge", Name = "Rime Charge", Blurb = "Almost harmless on its own -- it holds the foe still for the real blow.", Damage = 8f, EnduranceDamage = 10f, Cooldown = 6f, BlastRadius = 2.6f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, FetterSeconds = 1.2f }
+            new BombPart { Id = "rime-charge", Name = "Rime Charge", Blurb = "Almost harmless on its own -- it holds the foe still for the real blow.", Damage = 8f, EnduranceDamage = 10f, Cooldown = 6f, BlastRadius = 2.6f, ArcHeight = 5f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, FetterSeconds = 1.2f },
+            // Steeple trajectory (ARMORY §6, Pass I2): "Climbs past steeple
+            // height, falls straight down." Bars 3/2/4/4/3, Dmg 64-66.
+            // ArcHeight 14 is roughly three times the roster's lob apex --
+            // the "past steeple height" climb -- and FlightTimeMult 1.8
+            // buys the seconds to make that climb read as a climb. The
+            // payoff for the telegraph is a blast that arrives vertically:
+            // BombPath.Steeple finishes ALL its ground travel by the apex,
+            // so the last half of the flight is a straight drop onto the
+            // mark (LINGER 4, the delayed-threat bar).
+            new BombPart { Id = "steeplefall", Name = "Steeplefall", Blurb = "Climbs past steeple height, then falls straight down on the mark.", Damage = 66f, EnduranceDamage = 40f, Cooldown = 7f, BlastRadius = 3.6f, ArcHeight = 14f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 20f, Path = BombPath.Steeple, FlightTimeMult = 1.8f },
+            // Bend trajectory (ARMORY §6, Pass I2): "Bends around cover from
+            // the named side." Bars 3/3/4/2/3, Dmg 63/44. One entry with a
+            // side flag per the §1.1 mirror convention -- the Sinister
+            // variant is this same part with BendSide flipped, not a second
+            // catalog row. Flies LOW (ArcHeight 1.8, barely over head
+            // height) because the bow only means anything at a height where
+            // it can actually sweep a foe: ContactRadius 2.2 blows it on the
+            // first enemy the bow passes, so hugging cover on the dexter
+            // flank is punished while the wall itself never stops it.
+            new BombPart { Id = "oxbow-charge", Name = "Oxbow Charge (Dexter)", Blurb = "Swings wide to the right and comes back in -- cover on that flank is no cover at all.", Damage = 63f, EnduranceDamage = 30f, Cooldown = 6f, BlastRadius = 3.4f, ArcHeight = 1.8f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, Path = BombPath.Bend, BendWidth = 5f, BendSide = BombBendSide.Dexter, ContactRadius = 2.2f },
+            // Dwelling mine (ARMORY §6, Pass I2): "Lands, waits near-
+            // invisible, remembers." Bars 4/3/4/5/3 (LINGER 5, the roster's
+            // longest), Dmg 79/55. It does not detonate on landing: it
+            // settles, dims, and waits up to 8s, blowing when anyone strays
+            // within 3m -- or on its own when the wait runs out. It never
+            // simply forgets, which is the "remembers" in the blurb.
+            new BombPart { Id = "oubliette-mine", Name = "Oubliette Mine", Blurb = "Lands quiet and waits. It does not forget who walks over it.", Damage = 79f, EnduranceDamage = 45f, Cooldown = 8f, BlastRadius = 3.6f, ArcHeight = 4f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, DwellSeconds = 8f, DwellTriggerRadius = 3f },
+            // Twin mines (ARMORY §6, Pass I2): "Two forgotten pits for the
+            // price of one throw." Bars 2/3/3/3/1, Dmg 32 x2 -- Damage is
+            // per pit, per DOCTRINE pillar 3. MineCount 2 plants two
+            // genuinely independent bombs across the throw line, each with
+            // its own flight, its own wait, and its own trigger; that
+            // independence is what makes this a different weapon from
+            // Pincer Charge, whose two points are one blast at one instant.
+            new BombPart { Id = "oubliette-twin", Name = "Oubliette Twin", Blurb = "Two forgotten pits for the price of one throw. Step wrong twice.", Damage = 32f, EnduranceDamage = 16f, Cooldown = 6f, BlastRadius = 2.6f, ArcHeight = 4f, ReticuleAnchor = ReticuleAnchor.Target, ReticuleRange = 18f, DwellSeconds = 6f, DwellTriggerRadius = 2.6f, MineCount = 2, MineSpacing = 3f }
         };
 
         // Shield toll/raise data per ARMORY_REFERENCE §7 (GUARD front/back,
